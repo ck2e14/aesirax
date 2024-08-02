@@ -8,7 +8,6 @@ export async function init() {
    try {
       await createLogFile();
       processQ();
-
       write(`Configuration loaded: ${JSON.stringify(cfg)}`, "DEBUG");
       write(`App initialized.`, "INFO");
    } catch (error) {
