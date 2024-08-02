@@ -1,0 +1,21 @@
+{
+   "name": "typescript",
+   "version": "1.0.0",
+   "description": "",
+   "main": "index.js",
+   "type": "module",
+   "scripts": {
+      "build": "tsc",
+      "start": "node dist/app.js"
+   },
+   "keywords": [],
+   "author": "ck",
+   "license": "ISC",
+   "devDependencies": {
+      "@types/node": "^22.1.0",
+      "typescript": "^5.5.4"
+   },
+   "dependencies": {
+      "dotenv": "^16.4.5"
+   }
+}

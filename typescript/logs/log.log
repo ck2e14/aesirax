@@ -1,0 +1,3 @@
+2024-08-02T23:04:24.844Z [INFO]  Starting up...
+2024-08-02T23:04:24.854Z [DEBUG] Configuration loaded: {"verbose":true,"printToStdOut":true,"debug":true,"panic":true,"logDir":"/Users/chriskennedy/Desktop/aesirax/typescript/logs","logName":"log.log"}
+2024-08-02T23:04:24.854Z [INFO]  App initialized.
