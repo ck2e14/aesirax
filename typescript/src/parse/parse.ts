@@ -1,19 +1,9 @@
 import { DicomError } from "../error/dicomError.js";
-import { DicomErrorType } from "../globalEnums.js";
+import { ByteLen, DicomErrorType } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
 import { decodeTagNum } from "./tagNums.js";
 import { isVr } from "./typeGuards.js";
 import { decodeValue, decodeVr } from "./valueDecoders.js";
-
-const byteLen = {
-   PREAMBLE: 128,
-   HEADER: 4,
-   TAG_NUM: 4,
-   VR: 2,
-   EXT_VR_RESERVED: 2,
-   UINT_32: 4,
-   UINT_16: 2,
-} as const;
 
 /**
  * This is for learning - NOT PRODUCTION!
@@ -64,18 +54,18 @@ const byteLen = {
  * @throws Error
  */
 export function walkDicomBuffer(buf: Buffer): void {
-   let cursor = byteLen.PREAMBLE + byteLen.HEADER;
+   let cursor = ByteLen.PREAMBLE + ByteLen.HEADER;
 
    while (cursor < buf.length) {
-      const tagBuf = buf.subarray(cursor, cursor + byteLen.TAG_NUM);
+      const tagBuf = buf.subarray(cursor, cursor + ByteLen.TAG_NUM);
       const tag = decodeTagNum(tagBuf);
 
-      cursor += byteLen.TAG_NUM;
+      cursor += ByteLen.TAG_NUM;
 
-      const vrBuf = buf.subarray(cursor, cursor + byteLen.VR);
+      const vrBuf = buf.subarray(cursor, cursor + ByteLen.VR);
       const vr = decodeVr(vrBuf);
 
-      cursor += byteLen.VR;
+      cursor += ByteLen.VR;
 
       if (!isVr(vr)) {
          throwUnrecognisedVr(vr, vrBuf);
@@ -85,14 +75,14 @@ export function walkDicomBuffer(buf: Buffer): void {
       let valueLength = 0;
 
       if (isExtVr) {
-         cursor += byteLen.EXT_VR_RESERVED; // 2 reserved bytes can be ignored
+         cursor += ByteLen.EXT_VR_RESERVED; // 2 reserved bytes can be ignored
          valueLength = buf.readUInt32LE(cursor); // Extended VR tags' lengths are 4 bytes because they can be huge
-         cursor += byteLen.UINT_32;
+         cursor += ByteLen.UINT_32;
       }
 
       if (!isExtVr) {
          valueLength = buf.readUInt16LE(cursor); // Standard VR tags' lengths are 2 bytes, so max length is 0xFFFF
-         cursor += byteLen.UINT_16;
+         cursor += ByteLen.UINT_16;
       }
 
       const valueBuffer = buf.subarray(cursor, cursor + valueLength);

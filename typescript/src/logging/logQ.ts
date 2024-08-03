@@ -6,6 +6,7 @@ import { cfg } from "../init/init.js";
 const q = [];
 
 export function processQ() {
+   const path = constructLogFilePath();
    let active = false;
 
    setInterval(async () => {
@@ -14,7 +15,7 @@ export function processQ() {
       else active = true;
 
       try {
-         await appendFile(constructLogFilePath(), q.join("\n") + "\n");
+         await appendFile(path, q.join("\n") + "\n");
          q.length = 0;
       } catch (error) {
          console.log(error); // should write to a separate error log file and maybe notify someone
@@ -56,8 +57,7 @@ export function write(message: string, level: "INFO" | "DEBUG" | "ERROR") {
  * Create the log path if it doesn't exist.
  * @param path
  * @param depth
- * @throws {InitError} if the log path is a 0-length string
- * @throws {InitError} if the log path cannot be created after 3 attempts
+ * @throws {InitError}
  */
 export async function createLogFile(depth = 0) {
    const path = constructLogFilePath();
@@ -75,15 +75,18 @@ export async function createLogFile(depth = 0) {
          .split("/") // split the path into an array of directories
          .slice(0, -1)
          .join("/");
+
       mkdirSync(dir, { recursive: true });
+
       await appendFile(path, "testing");
+
       createLogFile(depth + 1);
    }
 }
 
 function constructLogFilePath() {
    let dir = cfg.logDir ?? "./logs/";
-   let name = cfg.logName ?? "log.txt";
+   const name = cfg.logName ?? "log.txt";
 
    if (!dir.endsWith("/")) {
       dir += "/";

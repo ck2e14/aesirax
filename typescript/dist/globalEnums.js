@@ -12,6 +12,16 @@ export var DicomErrorType;
     DicomErrorType["VALIDATE"] = "VALIDATE";
     DicomErrorType["PARSING"] = "PARSING";
 })(DicomErrorType || (DicomErrorType = {}));
+export var ByteLen;
+(function (ByteLen) {
+    ByteLen[ByteLen["PREAMBLE"] = 128] = "PREAMBLE";
+    ByteLen[ByteLen["HEADER"] = 4] = "HEADER";
+    ByteLen[ByteLen["TAG_NUM"] = 4] = "TAG_NUM";
+    ByteLen[ByteLen["VR"] = 2] = "VR";
+    ByteLen[ByteLen["UINT_32"] = 4] = "UINT_32";
+    ByteLen[ByteLen["UINT_16"] = 2] = "UINT_16";
+    ByteLen[ByteLen["EXT_VR_RESERVED"] = 2] = "EXT_VR_RESERVED";
+})(ByteLen || (ByteLen = {}));
 export var VR;
 (function (VR) {
     VR["AE"] = "AE";

@@ -37,22 +37,38 @@ const decoders = {
  * @throws DicomError
  */
 export function decodeVr(buf) {
-    if (buf.length !== 2) {
-        throw new DicomError({
-            errorType: DicomErrorType.PARSING,
-            message: `decodeVr() expects a 2byte buffer`,
-            buffer: buf,
-        });
-    }
     const vrByteLen = 2;
+    if (buf.length !== vrByteLen) {
+        return throwBadVrByteLength(buf);
+    }
     const decodedVr = buf.toString("ascii", 0, vrByteLen);
     const isRecognisedVr = Object.values(VR).includes(decodedVr);
     if (isRecognisedVr) {
         return decodedVr;
     }
+    return throwUnrecognisedVr(decodedVr, buf);
+}
+/**
+ * Throw an error if an unrecognised VR is encountered.
+ * @param vr
+ * @param vrBuf
+ * @throws DicomError
+ */
+function throwUnrecognisedVr(vr, vrBuf) {
     throw new DicomError({
         errorType: DicomErrorType.PARSING,
-        message: `decodeVr() expects a valid VR`,
+        message: `Unrecognised VR: ${vr}`,
+        buffer: vrBuf,
+    });
+}
+/**
+ * Throw an error if the buffer length is not 2 bytes.
+ * @param buf
+ */
+function throwBadVrByteLength(buf) {
+    throw new DicomError({
+        errorType: DicomErrorType.PARSING,
+        message: `decodeVr() expects a 2byte buffer`,
         buffer: buf,
     });
 }
@@ -72,20 +88,22 @@ export function decodeValue(vr, value) {
         return decoders.default(value);
     }
 }
+/**
+ * Decode a buffer to UTF-8 string and remove any null byte padding
+ * @param value
+ * @returns string
+ */
 function utf8Decoder(value) {
     return value //
         .toString("utf8")
-        .replace(/\0+$/, ""); // remove null byte padding
+        .replace(/\0+$/, "");
 }
 /**
  * Count the number of null bytes at the end of a buffer.
  * This is common in DICOM files where the actual value
  * is less than the fixed byte length required by the VR.
- * This is how we support variable length values and when
+ * This is how we support variable length values, and when
  * handling the values we should trim these null bytes out.
- * This is just a debug function to help understand the
- * literal values in the DICOM file versus the actual
- * values we should be using.
  * @param value
  * @returns void
  * @throws DicomError

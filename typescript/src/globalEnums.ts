@@ -13,6 +13,16 @@ export enum DicomErrorType {
    PARSING = "PARSING",
 }
 
+export enum ByteLen {
+   PREAMBLE = 128,
+   HEADER = 4,
+   TAG_NUM = 4,
+   VR = 2,
+   UINT_32 = 4,
+   UINT_16 = 2,
+   EXT_VR_RESERVED = 2,
+}
+
 export enum VR {
    AE = "AE",
    AS = "AS",
