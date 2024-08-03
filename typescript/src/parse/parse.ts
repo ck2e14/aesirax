@@ -1,4 +1,3 @@
-import { buffer } from "stream/consumers";
 import { write } from "../logging/logQ.js";
 import { DicomError } from "../error/dicomError.js";
 
@@ -14,9 +13,9 @@ import { DicomError } from "../error/dicomError.js";
  * that need to store potentially very large amount of
  * data, like OB for pixel data.
  *
- * When parsing the byte streams of DICOM files' Tags,
- * we need to walk the cursor forward a little differently
- * based on whether its a standard or extended format VR.
+ * When parsing the byte streams of DICOM files' Tags, we need to walk
+ * the cursor forward a little differently based on whether its a standard
+ * or extended format VR.
  *
  * The byte stream structure for standard VR is like this:
  *    - [2 x ASCII chars (2 bytes) e.g. SH]
@@ -30,7 +29,14 @@ import { DicomError } from "../error/dicomError.js";
  * So the byte stream structure for those extended VRs is like this:
  *    - [2 x ASCII chars (2 bytes) e.g. OB]
  *    - [2 x reserved bytes, always 0000 0000]
- *    - [4 x ]
+ *    - [The tag's actual value, of length 0000 - FFFFFFFF]
+ *
+ * Given that the extended VRs permit a 4-byte hex to specify the length,
+ * which is represented as FFFFFFFF
+ * this means the decimal length of the value can be at most 4,294,967,295
+ * or about 4GB. Also note that in reality some applications are going say
+ * GTFO if you pass 4GB in one single tag but it depends what you're dealing
+ * with. Ultrasounds are going to be phat in pixel data tags for example.
  *
  * Note as well that for futureproofing the DICOM spec demands that
  * there are 2 reserved bytes in the extended format VRs, which aren't
