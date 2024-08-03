@@ -1,14 +1,17 @@
 import { DicomError } from "../error/dicomError.js";
+import { DicomErrorType } from "../globalEnums.js";
 /**
  * Pass in a 4 byte buffer and get back the tag as a string
- * else throw a DicomError if unrecognised
+ * else throw a DicomError if unrecognised. It's the caller's
+ * responsibility to pass in the subarray that they determine
+ * to be the 4 bytes representing the tag (via cursor walking).
  * @param buf
- * @returns
+ * @returns string `(${string},${string})`
  */
 export function decodeTagNum(buf) {
     if (buf.length !== 4) {
         throw new DicomError({
-            errorType: Errors.DicomErrorType.PARSING,
+            errorType: DicomErrorType.PARSING,
             message: `decodeTag() expects a 4byte buffer`,
             buffer: buf,
         });
@@ -24,8 +27,8 @@ export function decodeTagNum(buf) {
     const syntax = /^[0-9a-fA-F]{4}$/;
     if (!syntax.test(groupNumber) || !syntax.test(elementNumber)) {
         throw new DicomError({
-            errorType: Errors.DicomErrorType.PARSING,
-            message: `decodeTag() expects a valid tag, got ${groupNumber},${elementNumber}`,
+            errorType: DicomErrorType.PARSING,
+            message: `decodeTag() decoded to an unexpected syntax:(${groupNumber},${elementNumber})`,
             buffer: buf,
         });
     }

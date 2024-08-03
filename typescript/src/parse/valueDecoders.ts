@@ -1,4 +1,5 @@
 import { DicomError } from "../error/dicomError.js";
+import { DicomErrorType } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
 
 type Decoder = (value: Buffer) => string;
@@ -43,13 +44,14 @@ const decoders: Partial<DecoderMap> = {
 export function decodeVr(buf: Buffer): Global.VR {
    if (buf.length !== 2) {
       throw new DicomError({
-         errorType: Errors.DicomErrorType.PARSING,
+         errorType: DicomErrorType.PARSING,
          message: `decodeVr() expects a 2byte buffer`,
          buffer: buf,
       });
    }
 
-   const decodedVr = buf.toString("ascii", 0, 2);
+   const vrByteLen = 2;
+   const decodedVr = buf.toString("ascii", 0, vrByteLen);
    const isRecognisedVr = Object.values(Global.VR).includes(decodedVr as Global.VR);
 
    if (isRecognisedVr) {
@@ -57,7 +59,7 @@ export function decodeVr(buf: Buffer): Global.VR {
    }
 
    throw new DicomError({
-      errorType: Errors.DicomErrorType.PARSING,
+      errorType: DicomErrorType.PARSING,
       message: `decodeVr() expects a valid VR`,
       buffer: buf,
    });

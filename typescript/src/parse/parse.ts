@@ -1,3 +1,5 @@
+import { DicomError } from "../error/dicomError.js";
+import { DicomErrorType } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
 import { decodeTagNum } from "./tagNums.js";
 import { decodeValue } from "./valueDecoders.js";
@@ -10,8 +12,8 @@ import { decodeValue } from "./valueDecoders.js";
  * 1. Standard Format VR
  * 2. Extended Format VR
  *
- * As the names suggest, Ext Format VRs are for VRs that need to store
- * potentially very large amount of data, like OB for pixel data.
+ * As the name suggests Extended Format VRs are for VRs that may store
+ * very large amounts of data, like OB VRs for pixel data.
  *
  * When parsing the byte streams of DICOM files' Tags, we need to walk
  * the cursor forward a little differently based on whether its a standard
@@ -33,7 +35,7 @@ import { decodeValue } from "./valueDecoders.js";
  *
  * Given that the extended VRs permit a 4-byte hex to specify the length,
  * which is represented as 0xFFFFFFFF. This means the decimal length of the
- * value can be at most 4,294,967,295 or about 4GB. Also note that in reality
+ * value can be at most 4,294,967,295 (i.e. about 4GB). Also note that in reality
  * some applications are going tell you to GTFO if you pass 4GB in one single
  * tag but it depends what you're dealing with. Ultrasounds are going to be
  * very long in pixel data tags, for example.
@@ -51,59 +53,65 @@ import { decodeValue } from "./valueDecoders.js";
  * @throws Error
  */
 export function walkDicomBuffer(buf: Buffer) {
-   const PREAMBLE_LEN = 128;
-   const HEADER_LEN = 4;
+   const PREAMBLE_LEN = 128,
+      HEADER_LEN = 4,
+      TAG_BUF_LEN = 4,
+      VR_BUF_LEN = 2,
+      EXT_VR_RESERVED_BUF_LEN = 2,
+      UINT_32_BUF_LEN = 4,
+      UINT_16_BUF_LEN = 2;
 
    let cursor = PREAMBLE_LEN + HEADER_LEN;
 
    while (cursor < buf.length) {
-      const tag = decodeTagNum(buf.subarray(132, 132 + 4));
-      cursor += 4;
+      const tagBuf = buf.subarray(cursor, cursor + TAG_BUF_LEN);
+      const tag = decodeTagNum(tagBuf);
+      cursor += TAG_BUF_LEN;
 
-      const vr = buf.toString("ascii", cursor, cursor + 2);
-      cursor += 2;
+      const vrBuf = buf.subarray(cursor, cursor + VR_BUF_LEN);
+      const vr = decodeTagNum(vrBuf);
 
-      let length: number;
-      if (isExtendedFormatVr(vr)) {
-         cursor += 2; // skip 2 reserved bytes
-         length = buf.readUInt32LE(cursor); // we know ext VRs' lengths are 4 bytes, and we can use the std lib's method for this
-         cursor += 4; // then walk the cursor past these bytes now we've read them
-      } else {
-         length = buf.readUInt16LE(cursor); // we know std VRs' lengths are 2 bytes, and we can use the std lib's method for this
-         cursor += 2; // then walk the cursor past these bytes now we've read them
+      if (!isVr(vr)) {
+         throw new DicomError({
+            errorType: DicomErrorType.PARSING,
+            message: `Unrecognised VR: ${vr}`,
+            buffer: vrBuf,
+         });
       }
 
-      const value = buf.subarray(cursor, cursor + length);
-      const decodedValue = decodeValue(vr, value);
+      cursor += VR_BUF_LEN;
 
-      write(`Tag: ${tag}, VR: ${vr}, Length: ${length}, Value: ${decodedValue}`, "DEBUG");
+      let tagByteLength: number;
+      if (isExtendedFormatVr(vr)) {
+         cursor += EXT_VR_RESERVED_BUF_LEN;
+         tagByteLength = buf.readUInt32LE(cursor); // Extended VR tags' lengths are 4 bytes
+         cursor += UINT_32_BUF_LEN;
+      } else {
+         tagByteLength = buf.readUInt16LE(cursor); // Standard VR tags' lengths are 2 bytes
+         cursor += UINT_16_BUF_LEN;
+      }
 
-      cursor += length;
+      const valueBuffer = buf.subarray(cursor, cursor + tagByteLength);
+      const decodedValue = decodeValue(vr, valueBuffer);
+
+      write(`Tag: ${tag}, VR: ${vr}, Length: ${tagByteLength}, Value: ${decodedValue}`, "DEBUG");
+
+      cursor += tagByteLength;
    }
 }
 
-/**
- * Determine if a VR should be decoded as UTF-8.
- * Note that this is not yet exhaustive.
- * Note that others can be decoded as UTF-8 for non
- * visual representations but this is intended for
- * human readable strings at the moment.
- * @param vr
- * @returns
- */
-export function shouldDecodeAsUtf8(vr: string) {
-   const pattern = /^AE|AS|CS|DA|DS|DT|IS|LO|LT|PN|SH|ST|TM|UC|UI|UR|UT$/;
-   return pattern.test(vr);
-}
+const isVr = (vr: string): vr is Global.VR => {
+   return vr in Global.VR;
+};
 
 /**
  * Determine if a VR is in the extended format.
  * Has implications for how the cursor is walked.
  * See comments in walkDicomBuffer for more info.
  * @param vr
- * @returns
+ * @returns boolean
  */
-function isExtendedFormatVr(vr: string) {
-   const pattern = /^OB|OW|OF|SQ|UT|UN$/;
-   return pattern.test(vr);
+function isExtendedFormatVr(vr: Global.VR): boolean {
+   const extVrPattern = /^OB|OW|OF|SQ|UT|UN$/;
+   return extVrPattern.test(vr);
 }
