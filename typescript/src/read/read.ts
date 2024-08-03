@@ -59,10 +59,9 @@ export function readDicom(path: string): ReadDicomPromise {
  * http://dicom.nema.org/medical/dicom/current/output/chtml/part10/chapter_7.html
  *
  * @param chunk
- * @returns true
  * @throws DicomError
  */
-function validateDicomHeader(chunk: Buffer): true {
+function validateDicomHeader(chunk: Buffer): void | never {
    const expectedWordLocation = chunk //
       .subarray(MAGIC_WORD_START, MAGIC_WORD_END)
       .toString();
@@ -74,6 +73,4 @@ function validateDicomHeader(chunk: Buffer): true {
          buffer: chunk,
       });
    }
-
-   return true;
 }

@@ -47,7 +47,6 @@ export function readDicom(path) {
  * http://dicom.nema.org/medical/dicom/current/output/chtml/part10/chapter_7.html
  *
  * @param chunk
- * @returns true
  * @throws DicomError
  */
 function validateDicomHeader(chunk) {
@@ -61,6 +60,5 @@ function validateDicomHeader(chunk) {
             buffer: chunk,
         });
     }
-    return true;
 }
 //# sourceMappingURL=read.js.map
