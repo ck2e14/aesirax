@@ -9,9 +9,8 @@ import { DicomError } from "../error/dicomError.js";
  * 1. Standard Format VR
  * 2. Extended Format VR
  *
- * As the names suggest, Ext Format VRs are for VRs
- * that need to store potentially very large amount of
- * data, like OB for pixel data.
+ * As the names suggest, Ext Format VRs are for VRs that need to store
+ * potentially very large amount of data, like OB for pixel data.
  *
  * When parsing the byte streams of DICOM files' Tags, we need to walk
  * the cursor forward a little differently based on whether its a standard
@@ -44,9 +43,12 @@ import { DicomError } from "../error/dicomError.js";
  * (as 0000H), so we need to know about these so we can walk the cursor
  * forward by the right amount.
  *
+ * Note that this function assumes you've chekced 0-128 bytes for the preamble,
+ * and 128-132 bytes for 'DICM' header.
+ *
  * @param buf
  * @returns void
- * @throws DicomError
+ * @throws Error
  */
 export function walkDicomBuffer(buf: Buffer) {
    let cursor = 132; // Skip preamble + "DICM" prefix
