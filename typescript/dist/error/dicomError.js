@@ -24,7 +24,7 @@ export class DicomError extends Error {
      * @param error
      * @returns {DicomError}
      */
-    static from(error) {
+    static from(error, errorType) {
         if (error instanceof DicomError)
             return error;
         return new DicomError({

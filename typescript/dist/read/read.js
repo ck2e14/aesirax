@@ -1,10 +1,10 @@
 import fs from "fs";
 import { DicomError } from "../error/dicomError.js";
 import { write } from "../logging/logQ.js";
-const PREAMBLE_LENGTH = 128;
 const MAGIC_WORD = "DICM";
+const PREAMBLE_LENGTH = 128;
 const MAGIC_WORD_START = PREAMBLE_LENGTH;
-const MAGIC_WORD_END = PREAMBLE_LENGTH + 4; // "DICM" is 4 characters
+const MAGIC_WORD_END = PREAMBLE_LENGTH + 4;
 /**
  * Read a DICOM file into memory.
  * @param path
@@ -30,13 +30,10 @@ export function readDicom(path) {
             res.len += chunk.length;
         });
         readStream.on("error", error => {
-            reject(new DicomError({
-                errorType: Errors.DicomErrorType.READ,
-                message: error.message,
-            }));
+            reject(DicomError.from(error, Errors.DicomErrorType.READ));
         });
         readStream.on("close", () => {
-            write(`Read ${res.len} bytes from ${path}`, "DEBUG");
+            write(`Read a total of ${res.len} bytes from ${path}`, "DEBUG");
             res.buf = Buffer.concat(bufs);
             resolve(res);
         });

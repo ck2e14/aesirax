@@ -37,7 +37,7 @@ export class DicomError extends Error {
     * @param error
     * @returns {DicomError}
     */
-   public static from(error: Error): DicomError {
+   public static from(error: Error, errorType?: Errors.DicomErrorType): DicomError {
       if (error instanceof DicomError) return error;
       return new DicomError({
          errorType: Errors.DicomErrorType.UNKNOWN,
