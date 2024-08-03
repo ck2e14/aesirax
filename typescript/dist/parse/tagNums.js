@@ -21,8 +21,8 @@ export function decodeTagNum(buf) {
         .readUInt16LE(2) // we read the first 2 bytes so offset by those 2
         .toString(16)
         .padStart(4, "0");
-    const isPermissibleSyntax = /^[0-9a-fA-F]{4}$/;
-    if (!isPermissibleSyntax.test(groupNumber) || !isPermissibleSyntax.test(elementNumber)) {
+    const syntax = /^[0-9a-fA-F]{4}$/;
+    if (!syntax.test(groupNumber) || !syntax.test(elementNumber)) {
         throw new DicomError({
             errorType: Errors.DicomErrorType.PARSING,
             message: `decodeTag() expects a valid tag, got ${groupNumber},${elementNumber}`,
