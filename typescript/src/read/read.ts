@@ -29,12 +29,10 @@ export function readDicom(path: string): ReadDicomPromise {
 
       readStream.on("data", (chunk: Buffer) => {
          write(`Read ${chunk.length} bytes from ${path}`, "DEBUG");
-
          if (firstChunk) {
             validateDicomHeader(chunk);
             firstChunk = false;
          }
-
          bufs.push(chunk);
          res.len += chunk.length;
       });
