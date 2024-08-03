@@ -1,5 +1,5 @@
 import { DicomError } from "../error/dicomError.js";
-import { DicomErrorType, VR } from "../globalEnums.js";
+import { ByteLen, DicomErrorType, VR } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
 
 type Decoder = (value: Buffer) => string;
@@ -42,13 +42,11 @@ const decoders: Partial<DecoderMap> = {
  * @throws DicomError
  */
 export function decodeVr(buf: Buffer): Global.VR {
-   const vrByteLen = 2;
-
-   if (buf.length !== vrByteLen) {
+   if (buf.length !== ByteLen.VR) {
       return throwBadVrByteLength(buf);
    }
 
-   const decodedVr = buf.toString("ascii", 0, vrByteLen);
+   const decodedVr = buf.toString("ascii", 0, ByteLen.VR);
    const isRecognisedVr = Object.values(VR).includes(decodedVr as VR);
 
    if (isRecognisedVr) {

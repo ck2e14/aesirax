@@ -1,6 +1,8 @@
 import { DicomError } from "../error/dicomError.js";
 import { DicomErrorType } from "../globalEnums.js";
 
+type TagStr = `(${string},${string})`;
+
 /**
  * Pass in a 4 byte buffer and get back the tag as a string
  * else throw a DicomError if unrecognised. It's the caller's
@@ -9,7 +11,7 @@ import { DicomErrorType } from "../globalEnums.js";
  * @param buf
  * @returns string
  */
-export function decodeTagNum(buf: Buffer): `(${string},${string})` {
+export function decodeTagNum(buf: Buffer): TagStr {
    if (buf.length !== 4) {
       return throwBadBufferLength(buf);
    }
