@@ -12,15 +12,14 @@ export function decodeTagNum(buf) {
     if (buf.length !== 4) {
         return throwBadBufferLength(buf);
     }
-    const decode = (cursor) => {
+    const decode = (offset) => {
         return buf
-            .readUInt16LE(cursor) // group nums are always 2 bytes
+            .readUInt16LE(offset) // group nums are always 2 bytes
             .toString(16) // hexes are base 16 so pass radix 16
             .padStart(4, "0"); // pad with 0s to make it 4 chars long
     };
     const isHexStr = (str) => /^[0-9a-fA-F]{4}$/.test(str); // DICOM tags are always 4 hex chars
-    const grp = decode(0);
-    const el = decode(2);
+    const [grp, el] = [0, 2].map(decode); // group starts at byte offset 0, element at byte offset 2
     if (!isHexStr(grp) || !isHexStr(el)) {
         return throwBadHexPattern(buf, `(${grp},${el})`);
     }

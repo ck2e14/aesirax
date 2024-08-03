@@ -1,7 +1,7 @@
-import fs from "fs";
 import { DicomError } from "../error/dicomError.js";
 import { write } from "../logging/logQ.js";
 import { DicomErrorType } from "../globalEnums.js";
+import { createReadStream } from "fs";
 
 type ReadDicom = { buf: Buffer; len: Number };
 type ReadDicomPromise = Promise<ReadDicom>;
@@ -22,7 +22,7 @@ export function readDicom(path: string): ReadDicomPromise {
    let firstChunk = true;
 
    return new Promise<ReadDicom>((resolve, reject) => {
-      const readStream = fs.createReadStream(path);
+      const readStream = createReadStream(path);
       const bufs: Buffer[] = [];
       const res = { buf: Buffer.alloc(0), len: 0 };
 
@@ -56,14 +56,16 @@ export function readDicom(path: string): ReadDicomPromise {
  * Preamble is 128 bytes of 0x00, followed by the magic word "DICM".
  * Preamble cannot be used to determine that the file is DICOM, per the spec.
  *
- *  http://dicom.nema.org/medical/dicom/current/output/chtml/part10/chapter_7.html
+ * http://dicom.nema.org/medical/dicom/current/output/chtml/part10/chapter_7.html
  *
  * @param chunk
  * @returns true
  * @throws DicomError
  */
 function validateDicomHeader(chunk: Buffer): true {
-   const expectedWordLocation = chunk.subarray(MAGIC_WORD_START, MAGIC_WORD_END).toString();
+   const expectedWordLocation = chunk //
+      .subarray(MAGIC_WORD_START, MAGIC_WORD_END)
+      .toString();
 
    if (expectedWordLocation !== MAGIC_WORD) {
       throw new DicomError({

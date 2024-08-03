@@ -85,7 +85,7 @@ export function walkDicomBuffer(buf: Buffer): void {
       let valueLength = 0;
 
       if (isExtVr) {
-         cursor += byteLen.EXT_VR_RESERVED;
+         cursor += byteLen.EXT_VR_RESERVED; // 2 reserved bytes can be ignored
          valueLength = buf.readUInt32LE(cursor); // Extended VR tags' lengths are 4 bytes because they can be huge
          cursor += byteLen.UINT_32;
       }
