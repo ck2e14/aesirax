@@ -1,5 +1,5 @@
 import { DicomError } from "../error/dicomError.js";
-import { DicomErrorType } from "../globalEnums.js";
+import { DicomErrorType, VR } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
 const decoders = {
     // partial because will add VRs incrementally
@@ -46,7 +46,7 @@ export function decodeVr(buf) {
     }
     const vrByteLen = 2;
     const decodedVr = buf.toString("ascii", 0, vrByteLen);
-    const isRecognisedVr = Object.values(Global.VR).includes(decodedVr);
+    const isRecognisedVr = Object.values(VR).includes(decodedVr);
     if (isRecognisedVr) {
         return decodedVr;
     }

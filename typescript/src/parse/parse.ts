@@ -2,7 +2,8 @@ import { DicomError } from "../error/dicomError.js";
 import { DicomErrorType } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
 import { decodeTagNum } from "./tagNums.js";
-import { decodeValue } from "./valueDecoders.js";
+import { isVr } from "./typeGuards.js";
+import { decodeValue, decodeVr } from "./valueDecoders.js";
 
 /**
  * Walk through a DICOM buffer and log the
@@ -65,11 +66,13 @@ export function walkDicomBuffer(buf: Buffer) {
 
    while (cursor < buf.length) {
       const tagBuf = buf.subarray(cursor, cursor + TAG_BUF_LEN);
-      const tag = decodeTagNum(tagBuf);
+      const tag = decodeTagNum(buf.subarray(cursor, cursor + 4));
+      // const tag = decodeTagNum(tagBuf);
       cursor += TAG_BUF_LEN;
 
       const vrBuf = buf.subarray(cursor, cursor + VR_BUF_LEN);
-      const vr = decodeTagNum(vrBuf);
+      const vr = decodeVr(vrBuf);
+      cursor += VR_BUF_LEN;
 
       if (!isVr(vr)) {
          throw new DicomError({
@@ -78,8 +81,6 @@ export function walkDicomBuffer(buf: Buffer) {
             buffer: vrBuf,
          });
       }
-
-      cursor += VR_BUF_LEN;
 
       let tagByteLength: number;
       if (isExtendedFormatVr(vr)) {
@@ -99,10 +100,6 @@ export function walkDicomBuffer(buf: Buffer) {
       cursor += tagByteLength;
    }
 }
-
-const isVr = (vr: string): vr is Global.VR => {
-   return vr in Global.VR;
-};
 
 /**
  * Determine if a VR is in the extended format.
