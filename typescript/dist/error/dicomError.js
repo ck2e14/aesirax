@@ -1,3 +1,4 @@
+import { DicomErrorType } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
 /**
  * DicomError is a custom error class for handling errors
@@ -20,7 +21,7 @@ export class DicomError extends Error {
     /**
      * Use this in catch blocks where we aren't sure what instance
      * type is being thrown but we want to establish a boundary
-     * within which errors should be classified as DicomErrors.
+     * within which all errors should be classified as DicomErrors.
      * @param error
      * @returns {DicomError}
      */
@@ -28,7 +29,7 @@ export class DicomError extends Error {
         if (error instanceof DicomError)
             return error;
         return new DicomError({
-            errorType: Errors.DicomErrorType.UNKNOWN,
+            errorType: DicomErrorType.UNKNOWN,
             message: error.message,
             originalStack: error.stack,
         });
