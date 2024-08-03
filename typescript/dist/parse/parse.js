@@ -4,9 +4,18 @@ import { write } from "../logging/logQ.js";
 import { decodeTagNum } from "./tagNums.js";
 import { isVr } from "./typeGuards.js";
 import { decodeValue, decodeVr } from "./valueDecoders.js";
+const byteLen = {
+    PREAMBLE: 128,
+    HEADER: 4,
+    TAG: 4,
+    VR: 2,
+    EXT_VR_RESERVED: 2,
+    UINT_32: 4,
+    UINT_16: 2,
+};
 /**
- * Walk through a DICOM buffer and log the
- * tags, VRs, lengths, and values.
+ * This is for learning - NOT PRODUCTION!
+ *  Walk through a DICOM buffer and log the tags, VRs, lengths, and values.
  *
  * In DICOM we have two main formats of VR:
  * 1. Standard Format VR
@@ -53,16 +62,14 @@ import { decodeValue, decodeVr } from "./valueDecoders.js";
  * @throws Error
  */
 export function walkDicomBuffer(buf) {
-    const PREAMBLE_LEN = 128, HEADER_LEN = 4, TAG_BUF_LEN = 4, VR_BUF_LEN = 2, EXT_VR_RESERVED_BUF_LEN = 2, UINT_32_BUF_LEN = 4, UINT_16_BUF_LEN = 2;
-    let cursor = PREAMBLE_LEN + HEADER_LEN;
+    let cursor = byteLen.PREAMBLE + byteLen.HEADER;
     while (cursor < buf.length) {
-        const tagBuf = buf.subarray(cursor, cursor + TAG_BUF_LEN);
-        const tag = decodeTagNum(buf.subarray(cursor, cursor + 4));
-        // const tag = decodeTagNum(tagBuf);
-        cursor += TAG_BUF_LEN;
-        const vrBuf = buf.subarray(cursor, cursor + VR_BUF_LEN);
+        const tagBuf = buf.subarray(cursor, cursor + byteLen.TAG);
+        const tag = decodeTagNum(tagBuf);
+        cursor += byteLen.TAG;
+        const vrBuf = buf.subarray(cursor, cursor + byteLen.VR);
         const vr = decodeVr(vrBuf);
-        cursor += VR_BUF_LEN;
+        cursor += byteLen.VR;
         if (!isVr(vr)) {
             throw new DicomError({
                 errorType: DicomErrorType.PARSING,
@@ -70,20 +77,21 @@ export function walkDicomBuffer(buf) {
                 buffer: vrBuf,
             });
         }
-        let tagByteLength;
-        if (isExtendedFormatVr(vr)) {
-            cursor += EXT_VR_RESERVED_BUF_LEN;
-            tagByteLength = buf.readUInt32LE(cursor); // Extended VR tags' lengths are 4 bytes
-            cursor += UINT_32_BUF_LEN;
+        let valueLength = 0;
+        const isExtVr = isExtendedFormatVr(vr);
+        if (isExtVr) {
+            cursor += byteLen.EXT_VR_RESERVED;
+            valueLength = buf.readUInt32LE(cursor); // Extended VR tags' lengths are 4 bytes because they can be huge
+            cursor += byteLen.UINT_32;
         }
-        else {
-            tagByteLength = buf.readUInt16LE(cursor); // Standard VR tags' lengths are 2 bytes
-            cursor += UINT_16_BUF_LEN;
+        if (!isExtVr) {
+            valueLength = buf.readUInt16LE(cursor); // Standard VR tags' lengths are 2 bytes, so max length is 0xFFFF
+            cursor += byteLen.UINT_16;
         }
-        const valueBuffer = buf.subarray(cursor, cursor + tagByteLength);
+        const valueBuffer = buf.subarray(cursor, cursor + valueLength);
         const decodedValue = decodeValue(vr, valueBuffer);
-        write(`Tag: ${tag}, VR: ${vr}, Length: ${tagByteLength}, Value: ${decodedValue}`, "DEBUG");
-        cursor += tagByteLength;
+        write(`Tag: ${tag}, VR: ${vr}, Length: ${valueLength}, Value: ${decodedValue}`, "DEBUG");
+        cursor += valueLength;
     }
 }
 /**
