@@ -8,7 +8,7 @@ import { decodeValue, decodeVr } from "./valueDecoders.js";
 const byteLen = {
    PREAMBLE: 128,
    HEADER: 4,
-   TAG: 4,
+   TAG_NUM: 4,
    VR: 2,
    EXT_VR_RESERVED: 2,
    UINT_32: 4,
@@ -67,10 +67,10 @@ export function walkDicomBuffer(buf: Buffer): void {
    let cursor = byteLen.PREAMBLE + byteLen.HEADER;
 
    while (cursor < buf.length) {
-      const tagBuf = buf.subarray(cursor, cursor + byteLen.TAG);
+      const tagBuf = buf.subarray(cursor, cursor + byteLen.TAG_NUM);
       const tag = decodeTagNum(tagBuf);
 
-      cursor += byteLen.TAG;
+      cursor += byteLen.TAG_NUM;
 
       const vrBuf = buf.subarray(cursor, cursor + byteLen.VR);
       const vr = decodeVr(vrBuf);
