@@ -63,28 +63,26 @@ const byteLen = {
  * @returns void
  * @throws Error
  */
-export function walkDicomBuffer(buf: Buffer) {
+export function walkDicomBuffer(buf: Buffer): void {
    let cursor = byteLen.PREAMBLE + byteLen.HEADER;
 
    while (cursor < buf.length) {
       const tagBuf = buf.subarray(cursor, cursor + byteLen.TAG);
       const tag = decodeTagNum(tagBuf);
+
       cursor += byteLen.TAG;
 
       const vrBuf = buf.subarray(cursor, cursor + byteLen.VR);
       const vr = decodeVr(vrBuf);
+
       cursor += byteLen.VR;
 
       if (!isVr(vr)) {
-         throw new DicomError({
-            errorType: DicomErrorType.PARSING,
-            message: `Unrecognised VR: ${vr}`,
-            buffer: vrBuf,
-         });
+         throwUnrecognisedVr(vr, vrBuf);
       }
 
-      let valueLength = 0;
       const isExtVr = isExtendedFormatVr(vr);
+      let valueLength = 0;
 
       if (isExtVr) {
          cursor += byteLen.EXT_VR_RESERVED;
@@ -104,6 +102,20 @@ export function walkDicomBuffer(buf: Buffer) {
 
       cursor += valueLength;
    }
+}
+
+/**
+ * Throw an error if an unrecognised VR is encountered.
+ * @param vr
+ * @param vrBuf
+ * @throws DicomError
+ */
+function throwUnrecognisedVr(vr: string, vrBuf: Buffer): never {
+   throw new DicomError({
+      errorType: DicomErrorType.PARSING,
+      message: `Unrecognised VR: ${vr}`,
+      buffer: vrBuf,
+   });
 }
 
 /**

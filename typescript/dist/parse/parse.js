@@ -71,14 +71,10 @@ export function walkDicomBuffer(buf) {
         const vr = decodeVr(vrBuf);
         cursor += byteLen.VR;
         if (!isVr(vr)) {
-            throw new DicomError({
-                errorType: DicomErrorType.PARSING,
-                message: `Unrecognised VR: ${vr}`,
-                buffer: vrBuf,
-            });
+            throwUnrecognisedVr(vr, vrBuf);
         }
-        let valueLength = 0;
         const isExtVr = isExtendedFormatVr(vr);
+        let valueLength = 0;
         if (isExtVr) {
             cursor += byteLen.EXT_VR_RESERVED;
             valueLength = buf.readUInt32LE(cursor); // Extended VR tags' lengths are 4 bytes because they can be huge
@@ -93,6 +89,19 @@ export function walkDicomBuffer(buf) {
         write(`Tag: ${tag}, VR: ${vr}, Length: ${valueLength}, Value: ${decodedValue}`, "DEBUG");
         cursor += valueLength;
     }
+}
+/**
+ * Throw an error if an unrecognised VR is encountered.
+ * @param vr
+ * @param vrBuf
+ * @throws DicomError
+ */
+function throwUnrecognisedVr(vr, vrBuf) {
+    throw new DicomError({
+        errorType: DicomErrorType.PARSING,
+        message: `Unrecognised VR: ${vr}`,
+        buffer: vrBuf,
+    });
 }
 /**
  * Determine if a VR is in the extended format.
