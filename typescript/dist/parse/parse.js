@@ -5,8 +5,12 @@ import { decodeTagNum } from "./tagNums.js";
 import { isVr } from "./typeGuards.js";
 import { decodeValue, decodeVr } from "./valueDecoders.js";
 /**
+ * WARN - this function expects THE ENTIRE DICOM FILE IN A SINGLE BUFFER!
+ *        see streamParse() for chunked processing of the file.
+ *
  * This is for learning - NOT PRODUCTION!
- *  Walk through a DICOM buffer and log the tags, VRs, lengths, and values.
+ *
+ * Walk through a DICOM buffer and log the tags, VRs, lengths, and values.
  *
  * In DICOM we have two main formats of VR:
  * 1. Standard Format VR
@@ -52,7 +56,7 @@ import { decodeValue, decodeVr } from "./valueDecoders.js";
  * @returns void
  * @throws Error
  */
-export function walkDicomBuffer(buf) {
+export function walkEntireDicomFileAsBuffer(buf) {
     let cursor = ByteLen.PREAMBLE + ByteLen.HEADER;
     while (cursor < buf.length) {
         const tagBuf = buf.subarray(cursor, cursor + ByteLen.TAG_NUM);
@@ -87,7 +91,7 @@ export function walkDicomBuffer(buf) {
  * @param vrBuf
  * @throws DicomError
  */
-function throwUnrecognisedVr(vr, vrBuf) {
+export function throwUnrecognisedVr(vr, vrBuf) {
     throw new DicomError({
         errorType: DicomErrorType.PARSING,
         message: `Unrecognised VR: ${vr}`,
@@ -97,11 +101,11 @@ function throwUnrecognisedVr(vr, vrBuf) {
 /**
  * Determine if a VR is in the extended format.
  * Has implications for how the cursor is walked.
- * See comments in walkDicomBuffer for more info.
+ * See comments in walkEntireDicomFileAsBuffer for more info.
  * @param vr
  * @returns boolean
  */
-function isExtendedFormatVr(vr) {
+export function isExtendedFormatVr(vr) {
     const extVrPattern = /^OB|OW|OF|SQ|UT|UN$/;
     return extVrPattern.test(vr);
 }
