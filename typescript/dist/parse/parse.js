@@ -87,7 +87,7 @@ export function walkDicomBuffer(buf) {
  * @param vrBuf
  * @throws DicomError
  */
-function throwUnrecognisedVr(vr, vrBuf) {
+export function throwUnrecognisedVr(vr, vrBuf) {
     throw new DicomError({
         errorType: DicomErrorType.PARSING,
         message: `Unrecognised VR: ${vr}`,
@@ -101,7 +101,7 @@ function throwUnrecognisedVr(vr, vrBuf) {
  * @param vr
  * @returns boolean
  */
-function isExtendedFormatVr(vr) {
+export function isExtendedFormatVr(vr) {
     const extVrPattern = /^OB|OW|OF|SQ|UT|UN$/;
     return extVrPattern.test(vr);
 }

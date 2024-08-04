@@ -1,10 +1,15 @@
 import { DicomError } from "../error/dicomError.js";
 import { write } from "../logging/logQ.js";
-import { DicomErrorType } from "../globalEnums.js";
+import { ByteLen, DicomErrorType } from "../globalEnums.js";
 import { createReadStream } from "fs";
+import { decodeTagNum } from "../parse/tagNums.js";
+import { isVr } from "../parse/typeGuards.js";
+import { decodeVr, decodeValue } from "../parse/valueDecoders.js";
+import { throwUnrecognisedVr, isExtendedFormatVr } from "../parse/parse.js";
 
 type ReadDicom = { buf: Buffer; len: Number };
 type ReadDicomPromise = Promise<ReadDicom>;
+type TruncatedTag = Buffer | null;
 
 const MAGIC_WORD = "DICM";
 const PREAMBLE_LENGTH = 128;
@@ -14,24 +19,53 @@ const MAGIC_WORD_END = PREAMBLE_LENGTH + 4;
 /**
  * Read a DICOM file into memory asynchronously and return a promise.
  * The promise resolves to an object containing the buffer and length.
- * @param path
- * @returns Promise<ReadDicom>
- * @throws DicomError
  */
-export function readDicom(path: string): ReadDicomPromise {
+export function readDicom(path: string) {
    let firstChunk = true;
 
    return new Promise<ReadDicom>((resolve, reject) => {
-      const readStream = createReadStream(path);
+      const readStream = createReadStream(path, {
+         highWaterMark: 1024,
+      });
       const bufs: Buffer[] = [];
-      const res = { buf: Buffer.alloc(0), len: 0 };
+      const res = {
+         buf: Buffer.alloc(0),
+         len: 0,
+      };
+
+      let truncatedPrevTag: TruncatedTag = null;
 
       readStream.on("data", (chunk: Buffer) => {
          write(`Read ${chunk.length} bytes from ${path}`, "DEBUG");
 
          if (firstChunk) {
             validateDicomHeader(chunk);
+            chunk = chunk.subarray(132, chunk.length); // _walk() expects removal of non-tag byte structure
             firstChunk = false;
+         }
+
+         if (!truncatedPrevTag) {
+            // if nothing to stitch then walk the current chunk
+            // and if _walk() returns a truncated tag buffer then
+            // assign it to truncatedPrevTag else null (which is
+            // what _walk() returns).
+            const newTruncatedPrevTag = _walk(chunk);
+            write(`newTruncatedPrevTag: ${newTruncatedPrevTag}`, "DEBUG");
+            truncatedPrevTag = newTruncatedPrevTag ? newTruncatedPrevTag : null;
+         } else {
+            // but if there is something to stitch, then we need to
+            // make a new buffer with that prefixed to the current chunk
+            // before we can pass it to _walk(). Then we need to clear truncatedPrevTag
+            // which we can do by assigning it the return value of _walk() which
+            // is either a truncatedTag buffer or null.
+            write(
+               `Stitching previous tag to current chunk: ${
+                  truncatedPrevTag.length
+               } bytes, ${truncatedPrevTag.toString()}`,
+               "DEBUG"
+            );
+            const stitchedBuf = Buffer.concat([truncatedPrevTag, chunk]);
+            _walk(stitchedBuf);
          }
 
          bufs.push(chunk);
@@ -73,4 +107,60 @@ function validateDicomHeader(chunk: Buffer): void | never {
          buffer: chunk,
       });
    }
+}
+
+// dont pass this the preamble & header - just pass
+// it where it can immediately begin parsing tag values
+// i.e. 132-byte offset.
+function _walk(buf: Buffer): TruncatedTag {
+   let cursor = 0;
+   let lastStartedTagCursorPosition: number = null;
+
+   while (cursor < buf.length) {
+      try {
+         lastStartedTagCursorPosition = cursor;
+
+         const tagBuf = buf.subarray(cursor, cursor + ByteLen.TAG_NUM);
+         const tag = decodeTagNum(tagBuf);
+
+         cursor += ByteLen.TAG_NUM;
+
+         const vrBuf = buf.subarray(cursor, cursor + ByteLen.VR);
+         const vr = decodeVr(vrBuf);
+
+         cursor += ByteLen.VR;
+
+         if (!isVr(vr)) {
+            throwUnrecognisedVr(vr, vrBuf);
+         }
+
+         const isExtVr = isExtendedFormatVr(vr);
+         let valueLength = 0;
+
+         if (isExtVr) {
+            cursor += ByteLen.EXT_VR_RESERVED; // 2 reserved bytes can be ignored
+            valueLength = buf.readUInt32LE(cursor); // Extended VR tags' lengths are 4 bytes because they can be huge
+            cursor += ByteLen.UINT_32;
+         }
+
+         if (!isExtVr) {
+            valueLength = buf.readUInt16LE(cursor); // Standard VR tags' lengths are 2 bytes, so max length is 0xFFFF
+            cursor += ByteLen.UINT_16;
+         }
+
+         const valueBuffer = buf.subarray(cursor, cursor + valueLength);
+         const decodedValue = decodeValue(vr, valueBuffer);
+
+         write(`Tag: ${tag}, VR: ${vr}, Length: ${valueLength}, Value: ${decodedValue}`, "DEBUG");
+
+         cursor += valueLength;
+      } catch (error) {
+         console.log(`Error parsing tag at cursor position ${cursor}: ${error.message}`);
+         return buf.subarray(lastStartedTagCursorPosition, buf.length);
+      }
+   }
+
+   return null; // this probably needs refining but if we reach here i think its because the end of the tag
+   // coincidentally happens to be the end of the buffer as well so we should return null so its easy to run an 'if' in
+   // the calling code
 }

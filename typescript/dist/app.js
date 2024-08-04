@@ -1,6 +1,5 @@
 import { cfg, init } from "./init/init.js";
 import { write } from "./logging/logQ.js";
-import { walkDicomBuffer } from "./parse/parse.js";
 import { readDicom } from "./read/read.js";
 (async function (cfg) {
     if (cfg.verbose) {
@@ -8,9 +7,9 @@ import { readDicom } from "./read/read.js";
     }
     await init();
     try {
-        const path = `/Users/chriskennedy/Desktop/aesirax/data/brokenSiemensCT/DICOM/24070314/34580000/40809056`;
-        const dicomBuffer = await readDicom(path);
-        walkDicomBuffer(dicomBuffer.buf);
+        const path = `/Users/chriskennedy/Desktop/aesirax/data/report_structured_report_PI-Contrast.dcm`;
+        readDicom(path);
+        // walkDicomBuffer(dicomBuffer.buf);
     }
     catch (error) {
         console.log(error.message);
