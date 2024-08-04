@@ -35,6 +35,31 @@ const decoders: Partial<DecoderMap> = {
 } as const;
 
 /**
+ * Pass in a DICOM tag's VR and a buffer containing the bytes
+ * representing the tag's value and get back an appropriately
+ * decoded string. Nums will be coerced to strings, using base10
+ * @param vr
+ * @param value
+ * @returns string
+ */
+export function decodeValue(vr: string, value: Buffer, checkNullPadding = false): string {
+   if (checkNullPadding) {
+      try {
+         countNullBytes(value);
+      } catch (error) {
+         // swallow here because  already logged in
+         // countNullBytes and don't want to rethrow
+      }
+   }
+
+   if (decoders.hasOwnProperty(vr)) {
+      return decoders[vr](value);
+   } else {
+      return decoders.default(value);
+   }
+}
+
+/**
  * Pass in a 2 byte buffer and get back the VR as a string
  * else throw a DicomError if unrecognised.
  * @param buf
@@ -80,22 +105,6 @@ function throwBadVrByteLength(buf: Buffer): never {
       message: `decodeVr() expects a 2byte buffer`,
       buffer: buf,
    });
-}
-
-/**
- * Pass in a DICOM tag's VR and a buffer containing the bytes
- * representing the tag's value and get back an appropriately
- * decoded string. Nums will be coerced to strings, using base10
- * @param vr
- * @param value
- * @returns string
- */
-export function decodeValue(vr: string, value: Buffer): string {
-   if (decoders.hasOwnProperty(vr)) {
-      return decoders[vr](value);
-   } else {
-      return decoders.default(value);
-   }
 }
 
 /**

@@ -30,6 +30,31 @@ const decoders = {
     default: (val) => val.toString("hex"),
 };
 /**
+ * Pass in a DICOM tag's VR and a buffer containing the bytes
+ * representing the tag's value and get back an appropriately
+ * decoded string. Nums will be coerced to strings, using base10
+ * @param vr
+ * @param value
+ * @returns string
+ */
+export function decodeValue(vr, value, checkNullPadding = false) {
+    if (checkNullPadding) {
+        try {
+            countNullBytes(value);
+        }
+        catch (error) {
+            // swallow here because  already logged in
+            // countNullBytes and don't want to rethrow
+        }
+    }
+    if (decoders.hasOwnProperty(vr)) {
+        return decoders[vr](value);
+    }
+    else {
+        return decoders.default(value);
+    }
+}
+/**
  * Pass in a 2 byte buffer and get back the VR as a string
  * else throw a DicomError if unrecognised.
  * @param buf
@@ -70,22 +95,6 @@ function throwBadVrByteLength(buf) {
         message: `decodeVr() expects a 2byte buffer`,
         buffer: buf,
     });
-}
-/**
- * Pass in a DICOM tag's VR and a buffer containing the bytes
- * representing the tag's value and get back an appropriately
- * decoded string. Nums will be coerced to strings, using base10
- * @param vr
- * @param value
- * @returns string
- */
-export function decodeValue(vr, value) {
-    if (decoders.hasOwnProperty(vr)) {
-        return decoders[vr](value);
-    }
-    else {
-        return decoders.default(value);
-    }
 }
 /**
  * Decode a buffer to UTF-8 string and remove any null byte padding

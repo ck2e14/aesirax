@@ -7,10 +7,9 @@ import { readDicom } from "./read/read.js";
         write(`Starting up...`, "INFO");
     }
     await init();
-    // some test code here, won't be actual app code in the final version
     try {
-        const dcmPath = "/Users/chriskennedy/Desktop/aesirax/data/report_structured_report_PI-Contrast.dcm";
-        const dicomBuffer = await readDicom(dcmPath);
+        const path = `/Users/chriskennedy/Desktop/aesirax/data/brokenSiemensCT/DICOM/24070314/34580000/40809056`;
+        const dicomBuffer = await readDicom(path);
         walkDicomBuffer(dicomBuffer.buf);
     }
     catch (error) {
