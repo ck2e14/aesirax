@@ -35,6 +35,17 @@ enum TransferSyntaxUid {
 // TODO we want to change the DataSet to be a hashmap of tags, so we can easily access them by their tag
 // for now lets just .find() in an array - can easily be changed later.
 
+// TODO in a future implementation I might consider writing a tranform stream
+// to emit elements as they are parsed from the buffer, which we can then handle
+// as they are emitted, rather than a dataset at the end. But not particularly key
+// and definitely not part of the MVP. This would be for SPEED EFFICIENCY while my
+// current implementation is for MEMORY EFFICIENCY (i.e. not loading 100% into memory)
+// E.g. for a custom DICOMweb serer it would be better to stream the elements outwards
+// as they are parsed by the readStream parser, but for use cases where we need the entire
+// dataset represented in memory, the current approach is more applicable. So it would not
+// be a replacement, it would be an option to plug into the readStream parser (hence being
+// a transform stream).
+
 /**
  * streamParse() takes advantage of the behaviour of streaming
  * from disk in a way that doesn't require the conclusion of the
@@ -173,8 +184,8 @@ function validateFileMetaInformation() {
  * in TypeScript. Such a flimsy aspect of compile-time-only generics and one
  * that would incur expensive runtime type checking to replicate proper type safety
  * which I guess we could do but I'd raher jump out the window than do that.
- * In Java or Golang you'd use the reflection API to check the type at runtime JS is 
- * dynamically typed. 
+ * In Java or Golang you'd use the reflection API to check the type at runtime JS is
+ * dynamically typed.
  * @param tag
  * @param elements
  * @returns T
