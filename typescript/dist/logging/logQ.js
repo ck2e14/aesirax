@@ -34,14 +34,11 @@ export function write(message, level) {
     if (level === "DEBUG" && !cfg.debug) {
         return;
     }
-    let _level;
-    // make uniform length
-    if (level === "INFO") {
-        _level = "[INFO] ";
-    }
-    else {
-        _level = `[${level}]`;
-    }
+    // make uniform length for cleaner log output
+    const _level = level === //
+        "INFO" || level === "WARN"
+        ? `[${level}] `
+        : `[${level}]`;
     message = `${new Date().toISOString()} ${_level} ${message}`;
     if (cfg.printToStdOut) {
         console.log(message);

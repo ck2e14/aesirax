@@ -7,8 +7,33 @@ import {
    Element,
    PartialTag,
    validateDicomHeader,
+   validateDicomPreamble,
    walk,
 } from "../parse/parse.js";
+
+type StreamBundle = {
+   firstBytes: boolean;
+   dataset: Element[];
+   partialTag: Buffer;
+   perBufMax: number;
+   totalBytes: number;
+   path: string;
+   nByteArray: number;
+   skipPixelData: boolean;
+   transferSyntaxUid: string;
+};
+
+enum TagDictionary {
+   TransferSyntaxUID = "(0002,0010)",
+}
+
+enum TransferSyntaxUid {
+   ImplicitVRLittleEndian = "1.2.840.10008.1.2",
+   ExplicitVRLittleEndian = "1.2.840.10008.1.2.1",
+}
+
+// TODO we want to change the DataSet to be a hashmap of tags, so we can easily access them by their tag
+// for now lets just .find() in an array - can easily be changed later.
 
 /**
  * streamParse() takes advantage of the behaviour of streaming
@@ -22,71 +47,138 @@ import {
  * @returns Promise<Element[]>
  * @throws DicomError
  */
-export function streamParse(path: string): Promise<Element[]> {
-   const dataset: Element[] = [];
-   const streamOpts = { highWaterMark: 512 }; // small buffer to enforce multiple bytess to test truncation logic
-   const dicomStream = createReadStream(path, streamOpts);
+export function streamParse(path: string, skipPixelData = true): Promise<Element[]> {
+   const bundle: StreamBundle = {
+      dataset: [] as Element[],
+      partialTag: Buffer.alloc(0),
+      perBufMax: Number(process.env.PER_BUF_MAX ?? 512),
+      firstBytes: true,
+      path: path,
+      nByteArray: 0,
+      totalBytes: 0,
+      skipPixelData,
+      transferSyntaxUid: null,
+   };
 
-   let n = 0;
-   let totalLen = 0;
-   let firstBytes = true;
-   let partialTag: PartialTag = Buffer.alloc(0);
+   if (bundle.perBufMax < DICOM_HEADER_END + 1) {
+      throw new DicomError({
+         message: `PER_BUF_MAX must be at least ${DICOM_HEADER_END + 1} bytes.`,
+         errorType: DicomErrorType.READ,
+      });
+   }
+
+   if (bundle.perBufMax < 1024) {
+      write(`PER_BUF_MAX is ${bundle.perBufMax} bytes. This will work but isn't ideal.`, "WARN");
+   }
 
    return new Promise<Element[]>((resolve, reject) => {
-      dicomStream.on("data", (bytes: Buffer) => {
-         totalLen += bytes.length;
-         partialTag = handleNewbytes(++n, bytes, path, partialTag, dataset, firstBytes); // update partialTag with any unfinished tag from walk()'s last invocation
-         firstBytes = false;
+      const stream = createReadStream(path, {
+         highWaterMark: bundle.perBufMax,
       });
 
-      dicomStream.on("error", error => {
+      stream.on("data", (currBytes: Buffer) => {
+         bundle.nByteArray = bundle.nByteArray + 1;
+         bundle.totalBytes = bundle.totalBytes + currBytes.length;
+         bundle.partialTag = handleDicomBytes(bundle, currBytes); // update partialTag with any partially read tag from current buffer
+      });
+
+      stream.on("close", () => {
+         write(`Finished: read a total of ${bundle.totalBytes} bytes from ${path}`, "DEBUG");
+         resolve(bundle.dataset);
+      });
+
+      stream.on("error", error => {
+         stream.close();
          reject(DicomError.from(error, DicomErrorType.READ));
-      });
-
-      dicomStream.on("close", () => {
-         write(`Read a total of ${totalLen} bytes from ${path}`, "DEBUG");
-         resolve(dataset);
       });
    });
 }
 
 /**
- * handleNewbytes() is a helper function for streamParse()
+ * isTransferSyntax() is a type guard for TransferSyntaxUids
+ * @param uid
+ * @returns boolean
+ */
+function isTransferSyntax(uid: string): uid is TransferSyntaxUid {
+   return Object.values(TransferSyntaxUid).includes(uid as TransferSyntaxUid);
+}
+
+/**
+ * handleDicomBytes() is a helper function for streamParse()
  * to handle the logic of reading a new bytes from disk, and
  * stitching it to the previous bytes where required.
- *
- * @param n
- * @param bytes
- * @param path
+ * @param bundle
+ * @param currBytes
+ * @returns PartialTag (byte[])
+ */
+export function handleDicomBytes(bundle: StreamBundle, currBytes: Buffer): PartialTag {
+   const { path, nByteArray } = bundle;
+   write(`Reading buffer (#${nByteArray} - ${currBytes.length} bytes) (${path})`, "DEBUG");
+
+   if (bundle.firstBytes) {
+      // Note that in all DICOM regardless of the transfer syntax, the File Meta Information
+      // which, in the byte stream, precedes the Data Set, will be encoded as the Explicit VR
+      // Little Endian Transfer Syntax, as laid out in the DICOM spec at PS3.5
+      // https://dicom.nema.org/medical/dicom/current/output/chtml/part05/PS3.5.html
+
+      validateDicomPreamble(currBytes);
+      validateDicomHeader(currBytes);
+
+      currBytes = currBytes.subarray(DICOM_HEADER_END, currBytes.length); // go beyond 'DICM' header
+
+      const truncatedElement = walk(currBytes, bundle.dataset);
+      const tsn = getElementValue<string>(TagDictionary.TransferSyntaxUID, bundle.dataset);
+
+      if (!isTransferSyntax(tsn)) {
+         throw new DicomError({
+            message: `Transfer Syntax UID ${tsn} is unsupported.`,
+            errorType: DicomErrorType.PARSING,
+         });
+      }
+
+      bundle.firstBytes = false;
+      return truncatedElement;
+   }
+
+   const s = stitchBytes(bundle, currBytes);
+   return walk(s, bundle.dataset);
+}
+
+/**
+ * stitchBytes() is a helper function for handleDicomBytes()
+ * to concatenate the partial tag bytes with the current bytes
  * @param partialTag
- * @param dataset
- * @param firstBytes
+ * @param currBytes
  * @returns
  */
-function handleNewbytes(
-   n: number,
-   bytes: Buffer,
-   path: string,
-   partialTag: Buffer,
-   dataset: Element[],
-   firstBytes = false
-): PartialTag {
-   write(`Reading next stream buffer (#${n} - ${bytes.length} bytes) (${path})`, "DEBUG");
+function stitchBytes(bundle: StreamBundle, currBytes: Buffer): Buffer {
+   const { partialTag, path } = bundle;
+   write(`Stitching ${partialTag.length} + ${currBytes.length} bytes (${path})`, "DEBUG");
+   return Buffer.concat([partialTag, currBytes]);
+}
 
-   if (firstBytes) {
-      validateDicomHeader(bytes);
-      bytes = bytes.subarray(DICOM_HEADER_END, bytes.length); // window beyond the DICOM header
-   }
+function validateLittleEndianness() {
+   // check for even length (achieved through null byte padding where required)
+}
 
-   if (partialTag.length > 0) {
-      write(`Stitching: ${partialTag.length} + ${bytes.length} bytes ${path}`, "DEBUG");
-   }
+function validateFileMetaInformation() {
+   // the File Meta Information is the section of the DICOM file format that precedes
+   // the DICOM Data Set. All tags in this section are in the 0x0002 group.
+}
 
-   // if there are partial tag bytes, stich them in front
-   // of the current bytes. We initialise it as a 0-length
-   // buffer, so it will not stictch any data on 1st invocation.
-   const stitchedBytes = Buffer.concat([partialTag, bytes]);
-   const partialTagOrNull = walk(stitchedBytes, dataset);
-
-   return partialTagOrNull;
+/**
+ * Get the value of an element from an array of elements. Note that without
+ * accepting a callback for runtime type checking we can't actually guarantee
+ * that the value is of the type we expect. This is a limitation of type erasure
+ * in TypeScript. Such a flimsy aspect of compile-time-only generics and one
+ * that would incur expensive runtime type checking to replicate proper type safety
+ * which I guess we could do but I'd raher jump out the window than do that.
+ * In Java or Golang you'd use the reflection API to check the type at runtime JS is 
+ * dynamically typed. 
+ * @param tag
+ * @param elements
+ * @returns T
+ */
+function getElementValue<T = unknown>(tag: string, elements: Element[]): T {
+   return elements.find(e => e.tag === tag).val as T;
 }

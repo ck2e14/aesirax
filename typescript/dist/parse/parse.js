@@ -64,42 +64,42 @@ export const DICOM_HEADER_END = PREAMBLE_LENGTH + 4;
  * Note that this function assumes you've chekced 0-128 bytes for the preamble,
  * and 128-132 bytes for 'DICM' header.
  *
- * @param buf
+ * @param buffer
  * @param elements
  * @returns PartialTag
  */
-export function walk(buf, elements) {
+export function walk(buffer, elements) {
     let cursor = 0;
-    let lastStartedTagCursorPosition = cursor;
-    while (cursor < buf.length) {
-        // This parsing loop works by walking a cursor forward by the appropriate
-        // number of bytes after each operation. The number to walk forward by is
-        // governed primarily by the DICOM specification, and datatype sizes.
+    let lastTagStartPosition = cursor;
+    // This loop works by walking a cursor forward by the appropriate
+    // number of bytes after each decode. The amount to walk forward by
+    // is governed primarily by the DICOM specification and datatype sizes.
+    while (cursor < buffer.length) {
         try {
             const el = newElement();
-            lastStartedTagCursorPosition = cursor;
-            const tagBuf = buf.subarray(cursor, cursor + ByteLen.TAG_NUM);
-            el.tag = decodeTagNum(tagBuf);
+            lastTagStartPosition = cursor;
+            const tagBuffer = buffer.subarray(cursor, cursor + ByteLen.TAG_NUM);
+            el.tag = decodeTagNum(tagBuffer);
             cursor += ByteLen.TAG_NUM;
-            const vrBuf = buf.subarray(cursor, cursor + ByteLen.VR);
-            el.vr = decodeVr(vrBuf);
+            const vrBuffer = buffer.subarray(cursor, cursor + ByteLen.VR);
+            el.vr = decodeVr(vrBuffer);
             cursor += ByteLen.VR;
             if (!isVr(el.vr)) {
-                throwUnrecognisedVr(el.vr, vrBuf);
+                throwUnrecognisedVr(el.vr, vrBuffer);
             }
             el.length = 0;
             const isExtVr = isExtendedFormatVr(el.vr);
             if (isExtVr) {
                 cursor += ByteLen.EXT_VR_RESERVED; // 2 reserved bytes can be ignored
-                el.length = buf.readUInt32LE(cursor); // Extended VR tags' lengths are 4 bytes because they can be huge
+                el.length = buffer.readUInt32LE(cursor); // Extended VR tags' lengths are 4 bytes because they can be huge
                 cursor += ByteLen.UINT_32;
             }
             if (!isExtVr) {
-                el.length = buf.readUInt16LE(cursor); // Standard VR tags' lengths are 2 bytes, so max length is 65,535
+                el.length = buffer.readUInt16LE(cursor); // Standard VR tags' lengths are 2 bytes, so max length is 65,535
                 cursor += ByteLen.UINT_16;
             }
-            const valueBuf = buf.subarray(cursor, cursor + el.length);
-            el.val = decodeValue(el.vr, valueBuf);
+            const valueBuffer = buffer.subarray(cursor, cursor + el.length);
+            el.val = decodeValue(el.vr, valueBuffer);
             if (el.vr !== VR.SQ && el.vr !== VR.OB) {
                 printElement(el);
             }
@@ -118,13 +118,10 @@ export function walk(buf, elements) {
             break;
         }
     }
-    // if here we didn't hit a parse error which either means
-    //  - we truncated in the middle of a tag's VALUE (far more likely)
-    //  - coincidentally the end of a tag's bytes is the end of the byte array
-    const bytesLeft = buf.length - lastStartedTagCursorPosition;
+    const bytesLeft = buffer.length - lastTagStartPosition;
     if (bytesLeft > 0) {
         write(`Returning truncated: ${bytesLeft} tag bytes`, "DEBUG");
-        return buf.subarray(lastStartedTagCursorPosition, buf.length);
+        return buffer.subarray(lastTagStartPosition, buffer.length);
     }
     else {
         write(`Nothing to return for stitching; returning null`, "DEBUG");
@@ -137,11 +134,11 @@ export function walk(buf, elements) {
  * @param vrBuf
  * @throws DicomError
  */
-export function throwUnrecognisedVr(vr, vrBuf) {
+export function throwUnrecognisedVr(vr, vrBuffer) {
     throw new DicomError({
         errorType: DicomErrorType.PARSING,
         message: `Unrecognised VR: ${vr}`,
-        buffer: vrBuf,
+        buffer: vrBuffer,
     });
 }
 /**
@@ -156,23 +153,40 @@ export function isExtendedFormatVr(vr) {
     return extVrPattern.test(vr);
 }
 /**
+ * Validate the DICOM preamble by checking that the
+ * first 128 bytes are all 0x00. This is a security
+ * design choice by me to prevent the execution of
+ * arbitrary code within the preamble. See spec notes.
+ * @param buffer
+ * @throws DicomError
+ */
+export function validateDicomPreamble(buffer) {
+    // TODO work out what quarantining really means and how to do it appropriately.
+    const preamble = buffer.subarray(0, PREAMBLE_LENGTH);
+    if (!preamble.every(byte => byte === 0x00)) {
+        throw new DicomError({
+            errorType: DicomErrorType.VALIDATE,
+            message: `DICOM file must beging with contain 128 bytes of 0x00 for security reasons. Quarantining this file`,
+        });
+    }
+}
+/**
  * Validate the DICOM header by checking for the 'magic word'.
  * A DICOM file should contain the 'magic word' "DICM" at bytes 128-132.
  * Preamble is 128 bytes of 0x00, followed by the 'magic word' "DICM".
  * Preamble may not be used to determine that the file is DICOM.
- *
  * @param byteArray
  * @throws DicomError
  */
-export function validateDicomHeader(byteArray) {
-    const strAtHeaderPosition = byteArray //
+export function validateDicomHeader(buffer) {
+    const strAtHeaderPosition = buffer //
         .subarray(DICOM_HEADER_START, DICOM_HEADER_END)
         .toString();
     if (strAtHeaderPosition !== DICOM_HEADER) {
         throw new DicomError({
             errorType: DicomErrorType.VALIDATE,
             message: `DICOM file does not contain 'magic word': ${DICOM_HEADER} at bytes 128-132. Found: ${strAtHeaderPosition}`,
-            buffer: byteArray,
+            buffer: buffer,
         });
     }
 }
