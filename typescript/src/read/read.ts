@@ -14,7 +14,7 @@ import {
  * streamParse() takes advantage of the behaviour of streaming
  * from disk in a way that doesn't require the conclusion of the
  * stream before beginning to work on it. It immediately begins
- * parsing each buffered byteArray of the file from disk, and
+ * parsing each buffered bytes of the file from disk, and
  * stitches truncated DICOM tags together for the next invocation
  * of the 'data' callback to work with.
  *
@@ -24,27 +24,20 @@ import {
  */
 export function streamParse(path: string): Promise<Elements> {
    const dataset: Elements = [];
-   const streamOpts = { highWaterMark: 512 }; // small buffer to enforce multiple byteArrays to test truncation logic
+   const streamOpts = { highWaterMark: 512 }; // small buffer to enforce multiple bytess to test truncation logic
    const dicomStream = createReadStream(path, streamOpts);
 
-   let firstByteArray = true;
+   let firstBytes = true;
 
    return new Promise<Elements>((resolve, reject) => {
       let n = 0;
       let totalLen = 0;
-      let partialTagBytes: PartialTag = null;
+      let partialTag: PartialTag = Buffer.alloc(0);
 
-      dicomStream.on("data", (byteArray: Buffer) => {
-         totalLen += byteArray.length;
-         partialTagBytes = handleNewByteArray(
-            byteArray,
-            ++n,
-            path,
-            partialTagBytes,
-            dataset,
-            firstByteArray
-         );
-         firstByteArray = false;
+      dicomStream.on("data", (bytes: Buffer) => {
+         totalLen += bytes.length;
+         partialTag = handleNewbytes(++n, bytes, path, partialTag, dataset, firstBytes); // update partialTag with any unfinished tag from walk()'s last invocation
+         firstBytes = false;
       });
 
       dicomStream.on("error", error => {
@@ -59,43 +52,43 @@ export function streamParse(path: string): Promise<Elements> {
 }
 
 /**
- * handleNewByteArray() is a helper function for streamParse() that
- * handles the logic of reading a new byteArray from disk, and
- * stitching it to the previous byteArray where required.
+ * handleNewbytes() is a helper function for streamParse()
+ * to handle the logic of reading a new bytes from disk, and
+ * stitching it to the previous bytes where required.
  *
- * @param byteArray
  * @param n
+ * @param bytes
  * @param path
- * @param partialTagBytes
+ * @param partialTag
  * @param dataset
- * @param firstByteArray
+ * @param firstBytes
  * @returns
  */
-function handleNewByteArray(
-   byteArray: Buffer,
+function handleNewbytes(
    n: number,
+   bytes: Buffer,
    path: string,
-   partialTagBytes: Buffer,
+   partialTag: Buffer,
    dataset: Elements,
-   firstByteArray = false
-) {
-   write(`Reading #${n} byteArray, ${byteArray.length} bytes (${path})`, "DEBUG");
+   firstBytes = false
+): PartialTag {
+   //
+   write(`Reading #${n} bytes, ${bytes.length} bytes (${path})`, "DEBUG");
 
-   if (firstByteArray) {
-      validateDicomHeader(byteArray);
-      byteArray = byteArray.subarray(DICOM_HEADER_END, byteArray.length); // window beyond 132 bytes
+   if (firstBytes) {
+      validateDicomHeader(bytes);
+      bytes = bytes.subarray(DICOM_HEADER_END, bytes.length); // window beyond the DICOM header
    }
 
-   // if there's nothing to stitch, walk the byte array &
-   // assign null or a subset of bytes to truncated.
-   if (!partialTagBytes) {
-      return walk(byteArray, dataset);
+   // if there are partial tag bytes, stich them in front
+   // of the current bytes. We initialise it as a 0-length
+   // buffer, so it will not stictch any data on 1st invocation.
+   const stitchedBytes = Buffer.concat([partialTag, bytes]);
+   const partialTagOrNull = walk(stitchedBytes, dataset);
+
+   if (partialTag.length > 0) {
+      write(`Stitching: ${partialTag.length} + ${bytes.length} bytes ${path}`, "DEBUG");
    }
 
-   // else stitch to the current byte array before walking.
-   write(`Stitch: ${partialTagBytes.length} + ${byteArray.length} bytes ${path}`, "DEBUG");
-
-   const stitchedBytes = Buffer.concat([partialTagBytes, byteArray]);
-
-   return walk(stitchedBytes, dataset);
+   return partialTagOrNull;
 }

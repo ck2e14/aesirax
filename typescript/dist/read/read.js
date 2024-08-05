@@ -7,7 +7,7 @@ import { DICOM_HEADER_END, validateDicomHeader, walk, } from "../parse/parse.js"
  * streamParse() takes advantage of the behaviour of streaming
  * from disk in a way that doesn't require the conclusion of the
  * stream before beginning to work on it. It immediately begins
- * parsing each buffered byteArray of the file from disk, and
+ * parsing each buffered bytes of the file from disk, and
  * stitches truncated DICOM tags together for the next invocation
  * of the 'data' callback to work with.
  *
@@ -17,17 +17,17 @@ import { DICOM_HEADER_END, validateDicomHeader, walk, } from "../parse/parse.js"
  */
 export function streamParse(path) {
     const dataset = [];
-    const streamOpts = { highWaterMark: 512 }; // small buffer to enforce multiple byteArrays to test truncation logic
+    const streamOpts = { highWaterMark: 512 }; // small buffer to enforce multiple bytess to test truncation logic
     const dicomStream = createReadStream(path, streamOpts);
-    let firstByteArray = true;
+    let firstBytes = true;
     return new Promise((resolve, reject) => {
         let n = 0;
         let totalLen = 0;
-        let partialTagBytes = null;
-        dicomStream.on("data", (byteArray) => {
-            totalLen += byteArray.length;
-            partialTagBytes = handleNewByteArray(byteArray, ++n, path, partialTagBytes, dataset, firstByteArray);
-            firstByteArray = false;
+        let partialTag = Buffer.alloc(0);
+        dicomStream.on("data", (bytes) => {
+            totalLen += bytes.length;
+            partialTag = handleNewbytes(++n, bytes, path, partialTag, dataset, firstBytes); // update partialTag with any unfinished tag from walk()'s last invocation
+            firstBytes = false;
         });
         dicomStream.on("error", error => {
             reject(DicomError.from(error, DicomErrorType.READ));
@@ -39,32 +39,33 @@ export function streamParse(path) {
     });
 }
 /**
- * handleNewByteArray() is a helper function for streamParse() that
- * handles the logic of reading a new byteArray from disk, and
- * stitching it to the previous byteArray where required.
+ * handleNewbytes() is a helper function for streamParse()
+ * to handle the logic of reading a new bytes from disk, and
+ * stitching it to the previous bytes where required.
  *
- * @param byteArray
  * @param n
+ * @param bytes
  * @param path
- * @param partialTagBytes
+ * @param partialTag
  * @param dataset
- * @param firstByteArray
+ * @param firstBytes
  * @returns
  */
-function handleNewByteArray(byteArray, n, path, partialTagBytes, dataset, firstByteArray = false) {
-    write(`Reading #${n} byteArray, ${byteArray.length} bytes (${path})`, "DEBUG");
-    if (firstByteArray) {
-        validateDicomHeader(byteArray);
-        byteArray = byteArray.subarray(DICOM_HEADER_END, byteArray.length); // window beyond 132 bytes
+function handleNewbytes(n, bytes, path, partialTag, dataset, firstBytes = false) {
+    //
+    write(`Reading #${n} bytes, ${bytes.length} bytes (${path})`, "DEBUG");
+    if (firstBytes) {
+        validateDicomHeader(bytes);
+        bytes = bytes.subarray(DICOM_HEADER_END, bytes.length); // window beyond the DICOM header
     }
-    // if there's nothing to stitch, walk the byte array &
-    // assign null or a subset of bytes to truncated.
-    if (!partialTagBytes) {
-        return walk(byteArray, dataset);
+    // if there are partial tag bytes, stich them in front
+    // of the current bytes. We initialise it as a 0-length
+    // buffer, so it will not stictch any data on 1st invocation.
+    const stitchedBytes = Buffer.concat([partialTag, bytes]);
+    const partialTagOrNull = walk(stitchedBytes, dataset);
+    if (partialTag.length > 0) {
+        write(`Stitching: ${partialTag.length} + ${bytes.length} bytes ${path}`, "DEBUG");
     }
-    // else stitch to the current byte array before walking.
-    write(`Stitch: ${partialTagBytes.length} + ${byteArray.length} bytes ${path}`, "DEBUG");
-    const stitchedBytes = Buffer.concat([partialTagBytes, byteArray]);
-    return walk(stitchedBytes, dataset);
+    return partialTagOrNull;
 }
 //# sourceMappingURL=read.js.map

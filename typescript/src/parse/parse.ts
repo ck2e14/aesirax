@@ -131,8 +131,8 @@ export function walk(buf: Buffer, elements: Element[]): PartialTag {
          elements.push(el); // only fully parsed elements, discard truncated elements
          cursor += el.length;
       } catch (error) {
-         // assuming errors here are indicative of a truncated buffer
-         // not malformed DICOM. In reality this can't be assumed but
+         // assumes errors caught here are indicative of a truncated buffer midway
+         // through a tag - not malformed DICOM. In reality this can't be assumed but
          // for testing purposes it's fine.
          break;
       }
