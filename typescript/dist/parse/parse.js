@@ -68,7 +68,7 @@ export const DICOM_HEADER_END = PREAMBLE_LENGTH + 4;
  * @param elements
  * @returns PartialTag
  */
-export function walk(buffer, elements) {
+export function walk(buffer, streamBundle) {
     let cursor = 0;
     let lastTagStartPosition = cursor;
     // This loop works by walking a cursor forward by the appropriate
@@ -99,7 +99,7 @@ export function walk(buffer, elements) {
                 cursor += ByteLen.UINT_16;
             }
             const valueBuffer = buffer.subarray(cursor, cursor + el.length);
-            el.val = decodeValue(el.vr, valueBuffer);
+            el.val = decodeValue(el.vr, valueBuffer, streamBundle);
             if (el.vr !== VR.SQ && el.vr !== VR.OB) {
                 printElement(el);
             }
@@ -107,7 +107,7 @@ export function walk(buffer, elements) {
                 el.devNote = UNIMPLEMENTED_VR_PARSING(el.vr);
                 printMinusValue(el);
             }
-            elements.push(el); // only fully parsed elements, discard truncated elements
+            streamBundle.dataset.push(el); // only fully parsed elements, discard truncated elements
             cursor += el.length;
         }
         catch (error) {

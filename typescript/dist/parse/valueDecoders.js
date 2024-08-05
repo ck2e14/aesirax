@@ -1,7 +1,7 @@
 import { DicomError } from "../error/dicomError.js";
-import { ByteLen, DicomErrorType, VR } from "../globalEnums.js";
+import { ByteLen, DicomErrorType, TransferSyntaxUid, VR } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
-const decoders = {
+const decodersLE = {
     // partial because will add VRs incrementally
     // currently only support numbers to base 10.
     AE: (val) => utf8Decoder(val),
@@ -29,6 +29,34 @@ const decoders = {
     US: (val) => val.readUInt16LE(0).toString(10),
     default: (val) => val.toString("hex"),
 };
+const decodersBE = {
+    // partial because will add VRs incrementally
+    // currently only support numbers to base 10.
+    AE: (val) => utf8Decoder(val),
+    AS: (val) => utf8Decoder(val),
+    CS: (val) => utf8Decoder(val),
+    DA: (val) => utf8Decoder(val),
+    DS: (val) => utf8Decoder(val),
+    DT: (val) => utf8Decoder(val),
+    IS: (val) => utf8Decoder(val),
+    LO: (val) => utf8Decoder(val),
+    LT: (val) => utf8Decoder(val),
+    PN: (val) => utf8Decoder(val),
+    SH: (val) => utf8Decoder(val),
+    ST: (val) => utf8Decoder(val),
+    TM: (val) => utf8Decoder(val),
+    UC: (val) => utf8Decoder(val),
+    UI: (val) => utf8Decoder(val),
+    UR: (val) => utf8Decoder(val),
+    UT: (val) => utf8Decoder(val),
+    FL: (val) => val.readFloatBE(0).toString(10),
+    FD: (val) => val.readDoubleBE(0).toString(10),
+    SL: (val) => val.readInt32BE(0).toString(10),
+    SS: (val) => val.readInt16BE(0).toString(10),
+    UL: (val) => val.readUInt32BE(0).toString(10),
+    US: (val) => val.readUInt16BE(0).toString(10),
+    default: (val) => val.toString("hex"),
+};
 /**
  * Pass in a DICOM tag's VR and a buffer containing the bytes
  * representing the tag's value and get back an appropriately
@@ -37,16 +65,19 @@ const decoders = {
  * @param value
  * @returns string
  */
-export function decodeValue(vr, value, checkNullPadding = false) {
+export function decodeValue(vr, value, streamBundle, checkNullPadding = false) {
     if (checkNullPadding) {
         try {
             countNullBytes(value);
         }
         catch (error) {
             // swallow here because already logged in
-            // countNullBytes and don't want to rethrow
+            // and don't want to interrupt the parsing
         }
     }
+    const decoders = streamBundle.transferSyntaxUid === TransferSyntaxUid.ExplicitVRLittleEndian
+        ? decodersLE
+        : decodersBE;
     if (decoders.hasOwnProperty(vr)) {
         return decoders[vr](value);
     }

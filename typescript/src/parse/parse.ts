@@ -1,6 +1,7 @@
 import { DicomError } from "../error/dicomError.js";
 import { ByteLen, DicomErrorType, VR } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
+import { StreamBundle } from "../read/read.js";
 import { decodeTagNum } from "./tagNums.js";
 import { isVr } from "./typeGuards.js";
 import { decodeValue, decodeVr } from "./valueDecoders.js";
@@ -22,7 +23,6 @@ export const DICOM_HEADER = "DICM";
 export const PREAMBLE_LENGTH = 128;
 export const DICOM_HEADER_START = PREAMBLE_LENGTH;
 export const DICOM_HEADER_END = PREAMBLE_LENGTH + 4;
-
 
 /**
  * Walk through a buffer containing a subset of a DICOM file's bytes, and
@@ -83,7 +83,7 @@ export const DICOM_HEADER_END = PREAMBLE_LENGTH + 4;
  * @param elements
  * @returns PartialTag
  */
-export function walk(buffer: Buffer, elements: Element[]): PartialTag {
+export function walk(buffer: Buffer, streamBundle: StreamBundle): PartialTag {
    let cursor = 0;
    let lastTagStartPosition: number = cursor;
 
@@ -122,7 +122,7 @@ export function walk(buffer: Buffer, elements: Element[]): PartialTag {
          }
 
          const valueBuffer = buffer.subarray(cursor, cursor + el.length);
-         el.val = decodeValue(el.vr, valueBuffer);
+         el.val = decodeValue(el.vr, valueBuffer, streamBundle);
 
          if (el.vr !== VR.SQ && el.vr !== VR.OB) {
             printElement(el);
@@ -131,7 +131,7 @@ export function walk(buffer: Buffer, elements: Element[]): PartialTag {
             printMinusValue(el);
          }
 
-         elements.push(el); // only fully parsed elements, discard truncated elements
+         streamBundle.dataset.push(el); // only fully parsed elements, discard truncated elements
          cursor += el.length;
       } catch (error) {
          // assumes errors caught here are indicative of a truncated buffer midway

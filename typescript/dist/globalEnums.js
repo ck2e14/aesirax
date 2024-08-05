@@ -5,6 +5,15 @@
 // in sync with the global.d.ts file. This is even though we tell tsconfig.json to
 // compile the global.d.ts file, but whatever lol. it doens't even throw errors, maybe
 // should make a pull request on this for the typescript compiler but can't be arsed
+export var TagDictionary;
+(function (TagDictionary) {
+    TagDictionary["TransferSyntaxUID"] = "(0002,0010)";
+})(TagDictionary || (TagDictionary = {}));
+export var TransferSyntaxUid;
+(function (TransferSyntaxUid) {
+    TransferSyntaxUid["ImplicitVRLittleEndian"] = "1.2.840.10008.1.2";
+    TransferSyntaxUid["ExplicitVRLittleEndian"] = "1.2.840.10008.1.2.1";
+})(TransferSyntaxUid || (TransferSyntaxUid = {}));
 export var DicomErrorType;
 (function (DicomErrorType) {
     DicomErrorType["UNKNOWN"] = "UNKNOWN";

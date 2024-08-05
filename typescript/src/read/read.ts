@@ -1,6 +1,6 @@
 import { DicomError } from "../error/dicomError.js";
 import { write } from "../logging/logQ.js";
-import { DicomErrorType } from "../globalEnums.js";
+import { DicomErrorType, TransferSyntaxUid, TagDictionary } from "../globalEnums.js";
 import { createReadStream } from "fs";
 import {
    DICOM_HEADER_END,
@@ -11,7 +11,7 @@ import {
    walk,
 } from "../parse/parse.js";
 
-type StreamBundle = {
+export type StreamBundle = {
    firstBytes: boolean;
    dataset: Element[];
    partialTag: Buffer;
@@ -22,15 +22,6 @@ type StreamBundle = {
    skipPixelData: boolean;
    transferSyntaxUid: string;
 };
-
-enum TagDictionary {
-   TransferSyntaxUID = "(0002,0010)",
-}
-
-enum TransferSyntaxUid {
-   ImplicitVRLittleEndian = "1.2.840.10008.1.2",
-   ExplicitVRLittleEndian = "1.2.840.10008.1.2.1",
-}
 
 // TODO we want to change the DataSet to be a hashmap of tags, so we can easily access them by their tag
 // for now lets just .find() in an array - can easily be changed later.
@@ -137,7 +128,7 @@ export function handleDicomBytes(bundle: StreamBundle, currBytes: Buffer): Parti
 
       currBytes = currBytes.subarray(DICOM_HEADER_END, currBytes.length); // go beyond 'DICM' header
 
-      const truncatedElement = walk(currBytes, bundle.dataset);
+      const truncatedElement = walk(currBytes, bundle);
       const tsn = getElementValue<string>(TagDictionary.TransferSyntaxUID, bundle.dataset);
 
       if (!isTransferSyntax(tsn)) {
@@ -152,7 +143,7 @@ export function handleDicomBytes(bundle: StreamBundle, currBytes: Buffer): Parti
    }
 
    const s = stitchBytes(bundle, currBytes);
-   return walk(s, bundle.dataset);
+   return walk(s, bundle);
 }
 
 /**
