@@ -47,7 +47,7 @@ export function decodeValue(vr: string, value: Buffer, checkNullPadding = false)
       try {
          countNullBytes(value);
       } catch (error) {
-         // swallow here because  already logged in
+         // swallow here because already logged in
          // countNullBytes and don't want to rethrow
       }
    }

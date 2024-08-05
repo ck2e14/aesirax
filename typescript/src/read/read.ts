@@ -4,7 +4,7 @@ import { DicomErrorType } from "../globalEnums.js";
 import { createReadStream } from "fs";
 import {
    DICOM_HEADER_END,
-   Elements,
+   Element,
    PartialTag,
    validateDicomHeader,
    walk,
@@ -19,21 +19,20 @@ import {
  * of the 'data' callback to work with.
  *
  * @param path
- * @returns Promise<Elements>
+ * @returns Promise<Element[]>
  * @throws DicomError
  */
-export function streamParse(path: string): Promise<Elements> {
-   const dataset: Elements = [];
+export function streamParse(path: string): Promise<Element[]> {
+   const dataset: Element[] = [];
    const streamOpts = { highWaterMark: 512 }; // small buffer to enforce multiple bytess to test truncation logic
    const dicomStream = createReadStream(path, streamOpts);
 
+   let n = 0;
+   let totalLen = 0;
    let firstBytes = true;
+   let partialTag: PartialTag = Buffer.alloc(0);
 
-   return new Promise<Elements>((resolve, reject) => {
-      let n = 0;
-      let totalLen = 0;
-      let partialTag: PartialTag = Buffer.alloc(0);
-
+   return new Promise<Element[]>((resolve, reject) => {
       dicomStream.on("data", (bytes: Buffer) => {
          totalLen += bytes.length;
          partialTag = handleNewbytes(++n, bytes, path, partialTag, dataset, firstBytes); // update partialTag with any unfinished tag from walk()'s last invocation
@@ -69,15 +68,18 @@ function handleNewbytes(
    bytes: Buffer,
    path: string,
    partialTag: Buffer,
-   dataset: Elements,
+   dataset: Element[],
    firstBytes = false
 ): PartialTag {
-   //
-   write(`Reading #${n} bytes, ${bytes.length} bytes (${path})`, "DEBUG");
+   write(`Reading next stream buffer (#${n} - ${bytes.length} bytes) (${path})`, "DEBUG");
 
    if (firstBytes) {
       validateDicomHeader(bytes);
       bytes = bytes.subarray(DICOM_HEADER_END, bytes.length); // window beyond the DICOM header
+   }
+
+   if (partialTag.length > 0) {
+      write(`Stitching: ${partialTag.length} + ${bytes.length} bytes ${path}`, "DEBUG");
    }
 
    // if there are partial tag bytes, stich them in front
@@ -85,10 +87,6 @@ function handleNewbytes(
    // buffer, so it will not stictch any data on 1st invocation.
    const stitchedBytes = Buffer.concat([partialTag, bytes]);
    const partialTagOrNull = walk(stitchedBytes, dataset);
-
-   if (partialTag.length > 0) {
-      write(`Stitching: ${partialTag.length} + ${bytes.length} bytes ${path}`, "DEBUG");
-   }
 
    return partialTagOrNull;
 }

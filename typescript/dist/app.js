@@ -7,6 +7,8 @@ import { streamParse } from "./read/read.js";
     await init();
     try {
         const path = `../data/report_structured_report_PI-Contrast.dcm`;
+        // const path = `/Users/chriskennedy/Desktop/aesirax/data/IMG00001.dcm`;
+        // const path =`/Users/chriskennedy/Desktop/aesirax/data/brokenSiemensCT/DICOM/24070314/34580002/40820056`
         const elements = await streamParse(path);
         console.log(elements);
     }

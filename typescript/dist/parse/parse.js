@@ -10,7 +10,9 @@ export const PREAMBLE_LENGTH = 128;
 export const DICOM_HEADER_START = PREAMBLE_LENGTH;
 export const DICOM_HEADER_END = PREAMBLE_LENGTH + 4;
 /**
- * Walk a buffer containing a subset of a DICOM file and parse the tags.
+ * Walk through a buffer containing a subset of a DICOM file's bytes, and
+ * parse the tags.
+ *
  * Return a buffer containing the truncated tag if the buffer is incomplete.
  * This is used to allow on-the-fly parsing of DICOM files as they are read
  * and stitching together truncated tags that span multiple byteArrays.
@@ -70,8 +72,11 @@ export function walk(buf, elements) {
     let cursor = 0;
     let lastStartedTagCursorPosition = cursor;
     while (cursor < buf.length) {
+        // This parsing loop works by walking a cursor forward by the appropriate
+        // number of bytes after each operation. The number to walk forward by is
+        // governed primarily by the DICOM specification, and datatype sizes.
         try {
-            const el = emptyElement();
+            const el = newElement();
             lastStartedTagCursorPosition = cursor;
             const tagBuf = buf.subarray(cursor, cursor + ByteLen.TAG_NUM);
             el.tag = decodeTagNum(tagBuf);
@@ -108,7 +113,8 @@ export function walk(buf, elements) {
         catch (error) {
             // assumes errors caught here are indicative of a truncated buffer midway
             // through a tag - not malformed DICOM. In reality this can't be assumed but
-            // for testing purposes it's fine.
+            // for testing purposes it's fine. We can easily adapt this by checking for
+            // things like instanceof or other custom properties that signify truncation.
             break;
         }
     }
@@ -192,7 +198,7 @@ export function printMinusValue(el) {
  * Return a new empty element object.
  * @returns Element
  */
-export function emptyElement() {
+export function newElement() {
     return {
         vr: null,
         tag: "TODO",
