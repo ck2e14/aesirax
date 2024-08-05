@@ -102,6 +102,9 @@ export function handleDicomBytes(bundle, currBytes) {
                 errorType: DicomErrorType.PARSING,
             });
         }
+        else {
+            bundle.transferSyntaxUid = tsn;
+        }
         bundle.firstBytes = false;
         return truncatedElement;
     }
