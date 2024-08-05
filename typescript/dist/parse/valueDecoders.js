@@ -1,6 +1,14 @@
 import { DicomError } from "../error/dicomError.js";
 import { ByteLen, DicomErrorType, TransferSyntaxUid, VR } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
+// TODO when we eventually handle pixel decoders, probably wanna
+// to do this also via streaming the values into something rather than
+// straight up decoding as a string in the heap (currently we are just 
+// using default decoding - i.e. hex). Because pixel data is phat as 
+// phuck for a single threaded runtime to chew through. Actually tbh 
+// worker threads are probably better for this because the actual computation
+// we'll be doing will not be done in the systemcall-land, which is where I/O 
+// parallesation gains are made, it's done inside JS land. 
 const decodersLE = {
     // partial because will add VRs incrementally
     // currently only support numbers to base 10.
@@ -65,15 +73,10 @@ const decodersBE = {
  * @param value
  * @returns string
  */
-export function decodeValue(vr, value, streamBundle, checkNullPadding = false) {
+export function decodeValue(vr, value, streamBundle, checkNullPadding = false // debug only
+) {
     if (checkNullPadding) {
-        try {
-            countNullBytes(value);
-        }
-        catch (error) {
-            // swallow here because already logged in
-            // and don't want to interrupt the parsing
-        }
+        countNullBytes(value);
     }
     const decoders = streamBundle.transferSyntaxUid === TransferSyntaxUid.ExplicitVRLittleEndian
         ? decodersLE
@@ -160,7 +163,7 @@ export function countNullBytes(value) {
     }
     catch (error) {
         write(`Error counting null bytes from value: ${value}`, "ERROR");
-        throw DicomError.from(error);
+        // swallow here, don't want to interrupt parsing
     }
 }
 //# sourceMappingURL=valueDecoders.js.map

@@ -93,7 +93,7 @@ export function handleDicomBytes(bundle, currBytes) {
         // https://dicom.nema.org/medical/dicom/current/output/chtml/part05/PS3.5.html
         validateDicomPreamble(currBytes);
         validateDicomHeader(currBytes);
-        currBytes = currBytes.subarray(DICOM_HEADER_END, currBytes.length); // go beyond 'DICM' header
+        currBytes = currBytes.subarray(DICOM_HEADER_END, currBytes.length); // window the buffer beyond 'DICM' header
         const truncatedElement = walk(currBytes, bundle);
         const tsn = getElementValue(TagDictionary.TransferSyntaxUID, bundle.dataset);
         if (!isTransferSyntax(tsn)) {
