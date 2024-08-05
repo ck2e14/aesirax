@@ -1,20 +1,30 @@
 import { DicomError } from "../error/dicomError.js";
-import { ByteLen, DicomErrorType } from "../globalEnums.js";
+import { ByteLen, DicomErrorType, VR } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
 import { decodeTagNum } from "./tagNums.js";
 import { isVr } from "./typeGuards.js";
 import { decodeValue, decodeVr } from "./valueDecoders.js";
+export const DICOM_HEADER = "DICM";
+export const PREAMBLE_LENGTH = 128;
+export const DICOM_HEADER_START = PREAMBLE_LENGTH;
+export const DICOM_HEADER_END = PREAMBLE_LENGTH + 4;
+export const UNIMPLEMENTED_VR_PARSING = (vr) => `Byte parsing support for VR: ${vr} is unimplemeted in this version`;
 /**
- * WARN - this function expects THE ENTIRE DICOM FILE IN A SINGLE BUFFER!
- *        see streamParse() for chunked processing of the file.
+ * Walk a buffer containing a subset of a DICOM file and parse the tags.
+ * Return a buffer containing the truncated tag if the buffer is incomplete.
+ * This is used to allow on-the-fly parsing of DICOM files as they are read
+ * and stitching together truncated tags that span multiple byteArrays.
  *
- * This is for learning - NOT PRODUCTION!
+ * Note that currently this assumes that the DICOM itself is not malformed.
+ * Because currently it just assumes that a handling error signifies the
+ * truncation of the buffer which is not realistic. But for testing purposes
+ * it's fine because we're working with always perfectly formed DICOMs for now
  *
- * Walk through a DICOM buffer and log the tags, VRs, lengths, and values.
+ * LEARNING NOTES:
  *
- * In DICOM we have two main formats of VR:
- * 1. Standard Format VR
- * 2. Extended Format VR
+ * In DICOM we have two main types of VR:
+ *  1. Standard Format VR
+ *  2. Extended Format VR
  *
  * As the name suggests Extended Format VRs are for VRs that may store
  * very large amounts of data, like OB VRs for pixel data.
@@ -24,22 +34,22 @@ import { decodeValue, decodeVr } from "./valueDecoders.js";
  * or extended format VR.
  *
  * The byte stream structure for standard VR is like this:
- *    - [2 x ASCII chars (2 bytes) e.g. SH]
- *    - [2 x bytes indicating the subsequent value length]
- *    - [The tag's actual value, of length 0x0000 - 0xFFFF]
+ *   - [2 x ASCII chars (2 bytes) e.g. SH]
+ *   - [2 x bytes indicating the subsequent value length]
+ *   - [The tag's actual value, of length 0x0000 - 0xFFFF]
  *
  * Given that standard VRs permit a 2-byte hex to specify the length,
  * this means the decimal length of the value can be at most 65,535 (0xFFFF).
  *
  * That doesn't really cut it for the very large tags like pixel data.
  * So the byte stream structure for those extended VRs is like this:
- *    - [2 x ASCII chars (2 bytes) e.g. OB]
- *    - [2 x reserved bytes, always 0x0000 0x0000]
- *    - [The tag's actual value, of length 0x0000 - 0xFFFFFFFF]
+ *   - [2 x ASCII chars (2 bytes) e.g. OB]
+ *   - [2 x reserved bytes, always 0x0000 0x0000]
+ *   - [The tag's actual value, of length 0x0000 - 0xFFFFFFFF]
  *
  * Given that the extended VRs permit a 4-byte hex to specify the length,
  * which is represented as 0xFFFFFFFF. This means the decimal length of the
- * value can be at most 4,294,967,295 (i.e. about 4GB). Also note that in reality
+ * value can be at most 4,294,967,295 (i.e. about 4GB). Note that in reality
  * some applications are going tell you to GTFO if you pass 4GB in one single
  * tag but it depends what you're dealing with. Ultrasounds are going to be
  * very long in pixel data tags, for example.
@@ -53,36 +63,66 @@ import { decodeValue, decodeVr } from "./valueDecoders.js";
  * and 128-132 bytes for 'DICM' header.
  *
  * @param buf
- * @returns void
- * @throws Error
+ * @param elements
+ * @returns PartialTag
  */
-export function walkEntireDicomFileAsBuffer(buf) {
-    let cursor = ByteLen.PREAMBLE + ByteLen.HEADER;
+export function walk(buf, elements) {
+    let cursor = 0;
+    let lastStartedTagCursorPosition = cursor;
     while (cursor < buf.length) {
-        const tagBuf = buf.subarray(cursor, cursor + ByteLen.TAG_NUM);
-        const tag = decodeTagNum(tagBuf);
-        cursor += ByteLen.TAG_NUM;
-        const vrBuf = buf.subarray(cursor, cursor + ByteLen.VR);
-        const vr = decodeVr(vrBuf);
-        cursor += ByteLen.VR;
-        if (!isVr(vr)) {
-            throwUnrecognisedVr(vr, vrBuf);
+        try {
+            const el = emptyElement();
+            lastStartedTagCursorPosition = cursor;
+            const tagBuf = buf.subarray(cursor, cursor + ByteLen.TAG_NUM);
+            el.tag = decodeTagNum(tagBuf);
+            cursor += ByteLen.TAG_NUM;
+            const vrBuf = buf.subarray(cursor, cursor + ByteLen.VR);
+            el.vr = decodeVr(vrBuf);
+            cursor += ByteLen.VR;
+            if (!isVr(el.vr)) {
+                throwUnrecognisedVr(el.vr, vrBuf);
+            }
+            el.length = 0;
+            const isExtVr = isExtendedFormatVr(el.vr);
+            if (isExtVr) {
+                cursor += ByteLen.EXT_VR_RESERVED; // 2 reserved bytes can be ignored
+                el.length = buf.readUInt32LE(cursor); // Extended VR tags' lengths are 4 bytes because they can be huge
+                cursor += ByteLen.UINT_32;
+            }
+            if (!isExtVr) {
+                el.length = buf.readUInt16LE(cursor); // Standard VR tags' lengths are 2 bytes, so max length is 65,535
+                cursor += ByteLen.UINT_16;
+            }
+            const valueBuf = buf.subarray(cursor, cursor + el.length);
+            el.val = decodeValue(el.vr, valueBuf);
+            if (el.vr !== VR.SQ && el.vr !== VR.OB) {
+                printElement(el);
+            }
+            else {
+                el.devNote = UNIMPLEMENTED_VR_PARSING(el.vr);
+                printMinusValue(el);
+            }
+            elements.push(el); // only fully parsed elements, discard truncated elements
+            cursor += el.length;
         }
-        const isExtVr = isExtendedFormatVr(vr);
-        let valueLength = 0;
-        if (isExtVr) {
-            cursor += ByteLen.EXT_VR_RESERVED; // 2 reserved bytes can be ignored
-            valueLength = buf.readUInt32LE(cursor); // Extended VR tags' lengths are 4 bytes because they can be huge
-            cursor += ByteLen.UINT_32;
+        catch (error) {
+            // assuming errors here are indicative of a truncated buffer
+            // not malformed DICOM. In reality this can't be assumed but
+            // for testing purposes it's fine.
+            break;
         }
-        if (!isExtVr) {
-            valueLength = buf.readUInt16LE(cursor); // Standard VR tags' lengths are 2 bytes, so max length is 0xFFFF
-            cursor += ByteLen.UINT_16;
-        }
-        const valueBuffer = buf.subarray(cursor, cursor + valueLength);
-        const decodedValue = decodeValue(vr, valueBuffer);
-        write(`Tag: ${tag}, VR: ${vr}, Length: ${valueLength}, Value: ${decodedValue}`, "DEBUG");
-        cursor += valueLength;
+    }
+    // if here we didn't hit a parse error which either means
+    //  - we truncated in the middle of a tag's VALUE (far more likely)
+    //  - coincidentally the end of a tag's bytes is the end of the byte array
+    const bytesLeft = buf.length - lastStartedTagCursorPosition;
+    if (bytesLeft > 0) {
+        write(`Returning truncated: ${bytesLeft} tag bytes`, "DEBUG");
+        return buf.subarray(lastStartedTagCursorPosition, buf.length);
+    }
+    else {
+        write(`Nothing to return for stitching; returning null`, "DEBUG");
+        return null;
     }
 }
 /**
@@ -108,5 +148,57 @@ export function throwUnrecognisedVr(vr, vrBuf) {
 export function isExtendedFormatVr(vr) {
     const extVrPattern = /^OB|OW|OF|SQ|UT|UN$/;
     return extVrPattern.test(vr);
+}
+/**
+ * Validate the DICOM header by checking for the 'magic word'.
+ * A DICOM file should contain the 'magic word' "DICM" at bytes 128-132.
+ * Preamble is 128 bytes of 0x00, followed by the 'magic word' "DICM".
+ * Preamble may not be used to determine that the file is DICOM.
+ *
+ * @param byteArray
+ * @throws DicomError
+ */
+export function validateDicomHeader(byteArray) {
+    const strAtHeaderPosition = byteArray //
+        .subarray(DICOM_HEADER_START, DICOM_HEADER_END)
+        .toString();
+    if (strAtHeaderPosition !== DICOM_HEADER) {
+        throw new DicomError({
+            errorType: DicomErrorType.VALIDATE,
+            message: `DICOM file does not contain 'magic word': ${DICOM_HEADER} at bytes 128-132. Found: ${strAtHeaderPosition}`,
+            buffer: byteArray,
+        });
+    }
+}
+/**
+ * Print an element to the console.
+ * @param el
+ */
+export function printElement(el) {
+    let str = `Tag: ${el.tag}, VR: ${el.vr}, Length: ${el.length}, Value: ${el.val}`;
+    if (el.devNote)
+        str += ` DevNote: ${el.devNote}`;
+    write(str, "DEBUG");
+}
+/**
+ * Print an element to the console.
+ * @param el
+ */
+export function printMinusValue(el) {
+    const str = `Tag: ${el.tag}, VR: ${el.vr}, Length: ${el.length} DevNote: ${el.devNote}`;
+    write(str, "DEBUG");
+}
+/**
+ * Return a new empty element object.
+ * @returns Element
+ */
+export function emptyElement() {
+    return {
+        vr: null,
+        tag: "TODO",
+        val: null,
+        name: null,
+        length: null,
+    };
 }
 //# sourceMappingURL=parse.js.map

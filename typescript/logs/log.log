@@ -1,59 +1,59 @@
-2024-08-05T11:21:47.162Z [INFO]  Starting up...
-2024-08-05T11:21:47.168Z [DEBUG] Configuration loaded: {"verbose":true,"printToStdOut":true,"debug":true,"panic":true,"logDir":"/Users/chriskennedy/Desktop/aesirax/typescript/logs","logName":"log.log"}
-2024-08-05T11:21:47.168Z [INFO]  App initialized.
-2024-08-05T11:21:47.170Z [DEBUG] Reading #1 byteArray, 1024 bytes (/Users/chriskennedy/Desktop/aesirax/data/report_structured_report_PI-Contrast.dcm)
-2024-08-05T11:21:47.170Z [DEBUG] Tag: (0002,0000), VR: UL, Length: 4, Value: 200
-2024-08-05T11:21:47.170Z [DEBUG] Tag: (0002,0001), VR: OB, Length: 2 DevNote: Byte parsing support for VR: OB is TBC
-2024-08-05T11:21:47.170Z [DEBUG] Tag: (0002,0002), VR: UI, Length: 30, Value: 1.2.840.10008.5.1.4.1.1.88.11
-2024-08-05T11:21:47.170Z [DEBUG] Tag: (0002,0003), VR: UI, Length: 64, Value: 1.2.826.0.1.3680043.10.710.4412171311315244557049108931076952056
-2024-08-05T11:21:47.170Z [DEBUG] Tag: (0002,0010), VR: UI, Length: 20, Value: 1.2.840.10008.1.2.1
-2024-08-05T11:21:47.171Z [DEBUG] Tag: (0002,0012), VR: UI, Length: 18, Value: 1.2.752.24.16.4.1
-2024-08-05T11:21:47.171Z [DEBUG] Tag: (0002,0013), VR: SH, Length: 14, Value: PYDICOM 2.3.1 
-2024-08-05T11:21:47.171Z [DEBUG] Tag: (0008,0016), VR: UI, Length: 30, Value: 1.2.840.10008.5.1.4.1.1.88.11
-2024-08-05T11:21:47.171Z [DEBUG] Tag: (0008,0018), VR: UI, Length: 64, Value: 1.2.826.0.1.3680043.10.710.4412171311315244557049108931076952056
-2024-08-05T11:21:47.171Z [DEBUG] Tag: (0008,0020), VR: DA, Length: 8, Value: 20111226
-2024-08-05T11:21:47.171Z [DEBUG] Tag: (0008,0021), VR: DA, Length: 8, Value: 20240417
-2024-08-05T11:21:47.171Z [DEBUG] Tag: (0008,0023), VR: DA, Length: 8, Value: 20240417
-2024-08-05T11:21:47.171Z [DEBUG] Tag: (0008,0030), VR: TM, Length: 14, Value: 145014.734000 
-2024-08-05T11:21:47.171Z [DEBUG] Tag: (0008,0031), VR: TM, Length: 14, Value: 153958.844822 
-2024-08-05T11:21:47.171Z [DEBUG] Tag: (0008,0033), VR: TM, Length: 6, Value: 153957
-2024-08-05T11:21:47.171Z [DEBUG] Tag: (0008,0050), VR: SH, Length: 16, Value: 42FFD8B77904694E
-2024-08-05T11:21:47.171Z [DEBUG] Tag: (0008,0060), VR: CS, Length: 2, Value: SR
-2024-08-05T11:21:47.171Z [DEBUG] Tag: (0008,0070), VR: LO, Length: 0, Value: 
-2024-08-05T11:21:47.171Z [DEBUG] Tag: (0008,0090), VR: PN, Length: 0, Value: 
-2024-08-05T11:21:47.171Z [DEBUG] Tag: (0008,1030), VR: LO, Length: 42, Value: MC prostaat kliniek detectie-mc MCPROSKL30
-2024-08-05T11:21:47.171Z [DEBUG] Tag: (0008,103e), VR: LO, Length: 24, Value: DICOM_structured_report 
-2024-08-05T11:21:47.171Z [DEBUG] Tag: (0008,1111), VR: SQ, Length: 0 DevNote: Byte parsing support for VR: SQ is TBC
-2024-08-05T11:21:47.171Z [DEBUG] Tag: (0010,0010), VR: PN, Length: 14, Value: ProstateX-0092
-2024-08-05T11:21:47.171Z [DEBUG] Tag: (0010,0020), VR: LO, Length: 14, Value: ProstateX-0092
-2024-08-05T11:21:47.172Z [DEBUG] Tag: (0010,0030), VR: DA, Length: 0, Value: 
-2024-08-05T11:21:47.172Z [DEBUG] Tag: (0010,0040), VR: CS, Length: 0, Value: 
-2024-08-05T11:21:47.172Z [DEBUG] Tag: (0018,0015), VR: CS, Length: 8, Value: PROSTATE
-2024-08-05T11:21:47.172Z [DEBUG] Tag: (0018,1030), VR: LO, Length: 20, Value: PI Structured Report
-2024-08-05T11:21:47.172Z [DEBUG] Tag: (0020,000d), VR: UI, Length: 64, Value: 1.3.6.1.4.1.14519.5.2.1.7311.5101.659146793326071700670324635152
-2024-08-05T11:21:47.172Z [DEBUG] Tag: (0020,000e), VR: UI, Length: 64, Value: 1.2.826.0.1.3680043.10.710.8610714221057495964655394978745080921
-2024-08-05T11:21:47.172Z [DEBUG] Tag: (0020,0010), VR: SH, Length: 0, Value: 
-2024-08-05T11:21:47.172Z [DEBUG] Tag: (0020,0011), VR: IS, Length: 4, Value: 2220
-2024-08-05T11:21:47.172Z [DEBUG] Tag: (0020,0013), VR: IS, Length: 2, Value: 1 
-2024-08-05T11:21:47.172Z [DEBUG] Tag: (0040,a040), VR: CS, Length: 10, Value: CONTAINER 
-2024-08-05T11:21:47.172Z [DEBUG] Tag: (0040,a043), VR: SQ, Length: 54 DevNote: Byte parsing support for VR: SQ is TBC
-2024-08-05T11:21:47.172Z [DEBUG] Returning truncated: 24 tag bytes
-2024-08-05T11:21:47.172Z [DEBUG] Reading #2 byteArray, 1024 bytes (/Users/chriskennedy/Desktop/aesirax/data/report_structured_report_PI-Contrast.dcm)
-2024-08-05T11:21:47.172Z [DEBUG] Stitch: 24 + 1024 bytes /Users/chriskennedy/Desktop/aesirax/data/report_structured_report_PI-Contrast.dcm
-2024-08-05T11:21:47.173Z [DEBUG] Tag: (0040,a043), VR: SQ, Length: 54 DevNote: Byte parsing support for VR: SQ is TBC
-2024-08-05T11:21:47.173Z [DEBUG] Tag: (0040,a050), VR: CS, Length: 8, Value: SEPARATE
-2024-08-05T11:21:47.173Z [DEBUG] Tag: (0040,a372), VR: SQ, Length: 0 DevNote: Byte parsing support for VR: SQ is TBC
-2024-08-05T11:21:47.173Z [DEBUG] Tag: (0040,a375), VR: SQ, Length: 0 DevNote: Byte parsing support for VR: SQ is TBC
-2024-08-05T11:21:47.173Z [DEBUG] Tag: (0040,a491), VR: CS, Length: 8, Value: COMPLETE
-2024-08-05T11:21:47.173Z [DEBUG] Tag: (0040,a493), VR: CS, Length: 10, Value: UNVERIFIED
-2024-08-05T11:21:47.173Z [DEBUG] Tag: (0040,a496), VR: CS, Length: 6, Value: FINAL 
-2024-08-05T11:21:47.173Z [DEBUG] Tag: (0040,a730), VR: SQ, Length: 948 DevNote: Byte parsing support for VR: SQ is TBC
-2024-08-05T11:21:47.173Z [DEBUG] Returning truncated: 894 tag bytes
-2024-08-05T11:21:47.173Z [DEBUG] Reading #3 byteArray, 124 bytes (/Users/chriskennedy/Desktop/aesirax/data/report_structured_report_PI-Contrast.dcm)
-2024-08-05T11:21:47.173Z [DEBUG] Stitch: 894 + 124 bytes /Users/chriskennedy/Desktop/aesirax/data/report_structured_report_PI-Contrast.dcm
-2024-08-05T11:21:47.173Z [DEBUG] Tag: (0040,a730), VR: SQ, Length: 948 DevNote: Byte parsing support for VR: SQ is TBC
-2024-08-05T11:21:47.173Z [DEBUG] Tag: (4413,0010), VR: LO, Length: 22, Value: Patient-Level Results 
-2024-08-05T11:21:47.173Z [DEBUG] Tag: (4413,1001), VR: ST, Length: 8, Value: 30.6 ml 
-2024-08-05T11:21:47.173Z [DEBUG] Tag: (4413,1002), VR: DS, Length: 4, Value: 4.6 
-2024-08-05T11:21:47.173Z [DEBUG] Returning truncated: 12 tag bytes
-2024-08-05T11:21:47.174Z [DEBUG] Read a total of 2172 bytes from /Users/chriskennedy/Desktop/aesirax/data/report_structured_report_PI-Contrast.dcm
+2024-08-05T11:34:44.736Z [INFO]  Starting up...
+2024-08-05T11:34:44.741Z [DEBUG] Configuration loaded: {"verbose":true,"printToStdOut":true,"debug":true,"panic":true,"logDir":"/Users/chriskennedy/Desktop/aesirax/typescript/logs","logName":"log.log"}
+2024-08-05T11:34:44.741Z [INFO]  App initialized.
+2024-08-05T11:34:44.743Z [DEBUG] Reading #1 byteArray, 1024 bytes (../data/report_structured_report_PI-Contrast.dcm)
+2024-08-05T11:34:44.743Z [DEBUG] Tag: (0002,0000), VR: UL, Length: 4, Value: 200
+2024-08-05T11:34:44.743Z [DEBUG] Tag: (0002,0001), VR: OB, Length: 2 DevNote: Byte parsing support for VR: OB is unimplemeted in this version
+2024-08-05T11:34:44.743Z [DEBUG] Tag: (0002,0002), VR: UI, Length: 30, Value: 1.2.840.10008.5.1.4.1.1.88.11
+2024-08-05T11:34:44.743Z [DEBUG] Tag: (0002,0003), VR: UI, Length: 64, Value: 1.2.826.0.1.3680043.10.710.4412171311315244557049108931076952056
+2024-08-05T11:34:44.743Z [DEBUG] Tag: (0002,0010), VR: UI, Length: 20, Value: 1.2.840.10008.1.2.1
+2024-08-05T11:34:44.743Z [DEBUG] Tag: (0002,0012), VR: UI, Length: 18, Value: 1.2.752.24.16.4.1
+2024-08-05T11:34:44.743Z [DEBUG] Tag: (0002,0013), VR: SH, Length: 14, Value: PYDICOM 2.3.1 
+2024-08-05T11:34:44.743Z [DEBUG] Tag: (0008,0016), VR: UI, Length: 30, Value: 1.2.840.10008.5.1.4.1.1.88.11
+2024-08-05T11:34:44.743Z [DEBUG] Tag: (0008,0018), VR: UI, Length: 64, Value: 1.2.826.0.1.3680043.10.710.4412171311315244557049108931076952056
+2024-08-05T11:34:44.743Z [DEBUG] Tag: (0008,0020), VR: DA, Length: 8, Value: 20111226
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0008,0021), VR: DA, Length: 8, Value: 20240417
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0008,0023), VR: DA, Length: 8, Value: 20240417
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0008,0030), VR: TM, Length: 14, Value: 145014.734000 
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0008,0031), VR: TM, Length: 14, Value: 153958.844822 
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0008,0033), VR: TM, Length: 6, Value: 153957
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0008,0050), VR: SH, Length: 16, Value: 42FFD8B77904694E
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0008,0060), VR: CS, Length: 2, Value: SR
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0008,0070), VR: LO, Length: 0, Value: 
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0008,0090), VR: PN, Length: 0, Value: 
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0008,1030), VR: LO, Length: 42, Value: MC prostaat kliniek detectie-mc MCPROSKL30
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0008,103e), VR: LO, Length: 24, Value: DICOM_structured_report 
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0008,1111), VR: SQ, Length: 0 DevNote: Byte parsing support for VR: SQ is unimplemeted in this version
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0010,0010), VR: PN, Length: 14, Value: ProstateX-0092
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0010,0020), VR: LO, Length: 14, Value: ProstateX-0092
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0010,0030), VR: DA, Length: 0, Value: 
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0010,0040), VR: CS, Length: 0, Value: 
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0018,0015), VR: CS, Length: 8, Value: PROSTATE
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0018,1030), VR: LO, Length: 20, Value: PI Structured Report
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0020,000d), VR: UI, Length: 64, Value: 1.3.6.1.4.1.14519.5.2.1.7311.5101.659146793326071700670324635152
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0020,000e), VR: UI, Length: 64, Value: 1.2.826.0.1.3680043.10.710.8610714221057495964655394978745080921
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0020,0010), VR: SH, Length: 0, Value: 
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0020,0011), VR: IS, Length: 4, Value: 2220
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0020,0013), VR: IS, Length: 2, Value: 1 
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0040,a040), VR: CS, Length: 10, Value: CONTAINER 
+2024-08-05T11:34:44.744Z [DEBUG] Tag: (0040,a043), VR: SQ, Length: 54 DevNote: Byte parsing support for VR: SQ is unimplemeted in this version
+2024-08-05T11:34:44.744Z [DEBUG] Returning truncated: 24 tag bytes
+2024-08-05T11:34:44.745Z [DEBUG] Reading #2 byteArray, 1024 bytes (../data/report_structured_report_PI-Contrast.dcm)
+2024-08-05T11:34:44.745Z [DEBUG] Stitch: 24 + 1024 bytes ../data/report_structured_report_PI-Contrast.dcm
+2024-08-05T11:34:44.745Z [DEBUG] Tag: (0040,a043), VR: SQ, Length: 54 DevNote: Byte parsing support for VR: SQ is unimplemeted in this version
+2024-08-05T11:34:44.745Z [DEBUG] Tag: (0040,a050), VR: CS, Length: 8, Value: SEPARATE
+2024-08-05T11:34:44.745Z [DEBUG] Tag: (0040,a372), VR: SQ, Length: 0 DevNote: Byte parsing support for VR: SQ is unimplemeted in this version
+2024-08-05T11:34:44.745Z [DEBUG] Tag: (0040,a375), VR: SQ, Length: 0 DevNote: Byte parsing support for VR: SQ is unimplemeted in this version
+2024-08-05T11:34:44.745Z [DEBUG] Tag: (0040,a491), VR: CS, Length: 8, Value: COMPLETE
+2024-08-05T11:34:44.745Z [DEBUG] Tag: (0040,a493), VR: CS, Length: 10, Value: UNVERIFIED
+2024-08-05T11:34:44.745Z [DEBUG] Tag: (0040,a496), VR: CS, Length: 6, Value: FINAL 
+2024-08-05T11:34:44.745Z [DEBUG] Tag: (0040,a730), VR: SQ, Length: 948 DevNote: Byte parsing support for VR: SQ is unimplemeted in this version
+2024-08-05T11:34:44.745Z [DEBUG] Returning truncated: 894 tag bytes
+2024-08-05T11:34:44.745Z [DEBUG] Reading #3 byteArray, 124 bytes (../data/report_structured_report_PI-Contrast.dcm)
+2024-08-05T11:34:44.745Z [DEBUG] Stitch: 894 + 124 bytes ../data/report_structured_report_PI-Contrast.dcm
+2024-08-05T11:34:44.745Z [DEBUG] Tag: (0040,a730), VR: SQ, Length: 948 DevNote: Byte parsing support for VR: SQ is unimplemeted in this version
+2024-08-05T11:34:44.745Z [DEBUG] Tag: (4413,0010), VR: LO, Length: 22, Value: Patient-Level Results 
+2024-08-05T11:34:44.745Z [DEBUG] Tag: (4413,1001), VR: ST, Length: 8, Value: 30.6 ml 
+2024-08-05T11:34:44.745Z [DEBUG] Tag: (4413,1002), VR: DS, Length: 4, Value: 4.6 
+2024-08-05T11:34:44.745Z [DEBUG] Returning truncated: 12 tag bytes
+2024-08-05T11:34:44.745Z [DEBUG] Read a total of 2172 bytes from ../data/report_structured_report_PI-Contrast.dcm
