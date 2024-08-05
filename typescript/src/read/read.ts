@@ -136,6 +136,8 @@ export function handleDicomBytes(bundle: StreamBundle, currBytes: Buffer): Parti
             message: `Transfer Syntax UID ${tsn} is unsupported.`,
             errorType: DicomErrorType.PARSING,
          });
+      } else {
+         bundle.transferSyntaxUid = tsn;
       }
 
       bundle.firstBytes = false;
