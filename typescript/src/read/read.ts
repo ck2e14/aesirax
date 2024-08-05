@@ -126,7 +126,7 @@ export function handleDicomBytes(bundle: StreamBundle, currBytes: Buffer): Parti
       validateDicomPreamble(currBytes);
       validateDicomHeader(currBytes);
 
-      currBytes = currBytes.subarray(DICOM_HEADER_END, currBytes.length); // go beyond 'DICM' header
+      currBytes = currBytes.subarray(DICOM_HEADER_END, currBytes.length); // window the buffer beyond 'DICM' header
 
       const truncatedElement = walk(currBytes, bundle);
       const tsn = getElementValue<string>(TagDictionary.TransferSyntaxUID, bundle.dataset);
