@@ -18,16 +18,13 @@ export type Element = {
 
 export type Elements = Element[];
 
-export const DICOM_HEADER = "DICM";
-
-export const PREAMBLE_LENGTH = 128;
-
-export const DICOM_HEADER_START = PREAMBLE_LENGTH;
-
-export const DICOM_HEADER_END = PREAMBLE_LENGTH + 4;
-
 export const UNIMPLEMENTED_VR_PARSING = (vr: Global.VR) =>
    `Byte parsing support for VR: ${vr} is unimplemeted in this version`;
+
+export const DICOM_HEADER = "DICM";
+export const PREAMBLE_LENGTH = 128;
+export const DICOM_HEADER_START = PREAMBLE_LENGTH;
+export const DICOM_HEADER_END = PREAMBLE_LENGTH + 4;
 
 /**
  * Walk a buffer containing a subset of a DICOM file and parse the tags.

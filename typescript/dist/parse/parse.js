@@ -4,11 +4,11 @@ import { write } from "../logging/logQ.js";
 import { decodeTagNum } from "./tagNums.js";
 import { isVr } from "./typeGuards.js";
 import { decodeValue, decodeVr } from "./valueDecoders.js";
+export const UNIMPLEMENTED_VR_PARSING = (vr) => `Byte parsing support for VR: ${vr} is unimplemeted in this version`;
 export const DICOM_HEADER = "DICM";
 export const PREAMBLE_LENGTH = 128;
 export const DICOM_HEADER_START = PREAMBLE_LENGTH;
 export const DICOM_HEADER_END = PREAMBLE_LENGTH + 4;
-export const UNIMPLEMENTED_VR_PARSING = (vr) => `Byte parsing support for VR: ${vr} is unimplemeted in this version`;
 /**
  * Walk a buffer containing a subset of a DICOM file and parse the tags.
  * Return a buffer containing the truncated tag if the buffer is incomplete.
