@@ -6,6 +6,15 @@
 // compile the global.d.ts file, but whatever lol. it doens't even throw errors, maybe
 // should make a pull request on this for the typescript compiler but can't be arsed
 
+export enum TagDictionary {
+   TransferSyntaxUID = "(0002,0010)",
+}
+
+export enum TransferSyntaxUid {
+   ImplicitVRLittleEndian = "1.2.840.10008.1.2",
+   ExplicitVRLittleEndian = "1.2.840.10008.1.2.1",
+}
+
 export enum DicomErrorType {
    UNKNOWN = "UNKNOWN",
    READ = "READ",

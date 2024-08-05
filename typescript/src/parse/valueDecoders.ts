@@ -1,11 +1,12 @@
 import { DicomError } from "../error/dicomError.js";
-import { ByteLen, DicomErrorType, VR } from "../globalEnums.js";
+import { ByteLen, DicomErrorType, TransferSyntaxUid, VR } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
+import { StreamBundle } from "../read/read.js";
 
 type Decoder = (value: Buffer) => string;
 type DecoderMap = Record<Global.VR | "default", Decoder>;
 
-const decoders: Partial<DecoderMap> = {
+const decodersLE: Partial<DecoderMap> = {
    // partial because will add VRs incrementally
    // currently only support numbers to base 10.
    AE: (val: Buffer) => utf8Decoder(val),
@@ -34,6 +35,35 @@ const decoders: Partial<DecoderMap> = {
    default: (val: Buffer) => val.toString("hex"),
 } as const;
 
+const decodersBE: Partial<DecoderMap> = {
+   // partial because will add VRs incrementally
+   // currently only support numbers to base 10.
+   AE: (val: Buffer) => utf8Decoder(val),
+   AS: (val: Buffer) => utf8Decoder(val),
+   CS: (val: Buffer) => utf8Decoder(val),
+   DA: (val: Buffer) => utf8Decoder(val),
+   DS: (val: Buffer) => utf8Decoder(val),
+   DT: (val: Buffer) => utf8Decoder(val),
+   IS: (val: Buffer) => utf8Decoder(val),
+   LO: (val: Buffer) => utf8Decoder(val),
+   LT: (val: Buffer) => utf8Decoder(val),
+   PN: (val: Buffer) => utf8Decoder(val),
+   SH: (val: Buffer) => utf8Decoder(val),
+   ST: (val: Buffer) => utf8Decoder(val),
+   TM: (val: Buffer) => utf8Decoder(val),
+   UC: (val: Buffer) => utf8Decoder(val),
+   UI: (val: Buffer) => utf8Decoder(val),
+   UR: (val: Buffer) => utf8Decoder(val),
+   UT: (val: Buffer) => utf8Decoder(val),
+   FL: (val: Buffer) => val.readFloatBE(0).toString(10),
+   FD: (val: Buffer) => val.readDoubleBE(0).toString(10),
+   SL: (val: Buffer) => val.readInt32BE(0).toString(10),
+   SS: (val: Buffer) => val.readInt16BE(0).toString(10),
+   UL: (val: Buffer) => val.readUInt32BE(0).toString(10),
+   US: (val: Buffer) => val.readUInt16BE(0).toString(10),
+   default: (val: Buffer) => val.toString("hex"),
+} as const;
+
 /**
  * Pass in a DICOM tag's VR and a buffer containing the bytes
  * representing the tag's value and get back an appropriately
@@ -42,15 +72,25 @@ const decoders: Partial<DecoderMap> = {
  * @param value
  * @returns string
  */
-export function decodeValue(vr: string, value: Buffer, checkNullPadding = false): string {
+export function decodeValue(
+   vr: string,
+   value: Buffer,
+   streamBundle: StreamBundle,
+   checkNullPadding = false
+): string {
    if (checkNullPadding) {
       try {
          countNullBytes(value);
       } catch (error) {
          // swallow here because already logged in
-         // countNullBytes and don't want to rethrow
+         // and don't want to interrupt the parsing
       }
    }
+
+   const decoders =
+      streamBundle.transferSyntaxUid === TransferSyntaxUid.ExplicitVRLittleEndian
+         ? decodersLE
+         : decodersBE;
 
    if (decoders.hasOwnProperty(vr)) {
       return decoders[vr](value);
