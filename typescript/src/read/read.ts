@@ -7,14 +7,12 @@ import { decodeValue, decodeVr } from "../parse/valueDecoders.js";
 import { isVr } from "../parse/typeGuards.js";
 import { isExtendedFormatVr, throwUnrecognisedVr } from "../parse/parse.js";
 
+type PartialTag = Buffer | null;
+
 type ReadDicom = {
    buf: Buffer;
    len: Number;
 };
-
-type ReadDicomPromise = Promise<ReadDicom>;
-
-type TruncatedTag = Buffer | null;
 
 type Element = {
    tag: string;
@@ -27,59 +25,12 @@ type Element = {
 
 type Elements = Element[];
 
-const DICOM_HEADER = "DICM",
-   PREAMBLE_LENGTH = 128,
-   DICOM_HEADER_START = PREAMBLE_LENGTH,
-   DICOM_HEADER_END = PREAMBLE_LENGTH + 4;
-
-/**
- * Read a DICOM file into memory asynchronously and return a promise.
- * The promise resolves to an object containing the buffer and length.
- * Note that this function is somewhat redundant in its use of streams
- * because it only begins processing the data once the whole stream
- * has ended. So we might as well just use fs.readFile() in this case.
- * It was a starting point however for the streamParse() function which
- * is why it bothers with streams to achieve the same thing that fs.readFile()
- * would achieve.
- *
- * @param path
- * @returns Promise<ReadDicom>
- * @throws DicomError
- */
-export function readDicom(path: string): ReadDicomPromise {
-   let firstChunk = true;
-
-   return new Promise<ReadDicom>((resolve, reject) => {
-      const readStream = createReadStream(path);
-      const bufs: Buffer[] = [];
-      const res = {
-         buf: Buffer.alloc(0),
-         len: 0,
-      };
-
-      readStream.on("data", (byteArray: Buffer) => {
-         write(`Read ${byteArray.length} bytes from ${path}`, "DEBUG");
-
-         if (firstChunk) {
-            validateDicomHeader(byteArray);
-            firstChunk = false;
-         }
-
-         bufs.push(byteArray);
-         res.len += byteArray.length;
-      });
-
-      readStream.on("error", error => {
-         reject(DicomError.from(error, DicomErrorType.READ));
-      });
-
-      readStream.on("close", () => {
-         write(`Read a total of ${res.len} bytes from ${path}`, "DEBUG");
-         res.buf = Buffer.concat(bufs);
-         resolve(res);
-      });
-   });
-}
+const DICOM_HEADER = "DICM";
+const PREAMBLE_LENGTH = 128;
+const DICOM_HEADER_START = PREAMBLE_LENGTH;
+const DICOM_HEADER_END = PREAMBLE_LENGTH + 4;
+const UNIMPLEMENTED_VR_PARSING = (vr: Global.VR) =>
+   `Byte parsing support for VR: ${vr} is unimplemeted in this version`;
 
 /**
  * Unlike readDicom() this takes advantage of the behaviour of
@@ -88,45 +39,53 @@ export function readDicom(path: string): ReadDicomPromise {
  * parsing each buffered byteArray of the file from disk, and stitches
  * truncated DICOM tags together for the next invocation of the 'data'
  * callback to work with.
+ *
+ * @param path
+ * @returns Promise<Elements>
+ * @throws DicomError
  */
 export function streamParse(path: string): Promise<Elements> {
    const elements: Elements = [];
-   const streamOpts = { highWaterMark: 1024 }; // using a small (1KB) buffer to enforce multiple chunks to test truncation logic
-   const readStream = createReadStream(path, streamOpts);
-   let firstChunk = true;
+   const streamOpts = { highWaterMark: 1024 }; // small buffer to enforce multiple byteArrays to test truncation logic
+   const dicomStream = createReadStream(path, streamOpts);
+
+   let firstByteArray = true;
 
    return new Promise<Elements>((resolve, reject) => {
+      let n = 0;
       let totalLen = 0;
-      let truncatedPrevTag: TruncatedTag = null;
+      let partialTagBuf: PartialTag = null;
 
-      readStream.on("data", (byteArray: Buffer) => {
-         write(`Read ${byteArray.length} bytes from ${path}`, "DEBUG");
+      dicomStream.on("data", (byteArray: Buffer) => {
+         n++;
          totalLen += byteArray.length;
 
-         if (firstChunk) {
+         write(`Reading #${n} byteArray, ${byteArray.length} bytes (${path})`, "DEBUG");
+
+         if (firstByteArray) {
             validateDicomHeader(byteArray);
             byteArray = byteArray.subarray(DICOM_HEADER_END, byteArray.length); // walk() expects removal of preamble + header
-            firstChunk = false;
+            firstByteArray = false;
          }
 
          // if there's nothing to stitch, walk the byte array &
-         // assign null or a subset of bytes to truncatedPrevTag.
+         // assign null or a subset of bytes to truncated.
          // else stitch to the current byte array before walking.
-         if (!truncatedPrevTag) {
-            truncatedPrevTag = walk(byteArray, elements);
+         if (!partialTagBuf) {
+            partialTagBuf = walk(byteArray, elements);
             return;
          } else {
-            write(`Stitching: ${truncatedPrevTag.length} + ${byteArray.length} bytes`, "DEBUG");
-            const stitched = Buffer.concat([truncatedPrevTag, byteArray]);
-            truncatedPrevTag = walk(stitched, elements);
+            write(`Stitch: ${partialTagBuf.length} + ${byteArray.length} bytes ${path}`, "DEBUG");
+            const stitchedBytes = Buffer.concat([partialTagBuf, byteArray]);
+            partialTagBuf = walk(stitchedBytes, elements);
          }
       });
 
-      readStream.on("error", error => {
+      dicomStream.on("error", error => {
          reject(DicomError.from(error, DicomErrorType.READ));
       });
 
-      readStream.on("close", () => {
+      dicomStream.on("close", () => {
          write(`Read a total of ${totalLen} bytes from ${path}`, "DEBUG");
          resolve(elements);
       });
@@ -137,7 +96,7 @@ export function streamParse(path: string): Promise<Elements> {
  * Walk a buffer containing a subset of a DICOM file and parse the tags.
  * Return a buffer containing the truncated tag if the buffer is incomplete.
  * This is used to allow on-the-fly parsing of DICOM files as they are read
- * and stitching together truncated tags that span multiple chunks.
+ * and stitching together truncated tags that span multiple byteArrays.
  *
  * Note that currently this assumes that the DICOM itself is not malformed.
  * Because currently it just assumes that a handling error signifies the
@@ -146,9 +105,9 @@ export function streamParse(path: string): Promise<Elements> {
  *
  * @param buf
  * @param elements
- * @returns TruncatedTag
+ * @returns PartialTag
  */
-function walk(buf: Buffer, elements: Element[]): TruncatedTag {
+function walk(buf: Buffer, elements: Element[]): PartialTag {
    let cursor = 0;
    let lastStartedTagCursorPosition: number = cursor;
 
@@ -183,28 +142,28 @@ function walk(buf: Buffer, elements: Element[]): TruncatedTag {
             cursor += ByteLen.UINT_16;
          }
 
-         const valBuf = buf.subarray(cursor, cursor + el.length);
-         el.val = decodeValue(el.vr, valBuf);
+         const valueBuf = buf.subarray(cursor, cursor + el.length);
+         el.val = decodeValue(el.vr, valueBuf);
 
          if (el.vr !== VR.SQ && el.vr !== VR.OB) {
             printElement(el);
          } else {
-            el.devNote = `Byte parsing support for VR: ${el.vr} is TBC`;
+            el.devNote = UNIMPLEMENTED_VR_PARSING(el.vr);
             printMinusValue(el);
          }
 
          elements.push(el); // only push fully parsed elements
          cursor += el.length;
       } catch (error) {
+         break;
          // currently errors are assumed to be truncated tags
          // because we're working with perfect DICOMs in testing.
          // But in reality DICOM may be malformed, which would
          // wrongly trigger this swallow + break approach.
-         break;
       }
    }
 
-   // if here, it's because we didn't hit a parse error which either means
+   // if here we didn't hit a parse error which either means
    //  - we truncated in the middle of a tag's VALUE (far more likely)
    //  - coincidentally the end of a tag's bytes is the end of the byte array
    const bytesLeft = buf.length - lastStartedTagCursorPosition;
@@ -212,17 +171,17 @@ function walk(buf: Buffer, elements: Element[]): TruncatedTag {
    if (bytesLeft > 0) {
       write(`Returning truncated: ${bytesLeft} tag bytes`, "DEBUG");
       return buf.subarray(lastStartedTagCursorPosition, buf.length);
+   } else {
+      write(`Nothing to return for stitching; returning null`, "DEBUG");
+      return null;
    }
-
-   write(`Nothing to return for stitching; returning null`, "DEBUG");
-   return null;
 }
 
 /**
  * Validate the DICOM header by checking for the 'magic word'.
  * A DICOM file should contain the 'magic word' "DICM" at bytes 128-132.
  * Preamble is 128 bytes of 0x00, followed by the 'magic word' "DICM".
- * Preamble cannot be used to determine that the file is DICOM, per the spec.
+ * Preamble may not be used to determine that the file is DICOM.
  *
  * @param byteArray
  * @throws DicomError
@@ -246,10 +205,9 @@ function validateDicomHeader(byteArray: Buffer): void | never {
  * @param el
  */
 function printElement(el: Element): void {
-   write(
-      `Tag: ${el.tag}, VR: ${el.vr}, Length: ${el.length}, Value: ${el.val} DevNote: ${el.devNote}`,
-      "DEBUG"
-   );
+   let str = `Tag: ${el.tag}, VR: ${el.vr}, Length: ${el.length}, Value: ${el.val}`;
+   if (el.devNote) str += ` DevNote: ${el.devNote}`;
+   write(str, "DEBUG");
 }
 
 /**
@@ -257,7 +215,8 @@ function printElement(el: Element): void {
  * @param el
  */
 function printMinusValue(el: Element): void {
-   write(`Tag: ${el.tag}, VR: ${el.vr}, Length: ${el.length} DevNote: ${el.devNote}`, "DEBUG");
+   const str = `Tag: ${el.tag}, VR: ${el.vr}, Length: ${el.length} DevNote: ${el.devNote}`;
+   write(str, "DEBUG");
 }
 
 /**
