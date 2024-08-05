@@ -10,15 +10,17 @@ import { readDicom, streamParse } from "./read/read.js";
 
    await init();
 
-   const path = `/Users/chriskennedy/Desktop/aesirax/data/brokenSiemensCT/DICOM/24070314/34580000/40809056`;
+   // const path = `/Users/chriskennedy/Desktop/aesirax/data/brokenSiemensCT/DICOM/24070314/34580000/40809056`;
+   const path = `/Users/chriskennedy/Desktop/aesirax/data/report_structured_report_PI-Contrast.dcm`;
 
    try {
       // // 1. Entire DICOM file as buffer version (memory-inefficient)
-      const dicomBuffer = await readDicom(path);
-      walkEntireDicomFileAsBuffer(dicomBuffer.buf);
+      // const dicomBuffer = await readDicom(path);
+      // walkEntireDicomFileAsBuffer(dicomBuffer.buf);
 
       // // 2. Stream-parsing version (memory-efficient)
-      streamParse(path);
+      const elements = await streamParse(path);
+      console.log(elements);
    } catch (error) {
       console.log(error.message);
       throw error;
