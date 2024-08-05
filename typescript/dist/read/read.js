@@ -26,7 +26,10 @@ export function readDicom(path) {
     return new Promise((resolve, reject) => {
         const readStream = createReadStream(path);
         const bufs = [];
-        const res = { buf: Buffer.alloc(0), len: 0 };
+        const res = {
+            buf: Buffer.alloc(0),
+            len: 0,
+        };
         readStream.on("data", (byteArray) => {
             write(`Read ${byteArray.length} bytes from ${path}`, "DEBUG");
             if (firstChunk) {
@@ -56,36 +59,38 @@ export function readDicom(path) {
  */
 export function streamParse(path) {
     const elements = [];
-    const streamOpts = { highWaterMark: 1024 }; // deliberately small (1KB) buffer to enforce multiple chunks to test truncation logic
+    const streamOpts = { highWaterMark: 1024 }; // using a small (1KB) buffer to enforce multiple chunks to test truncation logic
     const readStream = createReadStream(path, streamOpts);
     let firstChunk = true;
     return new Promise((resolve, reject) => {
-        let len = 0;
+        let totalLen = 0;
         let truncatedPrevTag = null;
         readStream.on("data", (byteArray) => {
             write(`Read ${byteArray.length} bytes from ${path}`, "DEBUG");
-            len += byteArray.length;
+            totalLen += byteArray.length;
             if (firstChunk) {
                 validateDicomHeader(byteArray);
                 byteArray = byteArray.subarray(DICOM_HEADER_END, byteArray.length); // walk() expects removal of preamble + header
                 firstChunk = false;
             }
+            // if there's nothing to stitch, walk the byte array &
+            // assign null or a subset of bytes to truncatedPrevTag.
+            // else stitch to the current byte array before walking.
             if (!truncatedPrevTag) {
-                truncatedPrevTag = walk(byteArray, elements); // walk the byte array & assign null or a subset of bytes to truncatedPrevTag
-                write(`newTruncatedPrevTag: ${truncatedPrevTag}`, "DEBUG");
+                truncatedPrevTag = walk(byteArray, elements);
                 return;
             }
-            write(`Stitching: ${truncatedPrevTag.length} + ${byteArray.length} bytes`, "DEBUG");
-            // else stitch truncatedPrevTag to the current byte array before walking.
-            const stitchedChunk = Buffer.concat([truncatedPrevTag, byteArray]);
-            truncatedPrevTag = walk(stitchedChunk, elements);
-            write(`newTruncatedPrevTag: ${truncatedPrevTag}`, "DEBUG");
+            else {
+                write(`Stitching: ${truncatedPrevTag.length} + ${byteArray.length} bytes`, "DEBUG");
+                const stitched = Buffer.concat([truncatedPrevTag, byteArray]);
+                truncatedPrevTag = walk(stitched, elements);
+            }
         });
         readStream.on("error", error => {
             reject(DicomError.from(error, DicomErrorType.READ));
         });
         readStream.on("close", () => {
-            write(`Read a total of ${len} bytes from ${path}`, "DEBUG");
+            write(`Read a total of ${totalLen} bytes from ${path}`, "DEBUG");
             resolve(elements);
         });
     });
@@ -99,14 +104,15 @@ export function streamParse(path) {
  * Note that currently this assumes that the DICOM itself is not malformed.
  * Because currently it just assumes that a handling error signifies the
  * truncation of the buffer which is not realistic. But for testing purposes
- * it's fine because we're working with always perfectly formed DICOMs - for now..
+ * it's fine because we're working with always perfectly formed DICOMs for now
  *
  * @param buf
- * @returns
+ * @param elements
+ * @returns TruncatedTag
  */
 function walk(buf, elements) {
     let cursor = 0;
-    let lastStartedTagCursorPosition = null;
+    let lastStartedTagCursorPosition = cursor;
     while (cursor < buf.length) {
         try {
             const el = emptyElement();
@@ -137,53 +143,36 @@ function walk(buf, elements) {
                 printElement(el);
             }
             else {
-                el.devNote = `Support for VR: ${el.vr} is TBC`;
+                el.devNote = `Byte parsing support for VR: ${el.vr} is TBC`;
                 printMinusValue(el);
             }
             elements.push(el); // only push fully parsed elements
             cursor += el.length;
         }
         catch (error) {
-            // currently, errors are assumed to be truncated tags
+            // currently errors are assumed to be truncated tags
             // because we're working with perfect DICOMs in testing.
             // But in reality DICOM may be malformed, which would
             // wrongly trigger this swallow + break approach.
             break;
         }
     }
-    // if we reached here its because we didn't hit a parse error which either means:
-    //   (A) we truncated in the middle of a tag's VALUE (far more likely)
-    //   (B) coincidentally the end of a tag's bytes is the end of the byte array
-    const remainingBytes = buf.length - lastStartedTagCursorPosition;
-    if (remainingBytes > 0) {
-        write(`Returning truncated: ${remainingBytes} tag bytes`, "DEBUG");
+    // if here, it's because we didn't hit a parse error which either means
+    //  - we truncated in the middle of a tag's VALUE (far more likely)
+    //  - coincidentally the end of a tag's bytes is the end of the byte array
+    const bytesLeft = buf.length - lastStartedTagCursorPosition;
+    if (bytesLeft > 0) {
+        write(`Returning truncated: ${bytesLeft} tag bytes`, "DEBUG");
         return buf.subarray(lastStartedTagCursorPosition, buf.length);
     }
-    write(`Nothing to return for stitching, returning null`, "DEBUG");
+    write(`Nothing to return for stitching; returning null`, "DEBUG");
     return null;
-}
-function printElement(el) {
-    write(`Tag: ${el.tag}, VR: ${el.vr}, Length: ${el.length}, Value: ${el.val}`, "DEBUG");
-}
-function printMinusValue(el) {
-    write(`Tag: ${el.tag}, VR: ${el.vr}, Length: ${el.length}`, "DEBUG");
-}
-function emptyElement() {
-    return {
-        tag: null,
-        length: null,
-        vr: null,
-        val: null,
-        name: null,
-    };
 }
 /**
  * Validate the DICOM header by checking for the 'magic word'.
  * A DICOM file should contain the 'magic word' "DICM" at bytes 128-132.
  * Preamble is 128 bytes of 0x00, followed by the 'magic word' "DICM".
  * Preamble cannot be used to determine that the file is DICOM, per the spec.
- *
- * http://dicom.nema.org/medical/dicom/current/output/chtml/part10/chapter_7.html
  *
  * @param byteArray
  * @throws DicomError
@@ -199,5 +188,32 @@ function validateDicomHeader(byteArray) {
             buffer: byteArray,
         });
     }
+}
+/**
+ * Print an element to the console.
+ * @param el
+ */
+function printElement(el) {
+    write(`Tag: ${el.tag}, VR: ${el.vr}, Length: ${el.length}, Value: ${el.val} DevNote: ${el.devNote}`, "DEBUG");
+}
+/**
+ * Print an element to the console.
+ * @param el
+ */
+function printMinusValue(el) {
+    write(`Tag: ${el.tag}, VR: ${el.vr}, Length: ${el.length} DevNote: ${el.devNote}`, "DEBUG");
+}
+/**
+ * Return a new empty element object.
+ * @returns Element
+ */
+function emptyElement() {
+    return {
+        vr: null,
+        tag: null,
+        val: null,
+        name: null,
+        length: null,
+    };
 }
 //# sourceMappingURL=read.js.map
