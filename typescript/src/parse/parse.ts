@@ -23,6 +23,7 @@ export const PREAMBLE_LENGTH = 128;
 export const DICOM_HEADER_START = PREAMBLE_LENGTH;
 export const DICOM_HEADER_END = PREAMBLE_LENGTH + 4;
 
+
 /**
  * Walk through a buffer containing a subset of a DICOM file's bytes, and
  * parse the tags.
