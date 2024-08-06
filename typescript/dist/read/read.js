@@ -91,11 +91,22 @@ export function handleDicomBytes(bundle, currBytes) {
     const s = stitchBytes(bundle, currBytes);
     return walk(s, bundle);
 }
+/**
+ * handleFirstBuffer() is a helper function for handleDicomBytes()
+ * to handle the first buffer read from disk, which contains the
+ * DICOM preamble and header. It walks the buffer like in handleDicomBytes()
+ * but it also validates the DICOM preamble and header.
+ *
+ * Note that in all DICOM regardless of the transfer syntax, the File Meta Information
+ * which, in the byte stream, precedes the Data Set, will be encoded as the Explicit VR
+ * Little Endian Transfer Syntax, as laid out in the DICOM spec at PS3.5
+ * https://dicom.nema.org/medical/dicom/current/output/chtml/part05/PS3.5.html
+ *
+ * @param bundle
+ * @param buffer
+ * @returns
+ */
 function handleFirstBuffer(bundle, buffer) {
-    // Note that in all DICOM regardless of the transfer syntax, the File Meta Information
-    // which, in the byte stream, precedes the Data Set, will be encoded as the Explicit VR
-    // Little Endian Transfer Syntax, as laid out in the DICOM spec at PS3.5
-    // https://dicom.nema.org/medical/dicom/current/output/chtml/part05/PS3.5.html
     validateDicomPreamble(buffer);
     validateDicomHeader(buffer);
     buffer = buffer.subarray(DICOM_HEADER_END, buffer.length); // window the buffer beyond 'DICM' header
@@ -124,9 +135,11 @@ function stitchBytes(bundle, currBytes) {
     return Buffer.concat([partialTag, currBytes]);
 }
 function validateLittleEndianness() {
+    // TODO
     // check for even length (achieved through null byte padding where required)
 }
 function validateFileMetaInformation() {
+    // TODO
     // the File Meta Information is the section of the DICOM file format that precedes
     // the DICOM Data Set. All tags in this section are in the 0x0002 group.
 }
