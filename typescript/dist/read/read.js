@@ -1,10 +1,8 @@
 import { DicomError } from "../error/dicomError.js";
 import { write } from "../logging/logQ.js";
-import { DicomErrorType, TransferSyntaxUid, TagDictionary } from "../globalEnums.js";
+import { DicomErrorType, TransferSyntaxUid } from "../globalEnums.js";
 import { createReadStream } from "fs";
 import { DICOM_HEADER_END, validateDicomHeader, validateDicomPreamble, walk, } from "../parse/parse.js";
-// TODO we want to change the DataSet to be a hashmap of tags, so we can easily access them by their tag
-// for now lets just .find() in an array - can easily be changed later.
 // TODO in a future implementation I might consider writing a tranform stream
 // to emit elements as they are parsed from the buffer, which we can then handle
 // as they are emitted, rather than a dataset at the end. But not particularly key
@@ -29,7 +27,7 @@ import { DICOM_HEADER_END, validateDicomHeader, validateDicomPreamble, walk, } f
  */
 export function streamParse(path, skipPixelData = true) {
     const bundle = {
-        dataset: [],
+        dataSet: new Map(),
         partialTag: Buffer.alloc(0),
         perBufMax: Number(process.env.PER_BUF_MAX ?? 512),
         firstBytes: true,
@@ -37,7 +35,7 @@ export function streamParse(path, skipPixelData = true) {
         nByteArray: 0,
         totalBytes: 0,
         skipPixelData,
-        transferSyntaxUid: null,
+        transferSyntaxUid: TransferSyntaxUid.ExplicitVRLittleEndian, // default to Explicit VR Little Endian
     };
     if (bundle.perBufMax < DICOM_HEADER_END + 1) {
         throw new DicomError({
@@ -59,7 +57,8 @@ export function streamParse(path, skipPixelData = true) {
         });
         stream.on("close", () => {
             write(`Finished: read a total of ${bundle.totalBytes} bytes from ${path}`, "DEBUG");
-            resolve(bundle.dataset);
+            write(`Parsed ${bundle.dataSet.size} elements from ${path}`, "DEBUG");
+            resolve(bundle.dataSet);
         });
         stream.on("error", error => {
             stream.close();
@@ -68,11 +67,11 @@ export function streamParse(path, skipPixelData = true) {
     });
 }
 /**
- * isTransferSyntax() is a type guard for TransferSyntaxUids
+ * isSupportedTSN() is a type guard for TransferSyntaxUids
  * @param uid
  * @returns boolean
  */
-function isTransferSyntax(uid) {
+function isSupportedTSN(uid) {
     return Object.values(TransferSyntaxUid).includes(uid);
 }
 /**
@@ -87,29 +86,30 @@ export function handleDicomBytes(bundle, currBytes) {
     const { path, nByteArray } = bundle;
     write(`Reading buffer (#${nByteArray} - ${currBytes.length} bytes) (${path})`, "DEBUG");
     if (bundle.firstBytes) {
-        // Note that in all DICOM regardless of the transfer syntax, the File Meta Information
-        // which, in the byte stream, precedes the Data Set, will be encoded as the Explicit VR
-        // Little Endian Transfer Syntax, as laid out in the DICOM spec at PS3.5
-        // https://dicom.nema.org/medical/dicom/current/output/chtml/part05/PS3.5.html
-        validateDicomPreamble(currBytes);
-        validateDicomHeader(currBytes);
-        currBytes = currBytes.subarray(DICOM_HEADER_END, currBytes.length); // window the buffer beyond 'DICM' header
-        const truncatedElement = walk(currBytes, bundle);
-        const tsn = getElementValue(TagDictionary.TransferSyntaxUID, bundle.dataset);
-        if (!isTransferSyntax(tsn)) {
-            throw new DicomError({
-                message: `Transfer Syntax UID ${tsn} is unsupported.`,
-                errorType: DicomErrorType.PARSING,
-            });
-        }
-        else {
-            bundle.transferSyntaxUid = tsn;
-        }
-        bundle.firstBytes = false;
-        return truncatedElement;
+        return handleFirstBuffer(bundle, currBytes);
     }
     const s = stitchBytes(bundle, currBytes);
     return walk(s, bundle);
+}
+function handleFirstBuffer(bundle, buffer) {
+    // Note that in all DICOM regardless of the transfer syntax, the File Meta Information
+    // which, in the byte stream, precedes the Data Set, will be encoded as the Explicit VR
+    // Little Endian Transfer Syntax, as laid out in the DICOM spec at PS3.5
+    // https://dicom.nema.org/medical/dicom/current/output/chtml/part05/PS3.5.html
+    validateDicomPreamble(buffer);
+    validateDicomHeader(buffer);
+    buffer = buffer.subarray(DICOM_HEADER_END, buffer.length); // window the buffer beyond 'DICM' header
+    const truncatedElement = walk(buffer, bundle);
+    const tsn = getElementValue("(0002,0010)", bundle.dataSet);
+    if (!isSupportedTSN(tsn)) {
+        throw new DicomError({
+            message: `Transfer Syntax UID ${tsn} is unsupported.`,
+            errorType: DicomErrorType.PARSING,
+        });
+    }
+    bundle.transferSyntaxUid = tsn;
+    bundle.firstBytes = false;
+    return truncatedElement;
 }
 /**
  * stitchBytes() is a helper function for handleDicomBytes()
@@ -136,14 +136,14 @@ function validateFileMetaInformation() {
  * that the value is of the type we expect. This is a limitation of type erasure
  * in TypeScript. Such a flimsy aspect of compile-time-only generics and one
  * that would incur expensive runtime type checking to replicate proper type safety
- * which I guess we could do but I'd raher jump out the window than do that.
- * In Java or Golang you'd use the reflection API to check the type at runtime JS is
- * dynamically typed.
+ * which I guess we could do but I'd rather jump out the window than do that.
+ * In Java or Golang you'd use the reflection API to check the type at runtime.
  * @param tag
  * @param elements
  * @returns T
  */
 function getElementValue(tag, elements) {
-    return elements.find(e => e.tag === tag).val;
+    const x = elements.get(tag);
+    return elements.get(tag).val;
 }
 //# sourceMappingURL=read.js.map

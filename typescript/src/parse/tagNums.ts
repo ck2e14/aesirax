@@ -1,7 +1,7 @@
 import { DicomError } from "../error/dicomError.js";
-import { DicomErrorType } from "../globalEnums.js";
+import { DicomErrorType, TagDictByHex } from "../globalEnums.js";
 
-type TagStr = `(${string},${string})`;
+export type TagStr = keyof typeof TagDictByHex; // 'keyof' gets the keys of an object type. So this is the union type of all the keys of TagDictByHex
 
 /**
  * Pass in a 4 byte buffer and get back the tag as a string
@@ -30,7 +30,24 @@ export function decodeTagNum(buf: Buffer): TagStr {
       return throwBadHexPattern(buf, `(${grp},${el})`);
    }
 
-   return `(${grp},${el})`;
+   // if (isDicomTag(`(${grp},${el})`)) {
+   //    return `(${grp},${el})` as TagStr;
+   // }
+
+   // this is overly militant because we can easily just not know about a tag
+   // basically all private tags in the world will trigger this error. Disabling
+   // until a better strat is th
+   // throw new DicomError({
+   //    errorType: DicomErrorType.PARSING,
+   //    message: `decodeTagNum() could not decode tag: (${grp},${el})`,
+   //    buffer: buf,
+   // });
+
+   return `(${grp},${el})` as TagStr;
+}
+
+function isDicomTag(tagStr: string): tagStr is TagStr {
+   return TagDictByHex.hasOwnProperty(tagStr.toUpperCase());
 }
 
 /**
