@@ -8,12 +8,12 @@ type DecoderMap = Record<Global.VR | "default", Decoder>;
 
 // TODO when we eventually handle pixel decoders, probably wanna
 // to do this also via streaming the values into something rather than
-// straight up decoding as a string in the heap (currently we are just 
-// using default decoding - i.e. hex). Because pixel data is phat as 
-// phuck for a single threaded runtime to chew through. Actually tbh 
+// straight up decoding as a string in the heap (currently we are just
+// using default decoding - i.e. hex). Because pixel data is phat as
+// phuck for a single threaded runtime to chew through. Actually tbh
 // worker threads are probably better for this because the actual computation
-// we'll be doing will not be done in the systemcall-land, which is where I/O 
-// parallesation gains are made, it's done inside JS land. 
+// we'll be doing will not be done in the systemcall-land, which is where I/O
+// parallesation gains are made, it's done inside JS land.
 
 const decodersLE: Partial<DecoderMap> = {
    // partial because will add VRs incrementally

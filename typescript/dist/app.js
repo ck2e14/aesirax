@@ -1,6 +1,7 @@
 import { cfg, init } from "./init/init.js";
 import { write } from "./logging/logQ.js";
 import { streamParse } from "./read/read.js";
+import { prettyPrintMap } from "./utilts.js";
 (async function (cfg) {
     if (cfg.verbose)
         write(`Starting up...`, "INFO");
@@ -10,7 +11,7 @@ import { streamParse } from "./read/read.js";
         // const path = `/Users/chriskennedy/Desktop/aesirax/data/IMG00001.dcm`;
         // const path =`/Users/chriskennedy/Desktop/aesirax/data/brokenSiemensCT/DICOM/24070314/34580002/40820056`
         const elements = await streamParse(path);
-        console.log(elements);
+        write(`dumping tag data for debug...\n` + prettyPrintMap(elements), "DEBUG");
     }
     catch (error) {
         console.log(error.message);

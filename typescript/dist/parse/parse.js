@@ -1,10 +1,9 @@
 import { DicomError } from "../error/dicomError.js";
-import { ByteLen, DicomErrorType, VR } from "../globalEnums.js";
+import { ByteLen, DicomErrorType, TagDictByHex, TransferSyntaxUid, VR } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
 import { decodeTagNum } from "./tagNums.js";
 import { isVr } from "./typeGuards.js";
 import { decodeValue, decodeVr } from "./valueDecoders.js";
-export const UNIMPLEMENTED_VR_PARSING = (vr) => `Byte parsing support for VR: ${vr} is unimplemeted in this version`;
 export const DICOM_HEADER = "DICM";
 export const PREAMBLE_LENGTH = 128;
 export const DICOM_HEADER_START = PREAMBLE_LENGTH;
@@ -71,15 +70,18 @@ export const DICOM_HEADER_END = PREAMBLE_LENGTH + 4;
 export function walk(buffer, streamBundle) {
     let cursor = 0;
     let lastTagStartPosition = cursor;
+    const useLE = streamBundle.transferSyntaxUid === TransferSyntaxUid.ExplicitVRLittleEndian ||
+        streamBundle.transferSyntaxUid === TransferSyntaxUid.ImplicitVRLittleEndian;
     // This loop works by walking a cursor forward by the appropriate
     // number of bytes after each decode. The amount to walk forward by
     // is governed primarily by the DICOM specification and datatype sizes.
     while (cursor < buffer.length) {
+        const el = newElement();
+        lastTagStartPosition = cursor;
         try {
-            const el = newElement();
-            lastTagStartPosition = cursor;
             const tagBuffer = buffer.subarray(cursor, cursor + ByteLen.TAG_NUM);
             el.tag = decodeTagNum(tagBuffer);
+            el.name = TagDictByHex[el.tag.toUpperCase()]?.["name"] ?? "Private or Unrecognised Tag";
             cursor += ByteLen.TAG_NUM;
             const vrBuffer = buffer.subarray(cursor, cursor + ByteLen.VR);
             el.vr = decodeVr(vrBuffer);
@@ -91,11 +93,11 @@ export function walk(buffer, streamBundle) {
             const isExtVr = isExtendedFormatVr(el.vr);
             if (isExtVr) {
                 cursor += ByteLen.EXT_VR_RESERVED; // 2 reserved bytes can be ignored
-                el.length = buffer.readUInt32LE(cursor); // Extended VR tags' lengths are 4 bytes because they can be huge
+                el.length = useLE ? buffer.readUInt32LE(cursor) : buffer.readUInt32BE(cursor); // Extended VR tags' lengths are 4 bytes because they can be huge
                 cursor += ByteLen.UINT_32;
             }
             if (!isExtVr) {
-                el.length = buffer.readUInt16LE(cursor); // Standard VR tags' lengths are 2 bytes, so max length is 65,535
+                el.length = useLE ? buffer.readUInt16LE(cursor) : buffer.readUInt16BE(cursor); // Standard VR tags' lengths are 2 bytes, so max length is 65,535
                 cursor += ByteLen.UINT_16;
             }
             const valueBuffer = buffer.subarray(cursor, cursor + el.length);
@@ -107,7 +109,7 @@ export function walk(buffer, streamBundle) {
                 el.devNote = UNIMPLEMENTED_VR_PARSING(el.vr);
                 printMinusValue(el);
             }
-            streamBundle.dataset.push(el); // only fully parsed elements, discard truncated elements
+            streamBundle.dataSet.set(el.tag, el); // only fully parsed elements, discard truncated elements
             cursor += el.length;
         }
         catch (error) {
@@ -120,7 +122,7 @@ export function walk(buffer, streamBundle) {
     }
     const bytesLeft = buffer.length - lastTagStartPosition;
     if (bytesLeft > 0) {
-        write(`Returning truncated: ${bytesLeft} tag bytes`, "DEBUG");
+        write(`Returning truncated tag buffer (${bytesLeft} bytes)`, "DEBUG");
         return buffer.subarray(lastTagStartPosition, buffer.length);
     }
     else {
@@ -161,7 +163,7 @@ export function isExtendedFormatVr(vr) {
  * @throws DicomError
  */
 export function validateDicomPreamble(buffer) {
-    // TODO work out what quarantining really means and how to do it appropriately.
+    // TODO work out what quarantining really entails and how to do it
     const preamble = buffer.subarray(0, PREAMBLE_LENGTH);
     if (!preamble.every(byte => byte === 0x00)) {
         throw new DicomError({
@@ -185,7 +187,7 @@ export function validateDicomHeader(buffer) {
     if (strAtHeaderPosition !== DICOM_HEADER) {
         throw new DicomError({
             errorType: DicomErrorType.VALIDATE,
-            message: `DICOM file does not contain 'magic word': ${DICOM_HEADER} at bytes 128-132. Found: ${strAtHeaderPosition}`,
+            message: `DICOM file does not contain 'DICM' at bytes 128-132. Found: ${strAtHeaderPosition}`,
             buffer: buffer,
         });
     }
@@ -195,7 +197,7 @@ export function validateDicomHeader(buffer) {
  * @param el
  */
 export function printElement(el) {
-    let str = `Tag: ${el.tag}, VR: ${el.vr}, Length: ${el.length}, Value: ${el.val}`;
+    let str = `Tag: ${el.tag}, Name: ${el.name}, VR: ${el.vr}, Length: ${el.length}, Value: ${el.val}`;
     if (el.devNote)
         str += ` DevNote: ${el.devNote}`;
     write(str, "DEBUG");
@@ -205,7 +207,7 @@ export function printElement(el) {
  * @param el
  */
 export function printMinusValue(el) {
-    const str = `Tag: ${el.tag}, VR: ${el.vr}, Length: ${el.length} DevNote: ${el.devNote}`;
+    const str = `Tag: ${el.tag}, Name: ${el.name}, VR: ${el.vr}, Length: ${el.length} DevNote: ${el.devNote}`;
     write(str, "DEBUG");
 }
 /**
@@ -215,10 +217,16 @@ export function printMinusValue(el) {
 export function newElement() {
     return {
         vr: null,
-        tag: "TODO",
+        tag: null,
         val: null,
         name: null,
         length: null,
     };
+}
+/**
+ * Placeholder for implementation
+ */
+export function UNIMPLEMENTED_VR_PARSING(vr) {
+    return `Byte parsing support for VR: ${vr} is unimplemeted in this version`;
 }
 //# sourceMappingURL=parse.js.map
