@@ -78,7 +78,8 @@ export function walk(buffer, streamBundle) {
     let cursor = 0;
     let lastTagStart = cursor;
     const useLE = streamBundle.transferSyntaxUid === TransferSyntaxUid.ExplicitVRLittleEndian ||
-        streamBundle.transferSyntaxUid === TransferSyntaxUid.ImplicitVRLittleEndian;
+        streamBundle.transferSyntaxUid === TransferSyntaxUid.ImplicitVRLittleEndian ||
+        streamBundle.transferSyntaxUid === TransferSyntaxUid.JPEG2000Lossless; // WARN VERIFY THIS IS ACCEPTABLE
     // This loop works by walking a cursor forward by the appropriate
     // number of bytes after each decode. The amount to walk forward by
     // is governed primarily by the DICOM specification and datatype sizes.
@@ -116,7 +117,7 @@ export function walk(buffer, streamBundle) {
             }
             // ** Value decoding **
             if (valueIsTruncated(buffer, cursor, el.length)) {
-                throw new BufferBoundaryError(`Tag ${el.tag} is truncated, will try to stitch...`);
+                throw new BufferBoundaryError(`Tag ${el.tag} is incompletely represeneted in bytes`);
             }
             const valueBuffer = buffer.subarray(cursor, cursor + el.length);
             el.val = decodeValue(el.vr, valueBuffer, streamBundle);
@@ -133,12 +134,12 @@ export function walk(buffer, streamBundle) {
             cursor += el.length; // Move cursor to the start of next tag
         }
         catch (error) {
-            const boundaryErr = [BufferBoundaryError, DicomError]; // can refine DicomError here because a bit broad but does work atm.
-            const presumedNotTruncationError = boundaryErr.every(ex => !(error instanceof ex));
-            if (presumedNotTruncationError) {
-                throw error; // halt parsing, unrecoverable error
+            const partialled = [BufferBoundaryError, DicomError]; // can refine DicomError here because a bit broad but does work atm.
+            const parsingError = partialled.every(ex => !(error instanceof ex));
+            if (parsingError) {
+                throw error; // halt parsing, unrecoverable error. Partialled is because streamed buffer boundaries, parsing error is when unable to handle.
             }
-            // else trigger buffer stitching
+            // else trigger buffer stitching by returning our partialled tag in bytes
             return buffer.subarray(lastTagStart, buffer.length);
         }
     }
