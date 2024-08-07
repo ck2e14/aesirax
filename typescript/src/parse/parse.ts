@@ -131,8 +131,13 @@ export function parse(buffer: Buffer, streamBundle: StreamBundle): PartialTag {
 function createCursor() {
    return {
       pos: 0,
+
       walk: function (n: number) {
          this.pos += n;
+      },
+
+      retreat: function (n: number) {
+         this.pos -= n;
       },
    };
 }

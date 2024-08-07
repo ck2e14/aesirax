@@ -116,6 +116,9 @@ function createCursor() {
         walk: function (n) {
             this.pos += n;
         },
+        retreat: function (n) {
+            this.pos -= n;
+        },
     };
 }
 /**
