@@ -20,9 +20,9 @@ export async function multiThreaded(cfg) {
     }
     await Promise.all(workerPromises);
     const end = performance.now();
-    write(`Time elapsed: ${end - start} ms`, "INFO");
-    write(`Parsed ${dataSets.length} datasets`, "INFO");
     dataSets.forEach((data, i) => console.log(`Dataset ${i + 1}: ${data}`));
+    write(`Parsed ${dataSets.length} datasets`, "INFO");
+    write(`Time elapsed (minus end printing): ${end - start} ms`, "INFO");
     return workerPromises;
 }
 /**
@@ -38,10 +38,11 @@ function createWork(dataSets, dicomFiles) {
             dataSets.push(msg.data);
             if (dicomFiles.length > 0) {
                 worker.postMessage({ filepath: dicomFiles.pop() });
-                return;
             }
-            worker.terminate();
-            resolve();
+            else {
+                worker.terminate();
+                resolve();
+            }
         });
         worker.on("error", error => {
             reject(error);
@@ -51,8 +52,8 @@ function createWork(dataSets, dicomFiles) {
                 reject(new Error(`Worker stopped with exit code ${code}`));
             }
         });
+        worker.postMessage({ filepath: dicomFiles.pop() });
     });
-    worker.postMessage({ filepath: dicomFiles.pop() });
     return workerPromise;
 }
 //# sourceMappingURL=multithreaded.js.map
