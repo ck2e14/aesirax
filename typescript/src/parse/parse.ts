@@ -1,4 +1,4 @@
-import { DicomError } from "../error/dicomError.js";
+import { BufferBoundaryError, DicomError, UndefinedLength } from "../error/errors.js";
 import { ByteLen, DicomErrorType, TagDictByHex, TransferSyntaxUid, VR } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
 import { StreamBundle } from "../read/read.js";
@@ -9,7 +9,7 @@ import { decodeValue, decodeVr } from "./valueDecoders.js";
 export type PartialTag = Buffer | null;
 export type Elements = Map<TagStr, Element>; // e.g. Map<"(0008,0008)", Element>
 export type Element = {
-   tag: TagStr
+   tag: TagStr;
    name: string;
    vr: VR;
    length: number;
@@ -25,6 +25,8 @@ export const DICOM_HEADER_END = PREAMBLE_LENGTH + 4;
 /**
  * Walk through a buffer containing a subset of a DICOM file's bytes, and
  * parse the tags.
+ *
+ * Implicit VR is not supported in this version.
  *
  * Return a buffer containing the truncated tag if the buffer is incomplete.
  * This is used to allow on-the-fly parsing of DICOM files as they are read
@@ -77,6 +79,11 @@ export const DICOM_HEADER_END = PREAMBLE_LENGTH + 4;
  * Note that this function assumes you've chekced 0-128 bytes for the preamble,
  * and 128-132 bytes for 'DICM' header.
  *
+ * Note that SQ items may not have a length specified, and instead have a length
+ * of 0xFFFFFFFF. This is a special case and is not yet supported in this version.
+ * When I say special case I mean it's a shocking design decision by the DICOM
+ * committee but one that is far too deeply ingrained as legacy code to remove.
+ *
  * @param buffer
  * @param elements
  * @returns PartialTag
@@ -98,11 +105,13 @@ export function walk(buffer: Buffer, streamBundle: StreamBundle): PartialTag {
       lastTagStartPosition = cursor;
 
       try {
+         // Tag Group Number and Element Number Decoding
          const tagBuffer = buffer.subarray(cursor, cursor + ByteLen.TAG_NUM);
          el.tag = decodeTagNum(tagBuffer);
          el.name = TagDictByHex[el.tag.toUpperCase()]?.["name"] ?? "Private or Unrecognised Tag";
          cursor += ByteLen.TAG_NUM;
 
+         // VR Decoding
          const vrBuffer = buffer.subarray(cursor, cursor + ByteLen.VR);
          el.vr = decodeVr(vrBuffer);
          cursor += ByteLen.VR;
@@ -117,7 +126,14 @@ export function walk(buffer: Buffer, streamBundle: StreamBundle): PartialTag {
          if (isExtVr) {
             cursor += ByteLen.EXT_VR_RESERVED; // 2 reserved bytes can be ignored
             el.length = useLE ? buffer.readUInt32LE(cursor) : buffer.readUInt32BE(cursor); // Extended VR tags' lengths are 4 bytes because they can be huge
-            cursor += ByteLen.UINT_32;
+
+            // see notes in UndefinedLength class. Fucking DICOM honestly.
+            const isUndefinedLength = el.length === 4294967295;
+            if (isUndefinedLength) {
+               throw new UndefinedLength(`${el.tag} => SQ of undefined length - unsupported ATM.`);
+            } else {
+               cursor += ByteLen.UINT_32;
+            }
          }
 
          if (!isExtVr) {
@@ -125,9 +141,15 @@ export function walk(buffer: Buffer, streamBundle: StreamBundle): PartialTag {
             cursor += ByteLen.UINT_16;
          }
 
+         // Value Decoding
+         if (valueIsTruncated(buffer, cursor, el.length)) {
+            throw new BufferBoundaryError(`Tag ${el.tag} is truncated, will try to stitch...`);
+         }
+
          const valueBuffer = buffer.subarray(cursor, cursor + el.length);
          el.val = decodeValue(el.vr, valueBuffer, streamBundle);
-        
+
+         // Debug printing
          if (el.vr !== VR.SQ && el.vr !== VR.OB) {
             printElement(el);
          } else {
@@ -135,26 +157,48 @@ export function walk(buffer: Buffer, streamBundle: StreamBundle): PartialTag {
             printMinusValue(el);
          }
 
-         streamBundle.dataSet.set(el.tag, el); // only fully parsed elements, discard truncated elements
-         cursor += el.length;
+         streamBundle.dataSet.set(el.tag, el); // Store fully parsed elements
+         streamBundle._dataSet[el.tag] = el; // Store fully parsed elements
+
+         cursor += el.length; // Move cursor to the start of the next tag
       } catch (error) {
-         // assumes errors caught here are indicative of a truncated buffer midway
-         // through a tag - not malformed DICOM. In reality this can't be assumed but
-         // for testing purposes it's fine. We can easily adapt this by checking for
-         // things like instanceof or other custom properties that signify truncation.
-         break;
+         const presumedNotTruncationError =
+            !(error instanceof BufferBoundaryError) && !(error instanceof DicomError);
+
+         if (presumedNotTruncationError) {
+            throw error; // halt parsing, unrecoverable error
+         } else {
+            break; // triggers return + stitch control flow
+         }
       }
    }
 
-   const bytesLeft = buffer.length - lastTagStartPosition;
+   return buffer.subarray(lastTagStartPosition, buffer.length);
+}
 
-   if (bytesLeft > 0) {
-      write(`Returning truncated tag buffer (${bytesLeft} bytes)`, "DEBUG");
-      return buffer.subarray(lastTagStartPosition, buffer.length);
-   } else {
-      write(`Nothing to return for stitching; returning null`, "DEBUG");
-      return null;
-   }
+/**
+ * Assess whether there are any bytes left in the buffer
+ * in relation to the current cursor position.
+ * @param buffer
+ * @param cursor
+ * @returns number
+ */
+function bytesLeft(buffer: Buffer, cursor: number): number {
+   return buffer.length - cursor;
+}
+
+/**
+ * Assess whether there are enough bytes left in the buffer to
+ * decode the next tag. If not, return the truncated tag. Saves
+ * redundant work and allows early return in walk() to pass back
+ * a buffer to be stitched to the next streamed buffer.
+ * @param buffer
+ * @param cursor
+ * @param expectedLength
+ * @returns boolean
+ */
+function valueIsTruncated(buffer: Buffer, cursor: number, expectedLength: number): boolean {
+   return expectedLength > bytesLeft(buffer, cursor);
 }
 
 /**

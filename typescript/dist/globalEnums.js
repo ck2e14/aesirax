@@ -9,7 +9,7 @@ export var TransferSyntaxUid;
 (function (TransferSyntaxUid) {
     TransferSyntaxUid["ImplicitVRLittleEndian"] = "1.2.840.10008.1.2";
     TransferSyntaxUid["ExplicitVRLittleEndian"] = "1.2.840.10008.1.2.1";
-    TransferSyntaxUid["JPEG2000Lossless"] = "1.2.840.10008.1.2.4.70";
+    TransferSyntaxUid["JPEG2000Lossless"] = "1.2.840.10008.1.2.4.90";
 })(TransferSyntaxUid || (TransferSyntaxUid = {}));
 export const TagDictByName = {
     CommandGroupLength: {

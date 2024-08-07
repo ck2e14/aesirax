@@ -10,11 +10,11 @@ import { findDICOM } from "./utilts.js";
 export async function multiThreaded(cfg) {
     const start = performance.now();
     const workerPromises = [];
-    const dicomFiles = findDICOM(cfg.targetDir ?? `../data/CUMINSMARJORIE`);
+    const dicomFiles = findDICOM(cfg.targetDir ?? `/Users/chriskennedy/Desktop/aesirax/data/CUMINSMARJORIE/isolate`);
     const dataSets = [];
     write(`Spawning ${cpus().length} workers`, "INFO");
     write(`Found ${dicomFiles.length} DICOM files`, "INFO");
-    for (let i = 0; i < cpus().length; i++) {
+    for (let i = 0; i < 1; i++) {
         const worker = createWork(dataSets, dicomFiles);
         workerPromises.push(worker);
     }
@@ -59,6 +59,7 @@ function addEvents(worker, dataSets, dicomFiles, resolve, reject) {
         }
     });
     worker.on("error", error => {
+        console.log("!!! Unhandled error", error);
         reject(error);
     });
     worker.on("exit", code => {

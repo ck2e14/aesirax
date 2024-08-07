@@ -1,4 +1,4 @@
-import { DicomError } from "../error/dicomError.js";
+import { DicomError } from "../error/errors.js";
 import { DicomErrorType, TagDictByHex } from "../globalEnums.js";
 
 export type TagStr = keyof typeof TagDictByHex; // 'keyof' gets the keys of an object type. So this is the union type of all the keys of TagDictByHex

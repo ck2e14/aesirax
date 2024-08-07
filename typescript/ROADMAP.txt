@@ -1,0 +1,30 @@
+TRANSFORM STREAM PLUGIN
+// TODO in a future implementation I might consider writing a tranform stream
+// to emit elements as they are parsed from the buffer, which we can then handle
+// as they are emitted, rather than a dataset at the end. But not particularly key
+// and definitely not part of the MVP. This would be for SPEED EFFICIENCY while my
+// current implementation is for MEMORY EFFICIENCY (i.e. not loading 100% into memory)
+// E.g. for a custom DICOMweb server it would be better to stream the elements outwards
+// as they are parsed by the readStream parser, but for use cases where we need the entire
+// dataset represented in memory, the current approach is more applicable. So it would not
+// be a replacement, it would be an option to plug into the readStream parser (hence being
+// a transform stream).
+
+
+// NESTED SEQUENCE DECODING
+ * TODO in order to simplify handling of nested sequences, when a
+ * sequence element is encountered, we should probably just return
+ * the buffer straight away back to streamParse, and continue to do
+ * so with subsequent buffers, until the end of the sequence is reached.
+ * And then parse out the whole sequence together.
+
+
+// VALUE DECODING
+// TODO when we eventually handle pixel decoders, probably wanna
+// to do this also via streaming the values into something rather than
+// straight up decoding as a string in the heap (currently we are just
+// using default decoding - i.e. hex). Because pixel data is phat as
+// phuck for a single threaded runtime to chew through. Actually tbh
+// worker threads are probably better for this because the actual computation
+// we'll be doing will not be done in the systemcall-land, which is where I/O
+// parallesation gains are made, it's done inside JS land.

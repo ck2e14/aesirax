@@ -1,4 +1,4 @@
-import { DicomError } from "../error/dicomError.js";
+import { DicomError } from "../error/errors.js";
 import { DicomErrorType } from "../globalEnums.js";
 /**
  * Pass in a 4 byte buffer and get back the tag as a string

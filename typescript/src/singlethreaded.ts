@@ -9,18 +9,23 @@ import { findDICOM, prettyPrintMap } from "./utilts.js";
  */
 export async function singleTheaded(cfg: Global.Config) {
    const start = performance.now();
-   const dir = `../data/CUMINSMARJORIE`;
-   const paths = findDICOM(dir);
+   const paths = findDICOM(cfg.targetDir ?? `/Users/chriskennedy/Desktop/aesirax/data/isolat`);
+   // const paths = findDICOM(cfg.targetDir ?? `/Users/chriskennedy/Desktop/aesirax/data/Pi`);
+
    const dataSets = [];
 
    for (let i = 0; i < paths.length; i++) {
       const elements = await streamParse(paths[i]);
-      dataSets.push(prettyPrintMap(elements));
+      dataSets.push(elements);
+      // dataSets.push(prettyPrintMap(elements));
    }
 
    const end = performance.now();
+   console.log(dataSets);
 
-   dataSets.forEach((data, i) => console.log(`Dataset ${i + 1}: ${data}`, "DEBUG"));
+   // dataSets.forEach((data, i) =>
+   //    console.log(`Dataset ${i + 1}: ${JSON.stringify(data, null, 3)}`, "DEBUG")
+   // );
 
    write(`Parsed ${dataSets.length} datasets`, "INFO");
    write(`Time elapsed: ${end - start} ms`, "INFO");

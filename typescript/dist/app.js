@@ -1,6 +1,5 @@
 import { cfg, init } from "./init/init.js";
 import { write } from "./logging/logQ.js";
-import { multiThreaded } from "./multithreaded.js";
 import { singleTheaded } from "./singlethreaded.js";
 /**
  * Main entry point for the application.
@@ -15,11 +14,13 @@ import { singleTheaded } from "./singlethreaded.js";
         write(`Starting up...`, "INFO");
     }
     await init();
-    await multiThreaded(cfg);
+    // await multiThreaded(cfg);
     await singleTheaded(cfg);
-    if (cfg.verbose) {
-        write(`Shutting down...`, "INFO");
-    }
-    setTimeout(() => process.exit(0), 2000); // Wait for logs to finish writing
+    setTimeout(() => {
+        if (cfg.verbose) {
+            write(`Completed work - shutting down.`, "INFO");
+        }
+        process.exit();
+    }, 2000); // Wait for logs to finish writing
 })(cfg);
 //# sourceMappingURL=app.js.map
