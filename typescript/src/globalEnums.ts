@@ -99378,6 +99378,7 @@ export enum DicomErrorType {
    READ = "READ",
    VALIDATE = "VALIDATE",
    PARSING = "PARSING",
+   BUNDLE_CONFIG  = "BUNDLE_CONFIG"
 }
 
 export enum ByteLen {

@@ -99376,6 +99376,7 @@ export var DicomErrorType;
     DicomErrorType["READ"] = "READ";
     DicomErrorType["VALIDATE"] = "VALIDATE";
     DicomErrorType["PARSING"] = "PARSING";
+    DicomErrorType["BUNDLE_CONFIG"] = "BUNDLE_CONFIG";
 })(DicomErrorType || (DicomErrorType = {}));
 export var ByteLen;
 (function (ByteLen) {
