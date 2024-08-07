@@ -166,6 +166,7 @@ function handleErrorPathways(error: any, buffer: Buffer, lastTagStart: number): 
 
    const start = lastTagStart;
    const end = buffer.length;
+
    return buffer.subarray(start, end);
 }
 
