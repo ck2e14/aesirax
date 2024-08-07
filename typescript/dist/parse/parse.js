@@ -85,9 +85,6 @@ export function parse(buffer, streamBundle) {
     const cursor = createCursor();
     let lastTagStart = cursor.pos;
     write(`Decoding as ${usingLE ? "Little Endian" : "Big Endian"} byte order`, "DEBUG");
-    // This loop works by walking a cursor forward by the appropriate
-    // number of bytes after each decode. The amount to parse forward by
-    // is governed primarily by the DICOM specification and datatype sizes.
     while (cursor.pos < buffer.length) {
         lastTagStart = cursor.pos;
         const el = newElement();
