@@ -20,6 +20,6 @@ import { singleTheaded } from "./singlethreaded.js";
     if (cfg.verbose) {
         write(`Shutting down...`, "INFO");
     }
-    process.exit(0);
+    setTimeout(() => process.exit(0), 2000); // Wait for logs to finish writing
 })(cfg);
 //# sourceMappingURL=app.js.map

@@ -10,7 +10,7 @@ import { findDICOM } from "./utilts.js";
 export async function multiThreaded(cfg) {
     const start = performance.now();
     const workerPromises = [];
-    const dicomFiles = findDICOM(`../data/CUMINSMARJORIE`);
+    const dicomFiles = findDICOM(cfg.targetDir ?? `../data/CUMINSMARJORIE`);
     const dataSets = [];
     write(`Spawning ${cpus().length} workers`, "INFO");
     write(`Found ${dicomFiles.length} DICOM files`, "INFO");
@@ -20,7 +20,7 @@ export async function multiThreaded(cfg) {
     }
     await Promise.all(workerPromises);
     const end = performance.now();
-    dataSets.forEach((data, i) => console.log(`Dataset ${i + 1}: ${data}`));
+    dataSets.forEach((data, i) => write(`Dataset ${i + 1}: ${data}`, "INFO"));
     write(`Parsed ${dataSets.length} datasets`, "INFO");
     write(`Time elapsed (minus end printing): ${end - start} ms`, "INFO");
     return workerPromises;
