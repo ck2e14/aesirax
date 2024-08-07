@@ -6,6 +6,7 @@ declare namespace Global {
       panic: boolean;
       logDir: string;
       logName: string;
+      targetDir: string;
    };
 
    enum VR {

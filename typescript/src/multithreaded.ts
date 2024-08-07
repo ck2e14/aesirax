@@ -5,14 +5,13 @@ import { findDICOM } from "./utilts.js";
 
 /**
  * Parse DICOM files using multiple threads
- * @param cfg
+ * @param cfg 
  * @returns promised worker threads' completion (void)
  */
 export async function multiThreaded(cfg: Global.Config) {
    const start = performance.now();
    const workerPromises = [];
-
-   const dicomFiles = findDICOM(`../data/CUMINSMARJORIE`);
+   const dicomFiles = findDICOM(cfg.targetDir ?? `../data/CUMINSMARJORIE`);
    const dataSets = [];
 
    write(`Spawning ${cpus().length} workers`, "INFO");
@@ -26,7 +25,7 @@ export async function multiThreaded(cfg: Global.Config) {
    await Promise.all(workerPromises);
    const end = performance.now();
 
-   dataSets.forEach((data, i) => console.log(`Dataset ${i + 1}: ${data}`));
+   dataSets.forEach((data, i) => write(`Dataset ${i + 1}: ${data}`, "INFO"));
 
    write(`Parsed ${dataSets.length} datasets`, "INFO");
    write(`Time elapsed (minus end printing): ${end - start} ms`, "INFO");

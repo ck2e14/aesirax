@@ -24,5 +24,5 @@ import { singleTheaded } from "./singlethreaded.js";
       write(`Shutting down...`, "INFO");
    }
 
-   process.exit(0);
+   setTimeout(() => process.exit(0), 2_000); // Wait for logs to finish writing
 })(cfg);
