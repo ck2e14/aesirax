@@ -1,7 +1,7 @@
 import fs, { mkdirSync } from "fs";
-import { InitError } from "../error/initError.js";
 import { appendFile } from "fs/promises";
 import { cfg } from "../init/init.js";
+import { InitError } from "../error/errors.js";
 const q = [];
 export function processQ() {
     const path = constructLogFilePath();

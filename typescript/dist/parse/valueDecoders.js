@@ -1,14 +1,6 @@
-import { DicomError } from "../error/dicomError.js";
+import { DicomError } from "../error/errors.js";
 import { ByteLen, DicomErrorType, TransferSyntaxUid, VR } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
-// TODO when we eventually handle pixel decoders, probably wanna
-// to do this also via streaming the values into something rather than
-// straight up decoding as a string in the heap (currently we are just
-// using default decoding - i.e. hex). Because pixel data is phat as
-// phuck for a single threaded runtime to chew through. Actually tbh
-// worker threads are probably better for this because the actual computation
-// we'll be doing will not be done in the systemcall-land, which is where I/O
-// parallesation gains are made, it's done inside JS land.
 const decodersLE = {
     // partial because will add VRs incrementally
     // currently only support numbers to base 10.
@@ -101,10 +93,11 @@ export function decodeVr(buf) {
     }
     const decodedVr = buf.toString("ascii", 0, ByteLen.VR);
     const isRecognisedVr = Object.values(VR).includes(decodedVr);
-    if (isRecognisedVr) {
-        return decodedVr;
-    }
-    return throwUnrecognisedVr(decodedVr, buf);
+    // disabling validation for now just return whatever is decoded :shrug:
+    // if (isRecognisedVr) {
+    return decodedVr;
+    // }
+    // return throwUnrecognisedVr(decodedVr, buf);
 }
 /**
  * Throw an error if an unrecognised VR is encountered.
@@ -115,7 +108,7 @@ export function decodeVr(buf) {
 function throwUnrecognisedVr(vr, vrBuf) {
     throw new DicomError({
         errorType: DicomErrorType.PARSING,
-        message: `Unrecognised VR: ${vr}`,
+        message: `Unrecognised VR: ${vr} from buffer: ${vrBuf.toString("ascii")}`,
         buffer: vrBuf,
     });
 }

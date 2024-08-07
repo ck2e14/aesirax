@@ -1,4 +1,4 @@
-import { InitError } from "../error/initError.js";
+import { InitError } from "../error/errors.js";
 import { createLogFile, processQ, write } from "../logging/logQ.js";
 import { config } from "./loadConfig.js";
 

@@ -9,7 +9,7 @@
 export enum TransferSyntaxUid {
    ImplicitVRLittleEndian = "1.2.840.10008.1.2",
    ExplicitVRLittleEndian = "1.2.840.10008.1.2.1",
-   JPEG2000Lossless = '1.2.840.10008.1.2.4.70'
+   JPEG2000Lossless = "1.2.840.10008.1.2.4.90",
 }
 
 export const TagDictByName = {

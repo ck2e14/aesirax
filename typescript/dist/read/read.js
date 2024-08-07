@@ -1,18 +1,8 @@
-import { DicomError } from "../error/dicomError.js";
 import { write } from "../logging/logQ.js";
 import { DicomErrorType, TransferSyntaxUid } from "../globalEnums.js";
 import { createReadStream } from "fs";
 import { DICOM_HEADER_END, validateDicomHeader, validateDicomPreamble, walk, } from "../parse/parse.js";
-// TODO in a future implementation I might consider writing a tranform stream
-// to emit elements as they are parsed from the buffer, which we can then handle
-// as they are emitted, rather than a dataset at the end. But not particularly key
-// and definitely not part of the MVP. This would be for SPEED EFFICIENCY while my
-// current implementation is for MEMORY EFFICIENCY (i.e. not loading 100% into memory)
-// E.g. for a custom DICOMweb serer it would be better to stream the elements outwards
-// as they are parsed by the readStream parser, but for use cases where we need the entire
-// dataset represented in memory, the current approach is more applicable. So it would not
-// be a replacement, it would be an option to plug into the readStream parser (hence being
-// a transform stream).
+import { DicomError, UnsupportedTSN } from "../error/errors.js";
 /**
  * streamParse() takes advantage of the behaviour of streaming
  * from disk in a way that doesn't require the conclusion of the
@@ -28,14 +18,15 @@ import { DICOM_HEADER_END, validateDicomHeader, validateDicomPreamble, walk, } f
 export function streamParse(path, skipPixelData = true) {
     const bundle = {
         dataSet: new Map(),
+        _dataSet: {}, // undecided whether map or obj is better, obj is more compatible with JSON and IPC but Map is more efficient for access
         partialTag: Buffer.alloc(0),
-        perBufMax: Number(process.env.PER_BUF_MAX ?? 1024 * 1024 * 2), // default to 2MB
+        perBufMax: Number(process.env.PER_BUF_MAX ?? 1024 * 12), // default to 12KB
         firstBytes: true,
         path: path,
         nByteArray: 0,
         totalBytes: 0,
-        skipPixelData,
-        transferSyntaxUid: TransferSyntaxUid.ExplicitVRLittleEndian, // default to Explicit VR Little Endian
+        skipPixelData, // TODO
+        transferSyntaxUid: TransferSyntaxUid.ExplicitVRLittleEndian, // file meta info always in this TSN and we update it if we find a different one
     };
     if (bundle.perBufMax < DICOM_HEADER_END + 1) {
         throw new DicomError({
@@ -51,18 +42,20 @@ export function streamParse(path, skipPixelData = true) {
             highWaterMark: bundle.perBufMax,
         });
         stream.on("data", (currBytes) => {
+            write(`Received ${currBytes.length} bytes from ${path}`, "DEBUG");
             bundle.nByteArray = bundle.nByteArray + 1;
             bundle.totalBytes = bundle.totalBytes + currBytes.length;
             bundle.partialTag = handleDicomBytes(bundle, currBytes); // update partialTag with any partially read tag from current buffer
         });
-        stream.on("close", () => {
+        stream.on("end", () => {
             write(`Finished: read a total of ${bundle.totalBytes} bytes from ${path}`, "DEBUG");
             write(`Parsed ${bundle.dataSet.size} elements from ${path}`, "DEBUG");
-            resolve(bundle.dataSet);
+            resolve(bundle._dataSet);
+            stream.close();
         });
         stream.on("error", error => {
-            stream.close();
             reject(DicomError.from(error, DicomErrorType.READ));
+            stream.close();
         });
     });
 }
@@ -88,8 +81,10 @@ export function handleDicomBytes(bundle, currBytes) {
     if (bundle.firstBytes) {
         return handleFirstBuffer(bundle, currBytes);
     }
-    const s = stitchBytes(bundle, currBytes);
-    return walk(s, bundle);
+    else {
+        const stichedBuffer = stitchBytes(bundle, currBytes);
+        return walk(stichedBuffer, bundle);
+    }
 }
 /**
  * handleFirstBuffer() is a helper function for handleDicomBytes()
@@ -105,7 +100,7 @@ export function handleDicomBytes(bundle, currBytes) {
  * @param bundle
  * @param buffer
  * @throws DicomError
- * @returns
+ * @returns PartialTag (byte[])
  */
 function handleFirstBuffer(bundle, buffer) {
     validateDicomPreamble(buffer); // throws if not void
@@ -113,13 +108,12 @@ function handleFirstBuffer(bundle, buffer) {
     buffer = buffer.subarray(DICOM_HEADER_END, buffer.length); // window the buffer beyond 'DICM' header
     const truncatedElement = walk(buffer, bundle);
     const tsn = getElementValue("(0002,0010)", bundle.dataSet);
-    if (!isSupportedTSN(tsn)) {
-        throw new DicomError({
-            message: `Transfer Syntax UID ${tsn} is unsupported.`,
-            errorType: DicomErrorType.PARSING,
-        });
+    if (tsn && !isSupportedTSN(tsn)) {
+        // no need to accomodate this not being the first buffer because we're going to put
+        // a hard-lock on the miniumum size of the first buffer to avoid unnecessary complexity
+        throw new UnsupportedTSN(`TSN: ${tsn} is unsupported.`);
     }
-    bundle.transferSyntaxUid = tsn;
+    bundle.transferSyntaxUid = tsn ?? TransferSyntaxUid.ExplicitVRLittleEndian;
     bundle.firstBytes = false;
     return truncatedElement;
 }
@@ -128,21 +122,12 @@ function handleFirstBuffer(bundle, buffer) {
  * to concatenate the partial tag bytes with the current bytes
  * @param partialTag
  * @param currBytes
- * @returns
+ * @returns Buffer
  */
 function stitchBytes(bundle, currBytes) {
     const { partialTag, path } = bundle;
     write(`Stitching ${partialTag.length} + ${currBytes.length} bytes (${path})`, "DEBUG");
     return Buffer.concat([partialTag, currBytes]);
-}
-function validateLittleEndianness() {
-    // TODO
-    // check for even length (achieved through null byte padding where required)
-}
-function validateFileMetaInformation() {
-    // TODO
-    // the File Meta Information is the section of the DICOM file format that precedes
-    // the DICOM Data Set. All tags in this section are in the 0x0002 group.
 }
 /**
  * Get the value of an element from an array of elements. Note that without

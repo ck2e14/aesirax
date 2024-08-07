@@ -17,12 +17,13 @@ import { singleTheaded } from "./singlethreaded.js";
    }
 
    await init();
-   await multiThreaded(cfg);
+   // await multiThreaded(cfg);
    await singleTheaded(cfg);
 
-   if (cfg.verbose) {
-      write(`Shutting down...`, "INFO");
-   }
-
-   setTimeout(() => process.exit(0), 2_000); // Wait for logs to finish writing
+   setTimeout(() => {
+      if (cfg.verbose) {
+         write(`Completed work - shutting down.`, "INFO");
+      }
+      process.exit();
+   }, 2_000); // Wait for logs to finish writing
 })(cfg);

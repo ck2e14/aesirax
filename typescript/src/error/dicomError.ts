@@ -30,20 +30,4 @@ export class DicomError extends Error {
 
       write(`Error: ${this.name} - ${message} - ${this.stack}`, "ERROR");
    }
-
-   /**
-    * Use this in catch blocks where we aren't sure what instance
-    * type is being thrown but we want to establish a boundary
-    * within which all errors should be classified as DicomErrors.
-    * @param error
-    * @returns {DicomError}
-    */
-   public static from(error: Error, errorType?: DicomErrorType): DicomError {
-      if (error instanceof DicomError) return error;
-      return new DicomError({
-         errorType: DicomErrorType.UNKNOWN,
-         message: error.message,
-         originalStack: error.stack,
-      });
-   }
 }
