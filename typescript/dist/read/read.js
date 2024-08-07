@@ -100,14 +100,16 @@ function handleFirstBuffer(bundle, buffer) {
     buffer = buffer.subarray(DICOM_HEADER_END, buffer.length);
     const partialElement = walk(buffer, bundle);
     const tsn = getElementValue("(0002,0010)", bundle.dataSet);
+    // no need to accomodate TSN not present in the first buffer because put a
+    // a hard-lock on the min size of buffers to avoid unnecessary complexity
     if (tsn && !isSupportedTSN(tsn)) {
-        // no need to accomodate TSN not present in the first buffer because put a
-        // a hard-lock on the min size of buffers to avoid unnecessary complexity
         throw new UnsupportedTSN(`TSN: ${tsn} is unsupported.`);
     }
-    bundle.transferSyntaxUid = tsn ?? TransferSyntaxUid.ExplicitVRLittleEndian;
-    bundle.firstBytes = false;
-    return partialElement;
+    else if (isSupportedTSN(tsn)) {
+        bundle.transferSyntaxUid = tsn ?? TransferSyntaxUid.ExplicitVRLittleEndian;
+        bundle.firstBytes = false;
+        return partialElement;
+    }
 }
 /**
  * stitchBytes() is a helper function for handleDicomBytes()
@@ -134,7 +136,7 @@ function stitchBytes(bundle, currBytes) {
  * @returns T
  */
 function getElementValue(tag, elements) {
-    return (elements[tag]?.val ?? "NOT FOUND");
+    return (elements[tag]?.value ?? "NOT FOUND");
 }
 /**
  * bundleFactory() is a factory function for creating a StreamBundle

@@ -22,7 +22,7 @@ export type StreamBundle = {
    path: string;
    nByteArray: number;
    skipPixelData: boolean;
-   transferSyntaxUid: string;
+   transferSyntaxUid: TransferSyntaxUid;
 };
 
 const SMALL_BUF_THRESHOLD = 1024;
@@ -135,17 +135,16 @@ function handleFirstBuffer(bundle: StreamBundle, buffer: Buffer): PartialTag {
 
    const partialElement = walk(buffer, bundle);
    const tsn = getElementValue<string>("(0002,0010)", bundle.dataSet);
+   // no need to accomodate TSN not present in the first buffer because put a
+   // a hard-lock on the min size of buffers to avoid unnecessary complexity
 
    if (tsn && !isSupportedTSN(tsn)) {
-      // no need to accomodate TSN not present in the first buffer because put a
-      // a hard-lock on the min size of buffers to avoid unnecessary complexity
       throw new UnsupportedTSN(`TSN: ${tsn} is unsupported.`);
+   } else if (isSupportedTSN(tsn)) {
+      bundle.transferSyntaxUid = tsn ?? TransferSyntaxUid.ExplicitVRLittleEndian;
+      bundle.firstBytes = false;
+      return partialElement;
    }
-
-   bundle.transferSyntaxUid = tsn ?? TransferSyntaxUid.ExplicitVRLittleEndian;
-   bundle.firstBytes = false;
-
-   return partialElement;
 }
 
 /**
@@ -174,7 +173,7 @@ function stitchBytes(bundle: StreamBundle, currBytes: Buffer): Buffer {
  * @returns T
  */
 function getElementValue<T = unknown>(tag: TagStr, elements: DataSet): T {
-   return (elements[tag]?.val ?? "NOT FOUND") as T;
+   return (elements[tag]?.value ?? "NOT FOUND") as T;
 }
 
 /**
