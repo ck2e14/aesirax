@@ -76,7 +76,7 @@ export const DICOM_HEADER_END = PREAMBLE_LENGTH + 4;
  */
 export function walk(buffer, streamBundle) {
     let cursor = 0;
-    let lastTagStartPosition = cursor;
+    let lastTagStart = cursor;
     const useLE = streamBundle.transferSyntaxUid === TransferSyntaxUid.ExplicitVRLittleEndian ||
         streamBundle.transferSyntaxUid === TransferSyntaxUid.ImplicitVRLittleEndian;
     // This loop works by walking a cursor forward by the appropriate
@@ -84,42 +84,43 @@ export function walk(buffer, streamBundle) {
     // is governed primarily by the DICOM specification and datatype sizes.
     while (cursor < buffer.length) {
         const el = newElement();
-        lastTagStartPosition = cursor;
+        lastTagStart = cursor;
         try {
-            // Group & Element Number decoding
+            // ** Group & Element Number decoding **
             const tagBuffer = buffer.subarray(cursor, cursor + ByteLen.TAG_NUM);
             el.tag = decodeTagNum(tagBuffer);
             el.name = TagDictByHex[el.tag.toUpperCase()]?.["name"] ?? "Private or Unrecognised Tag";
             cursor += ByteLen.TAG_NUM;
-            // VR decoding
+            // ** VR decoding **
             const vrBuffer = buffer.subarray(cursor, cursor + ByteLen.VR);
             el.vr = decodeVr(vrBuffer);
             cursor += ByteLen.VR;
             if (!isVr(el.vr)) {
                 throwUnrecognisedVr(el.vr, vrBuffer);
             }
+            // ** Value length decoding **
             el.length = 0;
             const isExtVr = isExtendedFormatVr(el.vr);
             if (isExtVr) {
                 cursor += ByteLen.EXT_VR_RESERVED; // 2 reserved bytes can be ignored
                 el.length = useLE ? buffer.readUInt32LE(cursor) : buffer.readUInt32BE(cursor); // Extended VR tags' lengths are 4 bytes, may be enormous
+                cursor += ByteLen.UINT_32;
                 const isUndefinedLength = el.length === 4294967295; // see notes in UndefinedLength class
                 if (isUndefinedLength) {
                     throw new UndefinedLength(`${el.tag} => SQ of undefined length - unsupported ATM.`);
                 }
-                cursor += ByteLen.UINT_32;
             }
             if (!isExtVr) {
                 el.length = useLE ? buffer.readUInt16LE(cursor) : buffer.readUInt16BE(cursor); // Standard VR tags' lengths are 2 bytes, so max length is 65,535
                 cursor += ByteLen.UINT_16;
             }
-            // Value decoding
+            // ** Value decoding **
             if (valueIsTruncated(buffer, cursor, el.length)) {
                 throw new BufferBoundaryError(`Tag ${el.tag} is truncated, will try to stitch...`);
             }
             const valueBuffer = buffer.subarray(cursor, cursor + el.length);
             el.val = decodeValue(el.vr, valueBuffer, streamBundle);
-            // Debug printing
+            // ** Debug printing **
             const longAsFuck = [VR.SQ, VR.OB, VR.UN];
             if (longAsFuck.includes(el.vr)) {
                 el.devNote = UNIMPLEMENTED_VR_PARSING(el.vr);
@@ -137,8 +138,8 @@ export function walk(buffer, streamBundle) {
             if (presumedNotTruncationError) {
                 throw error; // halt parsing, unrecoverable error
             }
-            return buffer.subarray(lastTagStartPosition, buffer.length);
-            // break; // else buffer stitching
+            // else trigger buffer stitching
+            return buffer.subarray(lastTagStart, buffer.length);
         }
     }
 }
