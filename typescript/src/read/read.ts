@@ -1,6 +1,6 @@
 import { DicomError } from "../error/dicomError.js";
 import { write } from "../logging/logQ.js";
-import { DicomErrorType, TransferSyntaxUid, TagDictByHex, TagDictByName } from "../globalEnums.js";
+import { DicomErrorType, TransferSyntaxUid } from "../globalEnums.js";
 import { createReadStream } from "fs";
 import {
    DICOM_HEADER_END,
@@ -50,9 +50,9 @@ export type StreamBundle = {
  */
 export function streamParse(path: string, skipPixelData = true): Promise<Elements> {
    const bundle: StreamBundle = {
-      dataSet: new Map<keyof typeof TagDictByHex, Element>(),
+      dataSet: new Map<TagStr, Element>(),
       partialTag: Buffer.alloc(0),
-      perBufMax: Number(process.env.PER_BUF_MAX ?? 512),
+      perBufMax: Number(process.env.PER_BUF_MAX ?? 1024 * 1024 * 2), // default to 2MB
       firstBytes: true,
       path: path,
       nByteArray: 0,
@@ -107,7 +107,7 @@ function isSupportedTSN(uid: string): uid is TransferSyntaxUid {
 
 /**
  * handleDicomBytes() is a helper function for streamParse()
- * to handle the logic of reading a new bytes from disk, and
+ * to handle the logic of reading a new buffer from disk, and
  * stitching it to the previous bytes where required.
  * @param bundle
  * @param currBytes
@@ -139,11 +139,12 @@ export function handleDicomBytes(bundle: StreamBundle, currBytes: Buffer): Parti
  *
  * @param bundle
  * @param buffer
+ * @throws DicomError
  * @returns
  */
 function handleFirstBuffer(bundle: StreamBundle, buffer: Buffer): PartialTag {
-   validateDicomPreamble(buffer);
-   validateDicomHeader(buffer);
+   validateDicomPreamble(buffer); // throws if not void
+   validateDicomHeader(buffer); // throws if not void
 
    buffer = buffer.subarray(DICOM_HEADER_END, buffer.length); // window the buffer beyond 'DICM' header
 
@@ -200,6 +201,5 @@ function validateFileMetaInformation() {
  * @returns T
  */
 function getElementValue<T = unknown>(tag: TagStr, elements: Elements): T {
-   const x = elements.get(tag);
    return elements.get(tag).val as T;
 }

@@ -29,7 +29,7 @@ export function streamParse(path, skipPixelData = true) {
     const bundle = {
         dataSet: new Map(),
         partialTag: Buffer.alloc(0),
-        perBufMax: Number(process.env.PER_BUF_MAX ?? 512),
+        perBufMax: Number(process.env.PER_BUF_MAX ?? 1024 * 1024 * 2), // default to 2MB
         firstBytes: true,
         path: path,
         nByteArray: 0,
@@ -76,7 +76,7 @@ function isSupportedTSN(uid) {
 }
 /**
  * handleDicomBytes() is a helper function for streamParse()
- * to handle the logic of reading a new bytes from disk, and
+ * to handle the logic of reading a new buffer from disk, and
  * stitching it to the previous bytes where required.
  * @param bundle
  * @param currBytes
@@ -104,11 +104,12 @@ export function handleDicomBytes(bundle, currBytes) {
  *
  * @param bundle
  * @param buffer
+ * @throws DicomError
  * @returns
  */
 function handleFirstBuffer(bundle, buffer) {
-    validateDicomPreamble(buffer);
-    validateDicomHeader(buffer);
+    validateDicomPreamble(buffer); // throws if not void
+    validateDicomHeader(buffer); // throws if not void
     buffer = buffer.subarray(DICOM_HEADER_END, buffer.length); // window the buffer beyond 'DICM' header
     const truncatedElement = walk(buffer, bundle);
     const tsn = getElementValue("(0002,0010)", bundle.dataSet);
@@ -156,7 +157,6 @@ function validateFileMetaInformation() {
  * @returns T
  */
 function getElementValue(tag, elements) {
-    const x = elements.get(tag);
     return elements.get(tag).val;
 }
 //# sourceMappingURL=read.js.map

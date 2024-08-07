@@ -2,14 +2,14 @@ import { DicomError } from "../error/dicomError.js";
 import { ByteLen, DicomErrorType, TagDictByHex, TransferSyntaxUid, VR } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
 import { StreamBundle } from "../read/read.js";
-import { decodeTagNum } from "./tagNums.js";
+import { decodeTagNum, TagStr } from "./tagNums.js";
 import { isVr } from "./typeGuards.js";
 import { decodeValue, decodeVr } from "./valueDecoders.js";
 
 export type PartialTag = Buffer | null;
-export type Elements = Map<keyof typeof TagDictByHex, Element>; // e.g. Map<"(0008,0008)", Element>
+export type Elements = Map<TagStr, Element>; // e.g. Map<"(0008,0008)", Element>
 export type Element = {
-   tag: keyof typeof TagDictByHex;
+   tag: TagStr
    name: string;
    vr: VR;
    length: number;
@@ -127,7 +127,7 @@ export function walk(buffer: Buffer, streamBundle: StreamBundle): PartialTag {
 
          const valueBuffer = buffer.subarray(cursor, cursor + el.length);
          el.val = decodeValue(el.vr, valueBuffer, streamBundle);
-
+        
          if (el.vr !== VR.SQ && el.vr !== VR.OB) {
             printElement(el);
          } else {
