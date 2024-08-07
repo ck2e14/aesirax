@@ -1,2 +1,6 @@
-Aesirax is a repisotory comprised of a collection personal learning projects centred around healthcare engineering, particularly in a wed development context.
+Aesirax is a from-scratch, zero-dependency byte-level DICOM parsing project, intended to implement the DICOM spec to learn how it works at the lowest levels.
 
+It's written in Typescript and will be rewrittien idiomatically in Go at some point as well. 
+
+
+NOT FOR PRODUCTION USE - THIS IS NOT LICENSED MEDICAL SOFTWARE!
