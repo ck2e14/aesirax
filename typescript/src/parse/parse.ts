@@ -6,7 +6,7 @@ import { decodeTagNum, TagStr } from "./tagNums.js";
 import { isVr } from "./typeGuards.js";
 import { decodeValue, decodeVr } from "./valueDecoders.js";
 
-export type PartialTag = Buffer | null;
+export type PartialTag = Buffer | null; // because streaming will guarantee cutting tags up
 export type DataSet = Record<string, Element>;
 export type Element = {
    tag: TagStr;
@@ -20,7 +20,7 @@ export type Element = {
 export const DICOM_HEADER = "DICM";
 export const PREAMBLE_LENGTH = 128;
 export const DICOM_HEADER_START = PREAMBLE_LENGTH;
-export const DICOM_HEADER_END = PREAMBLE_LENGTH + 4;
+export const HEADER_END = PREAMBLE_LENGTH + 4;
 
 /**
  * Walk through a buffer containing a subset of a DICOM file's bytes, and
@@ -89,19 +89,20 @@ export const DICOM_HEADER_END = PREAMBLE_LENGTH + 4;
  * @returns PartialTag
  */
 export function walk(buffer: Buffer, streamBundle: StreamBundle): PartialTag {
+   const usingLE = useLE(streamBundle.transferSyntaxUid);
+   write(`Decoding using ${usingLE ? "Little Endian" : "Big Endian"} byte order`, "DEBUG");
+
    let cursor = 0;
    let lastTagStart: number = cursor;
-
-   const usingLE = useLE(streamBundle.transferSyntaxUid);
-   write(`Will decode using ${useLE ? "Little Endian" : "Big Endian"} byte order`, "DEBUG");
 
    // This loop works by walking a cursor forward by the appropriate
    // number of bytes after each decode. The amount to walk forward by
    // is governed primarily by the DICOM specification and datatype sizes.
 
    while (cursor < buffer.length) {
-      const el = newElement();
       lastTagStart = cursor;
+
+      const el = newElement();
 
       try {
          // ** Group & Element Number decoding **
@@ -121,14 +122,14 @@ export function walk(buffer: Buffer, streamBundle: StreamBundle): PartialTag {
 
          // ** Value length decoding **
          el.length = 0;
-         const isExtVr = isExtendedFormatVr(el.vr);
 
+         const isExtVr = isExtendedFormatVr(el.vr);
          if (isExtVr) {
             cursor += ByteLen.EXT_VR_RESERVED; // 2 reserved bytes can be ignored
             el.length = useLE ? buffer.readUInt32LE(cursor) : buffer.readUInt32BE(cursor); // Extended VR tags' lengths are 4 bytes, may be enormous
             cursor += ByteLen.UINT_32;
 
-            const isUndefinedLength = el.length === 4_294_967_295; // see notes in UndefinedLength class
+            const isUndefinedLength = el.length === 4_294_967_295; // see notes in UndefinedLength class. Spec flaw.
             if (isUndefinedLength) {
                throw new UndefinedLength(`${el.tag} => SQ of undefined length - unsupported ATM.`);
             }
@@ -227,17 +228,17 @@ export function isExtendedFormatVr(vr: Global.VR): boolean {
  * first 128 bytes are all 0x00. This is a security
  * design choice by me to prevent the execution of
  * arbitrary code within the preamble. See spec notes.
+ * TODO work out what quarantining really entails
  * @param buffer
  * @throws DicomError
  */
-export function validateDicomPreamble(buffer: Buffer): void | never {
-   // TODO work out what quarantining really entails and how to do it
+export function validatePreamble(buffer: Buffer): void | never {
    const preamble = buffer.subarray(0, PREAMBLE_LENGTH);
 
    if (!preamble.every(byte => byte === 0x00)) {
       throw new DicomError({
          errorType: DicomErrorType.VALIDATE,
-         message: `DICOM file must beging with contain 128 bytes of 0x00 for security reasons. Quarantining this file`,
+         message: `DICOM file must begin with contain 128 bytes of 0x00 for security reasons. Quarantining this file`,
       });
    }
 }
@@ -250,9 +251,9 @@ export function validateDicomPreamble(buffer: Buffer): void | never {
  * @param byteArray
  * @throws DicomError
  */
-export function validateDicomHeader(buffer: Buffer): void | never {
+export function validateHeader(buffer: Buffer): void | never {
    const strAtHeaderPosition = buffer //
-      .subarray(DICOM_HEADER_START, DICOM_HEADER_END)
+      .subarray(DICOM_HEADER_START, HEADER_END)
       .toString();
 
    if (strAtHeaderPosition !== DICOM_HEADER) {

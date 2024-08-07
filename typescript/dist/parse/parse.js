@@ -7,7 +7,7 @@ import { decodeValue, decodeVr } from "./valueDecoders.js";
 export const DICOM_HEADER = "DICM";
 export const PREAMBLE_LENGTH = 128;
 export const DICOM_HEADER_START = PREAMBLE_LENGTH;
-export const DICOM_HEADER_END = PREAMBLE_LENGTH + 4;
+export const HEADER_END = PREAMBLE_LENGTH + 4;
 /**
  * Walk through a buffer containing a subset of a DICOM file's bytes, and
  * parse the tags.
@@ -75,16 +75,16 @@ export const DICOM_HEADER_END = PREAMBLE_LENGTH + 4;
  * @returns PartialTag
  */
 export function walk(buffer, streamBundle) {
+    const usingLE = useLE(streamBundle.transferSyntaxUid);
+    write(`Decoding using ${usingLE ? "Little Endian" : "Big Endian"} byte order`, "DEBUG");
     let cursor = 0;
     let lastTagStart = cursor;
-    const usingLE = useLE(streamBundle.transferSyntaxUid);
-    write(`Will decode using ${useLE ? "Little Endian" : "Big Endian"} byte order`, "DEBUG");
     // This loop works by walking a cursor forward by the appropriate
     // number of bytes after each decode. The amount to walk forward by
     // is governed primarily by the DICOM specification and datatype sizes.
     while (cursor < buffer.length) {
-        const el = newElement();
         lastTagStart = cursor;
+        const el = newElement();
         try {
             // ** Group & Element Number decoding **
             const tagBuffer = buffer.subarray(cursor, cursor + ByteLen.TAG_NUM);
@@ -105,7 +105,7 @@ export function walk(buffer, streamBundle) {
                 cursor += ByteLen.EXT_VR_RESERVED; // 2 reserved bytes can be ignored
                 el.length = useLE ? buffer.readUInt32LE(cursor) : buffer.readUInt32BE(cursor); // Extended VR tags' lengths are 4 bytes, may be enormous
                 cursor += ByteLen.UINT_32;
-                const isUndefinedLength = el.length === 4294967295; // see notes in UndefinedLength class
+                const isUndefinedLength = el.length === 4294967295; // see notes in UndefinedLength class. Spec flaw.
                 if (isUndefinedLength) {
                     throw new UndefinedLength(`${el.tag} => SQ of undefined length - unsupported ATM.`);
                 }
@@ -195,16 +195,16 @@ export function isExtendedFormatVr(vr) {
  * first 128 bytes are all 0x00. This is a security
  * design choice by me to prevent the execution of
  * arbitrary code within the preamble. See spec notes.
+ * TODO work out what quarantining really entails
  * @param buffer
  * @throws DicomError
  */
-export function validateDicomPreamble(buffer) {
-    // TODO work out what quarantining really entails and how to do it
+export function validatePreamble(buffer) {
     const preamble = buffer.subarray(0, PREAMBLE_LENGTH);
     if (!preamble.every(byte => byte === 0x00)) {
         throw new DicomError({
             errorType: DicomErrorType.VALIDATE,
-            message: `DICOM file must beging with contain 128 bytes of 0x00 for security reasons. Quarantining this file`,
+            message: `DICOM file must begin with contain 128 bytes of 0x00 for security reasons. Quarantining this file`,
         });
     }
 }
@@ -216,9 +216,9 @@ export function validateDicomPreamble(buffer) {
  * @param byteArray
  * @throws DicomError
  */
-export function validateDicomHeader(buffer) {
+export function validateHeader(buffer) {
     const strAtHeaderPosition = buffer //
-        .subarray(DICOM_HEADER_START, DICOM_HEADER_END)
+        .subarray(DICOM_HEADER_START, HEADER_END)
         .toString();
     if (strAtHeaderPosition !== DICOM_HEADER) {
         throw new DicomError({
