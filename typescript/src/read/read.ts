@@ -22,6 +22,7 @@ export type StreamBundle = {
    nByteArray: number;
    skipPixelData: boolean;
    transferSyntaxUid: TransferSyntaxUid;
+   usingLE: boolean;
 };
 
 const SMALL_BUF_THRESHOLD = 1024;
@@ -199,6 +200,7 @@ function bundleFactory(
          nByteArray: 0,
          skipPixelData: skipPixels,
          transferSyntaxUid: TransferSyntaxUid.ExplicitVRLittleEndian,
+         usingLE: true,
       };
    } else {
       return {
