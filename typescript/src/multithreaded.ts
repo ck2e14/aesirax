@@ -43,12 +43,10 @@ export async function multiThreaded(cfg: Global.Config) {
 function createWork(dataSets: any[], dicomFiles: string[]) {
    const worker = new Worker("./dist/worker.js");
 
-   const workerPromise = new Promise<void>((resolve, reject) => {
+   return new Promise<void>((resolve, reject) => {
       addEvents(worker, dataSets, dicomFiles, resolve, reject);
       worker.postMessage({ filepath: dicomFiles.pop() });
    });
-
-   return workerPromise;
 }
 
 /**

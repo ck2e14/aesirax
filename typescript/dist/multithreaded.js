@@ -33,11 +33,10 @@ export async function multiThreaded(cfg) {
  */
 function createWork(dataSets, dicomFiles) {
     const worker = new Worker("./dist/worker.js");
-    const workerPromise = new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
         addEvents(worker, dataSets, dicomFiles, resolve, reject);
         worker.postMessage({ filepath: dicomFiles.pop() });
     });
-    return workerPromise;
 }
 /**
  * Add event listeners to the worker thread
