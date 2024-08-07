@@ -96,17 +96,18 @@ export function handleDicomBytes(bundle, currBytes) {
 function handleFirstBuffer(bundle, buffer) {
     validateDicomPreamble(buffer); // throws if not void
     validateDicomHeader(buffer); // throws if not void
-    buffer = buffer.subarray(DICOM_HEADER_END, buffer.length); // window the buffer beyond 'DICM' header
-    const truncatedElement = walk(buffer, bundle);
+    // window the buffer beyond 'DICM' header
+    buffer = buffer.subarray(DICOM_HEADER_END, buffer.length);
+    const partialElement = walk(buffer, bundle);
     const tsn = getElementValue("(0002,0010)", bundle.dataSet);
     if (tsn && !isSupportedTSN(tsn)) {
-        // no need to accomodate this not being the first buffer because we're going to put
-        // a hard-lock on the miniumum size of the first buffer to avoid unnecessary complexity
+        // no need to accomodate TSN not present in the first buffer because put a
+        // a hard-lock on the min size of buffers to avoid unnecessary complexity
         throw new UnsupportedTSN(`TSN: ${tsn} is unsupported.`);
     }
     bundle.transferSyntaxUid = tsn ?? TransferSyntaxUid.ExplicitVRLittleEndian;
     bundle.firstBytes = false;
-    return truncatedElement;
+    return partialElement;
 }
 /**
  * stitchBytes() is a helper function for handleDicomBytes()
