@@ -11,15 +11,13 @@ import { findDICOM } from "./utilts.js";
 export async function multiThreaded(cfg: Global.Config) {
    const start = performance.now();
    const workerPromises = [];
-   const dicomFiles = findDICOM(
-      cfg.targetDir ?? `/Users/chriskennedy/Desktop/aesirax/data/CUMINSMARJORIE/isolate`
-   );
+   const dicomFiles = findDICOM(cfg.targetDir ?? `/Users/chriskennedy/Desktop/aesirax/data/Pi`);
    const dataSets = [];
+   const nWorkers = cpus().length > dicomFiles.length ? dicomFiles.length : cpus().length; // this could be refined because one massive file also benefits from multiple workers
 
-   write(`Spawning ${cpus().length} workers`, "INFO");
-   write(`Found ${dicomFiles.length} DICOM files`, "INFO");
+   write(`Spawning ${nWorkers} workers to read ${dicomFiles.length} DICOM files`, "INFO");
 
-   for (let i = 0; i < 1; i++) {
+   for (let i = 0; i < nWorkers; i++) {
       const worker = createWork(dataSets, dicomFiles);
       workerPromises.push(worker);
    }
