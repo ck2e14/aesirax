@@ -157,6 +157,7 @@ function bundleFactory(path, opts = null, assumeDefaults = true, skipPixels = tr
             nByteArray: 0,
             skipPixelData: skipPixels,
             transferSyntaxUid: TransferSyntaxUid.ExplicitVRLittleEndian,
+            usingLE: true,
         };
     }
     else {

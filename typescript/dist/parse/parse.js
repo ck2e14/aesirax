@@ -81,17 +81,17 @@ export const HEADER_END = PREAMBLE_LENGTH + 4;
  * @returns PartialTag
  */
 export function parse(buffer, streamBundle) {
-    const usingLE = useLE(streamBundle.transferSyntaxUid);
-    const cursor = createCursor();
+    const cursor = newCursor();
     let lastTagStart = cursor.pos;
-    write(`Decoding as ${usingLE ? "Little Endian" : "Big Endian"} byte order`, "DEBUG");
+    streamBundle.usingLE = useLE(streamBundle.transferSyntaxUid);
+    write(`Decoding as ${streamBundle.usingLE ? "Little Endian" : "Big Endian"} byte order`, "DEBUG");
     while (cursor.pos < buffer.length) {
         lastTagStart = cursor.pos;
         const el = newElement();
         try {
             decodeTagAndMoveCursor(buffer, cursor, el);
             decodeVRAndMoveCursor(buffer, cursor, el);
-            decodeValueLengthAndMoveCursor(el, cursor, buffer);
+            decodeValueLengthAndMoveCursor(el, cursor, buffer, streamBundle);
             decodeValueAndMoveCursor(buffer, cursor, el, streamBundle);
             debugPrint(el);
             streamBundle.dataSet[el.tag] = el;
@@ -107,9 +107,9 @@ export function parse(buffer, streamBundle) {
  * current position in the buffer.
  * @returns Cursor
  */
-function createCursor() {
+function newCursor(pos = 0) {
     return {
-        pos: 0,
+        pos,
         walk: function (n) {
             this.pos += n;
         },
@@ -133,12 +133,14 @@ function createCursor() {
  * @returns PartialTag
  */
 function handleErrorPathways(error, buffer, lastTagStart) {
-    const partialled = [BufferBoundaryError, DicomError]; // can refine DicomError here because a bit broad but does work atm.
+    const partialled = [BufferBoundaryError, DicomError]; // can refine
     const parsingError = partialled.every(ex => !(error instanceof ex));
     if (parsingError) {
         throw error;
     }
-    return buffer.subarray(lastTagStart, buffer.length);
+    const start = lastTagStart;
+    const end = buffer.length;
+    return buffer.subarray(start, end);
 }
 /**
  * Print an element to the console.
@@ -168,7 +170,9 @@ function decodeValueAndMoveCursor(buffer, cursor, el, streamBundle) {
     if (valueIsTruncated(buffer, cursor.pos, el.length)) {
         throw new BufferBoundaryError(`Tag ${el.tag} is incompletely represeneted in bytes`);
     }
-    const valueBuffer = buffer.subarray(cursor.pos, cursor.pos + el.length);
+    const start = cursor.pos;
+    const end = cursor.pos + el.length;
+    const valueBuffer = buffer.subarray(start, end);
     el.value = decodeValue(el.vr, valueBuffer, streamBundle);
 }
 /**
@@ -177,12 +181,13 @@ function decodeValueAndMoveCursor(buffer, cursor, el, streamBundle) {
  * @param el
  * @param cursor
  * @param buffer
+ * @returns void
  */
-function decodeValueLengthAndMoveCursor(el, cursor, buffer) {
+function decodeValueLengthAndMoveCursor(el, cursor, buffer, bundle) {
     const isExtVr = isExtendedFormatVr(el.vr);
     if (isExtVr) {
         cursor.walk(ByteLen.EXT_VR_RESERVED); // 2 reserved bytes can be ignored
-        el.length = useLE ? buffer.readUInt32LE(cursor.pos) : buffer.readUInt32BE(cursor.pos); // Extended VR tags' lengths are 4 bytes, may be enormous
+        _decodeValueLength(el, buffer, cursor, bundle); // Extended VR tags' lengths are 4 bytes, may be enormous
         cursor.walk(ByteLen.UINT_32);
     }
     const isUndefinedLength = el.length === 4294967295; // see notes in UndefinedLength class. Spec flaw.
@@ -190,9 +195,26 @@ function decodeValueLengthAndMoveCursor(el, cursor, buffer) {
         throw new UndefinedLength(`${el.tag} => SQ has undefined length - unsupported ATM.`);
     }
     if (!isExtVr) {
-        el.length = useLE ? buffer.readUInt16LE(cursor.pos) : buffer.readUInt16BE(cursor.pos); // Standard VR tags' lengths are 2 bytes, so max length is 65,535
+        el.length = bundle.usingLE
+            ? buffer.readUInt16LE(cursor.pos)
+            : buffer.readUInt16BE(cursor.pos); // Standard VR tags' lengths are 2 bytes, so max length is 65,535
         cursor.walk(ByteLen.UINT_16);
     }
+}
+/**
+ * Helper function, not a public interface. Decode
+ * the current element's value length and walk the
+ * cursor forward appropriately.
+ * @param el
+ * @param buffer
+ * @param cursor
+ * @param bundle
+ * @returns void
+ */
+function _decodeValueLength(el, buffer, cursor, bundle) {
+    el.length = bundle.usingLE //
+        ? buffer.readUInt32LE(cursor.pos)
+        : buffer.readUInt32BE(cursor.pos);
 }
 /**
  * Decode the current element's VR and
@@ -203,7 +225,9 @@ function decodeValueLengthAndMoveCursor(el, cursor, buffer) {
  * @returns void
  */
 function decodeVRAndMoveCursor(buffer, cursor, el) {
-    const vrBuffer = buffer.subarray(cursor.pos, cursor.pos + ByteLen.VR);
+    const start = cursor.pos;
+    const end = cursor.pos + ByteLen.VR;
+    const vrBuffer = buffer.subarray(start, end);
     el.vr = decodeVr(vrBuffer);
     cursor.walk(ByteLen.VR);
     if (!isVr(el.vr)) {
@@ -219,7 +243,9 @@ function decodeVRAndMoveCursor(buffer, cursor, el) {
  * @returns void
  */
 function decodeTagAndMoveCursor(buffer, cursor, el) {
-    const tagBuffer = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM);
+    const start = cursor.pos;
+    const end = cursor.pos + ByteLen.TAG_NUM;
+    const tagBuffer = buffer.subarray(start, end);
     el.tag = decodeTagNum(tagBuffer);
     el.name = TagDictByHex[el.tag.toUpperCase()]?.["name"] ?? "Private or Unrecognised Tag";
     cursor.walk(ByteLen.TAG_NUM);
@@ -281,7 +307,9 @@ export function isExtendedFormatVr(vr) {
  * @throws DicomError
  */
 export function validatePreamble(buffer) {
-    const preamble = buffer.subarray(0, PREAMBLE_LENGTH);
+    const start = 0;
+    const end = PREAMBLE_LENGTH;
+    const preamble = buffer.subarray(start, end);
     if (!preamble.every(byte => byte === 0x00)) {
         throw new DicomError({
             errorType: DicomErrorType.VALIDATE,
@@ -315,8 +343,9 @@ export function validateHeader(buffer) {
  */
 export function printElement(el) {
     let str = `Tag: ${el.tag}, Name: ${el.name}, VR: ${el.vr}, Length: ${el.length}, Value: ${el.value}`;
-    if (el.devNote)
+    if (el.devNote) {
         str += ` DevNote: ${el.devNote}`;
+    }
     write(str, "DEBUG");
 }
 /**
