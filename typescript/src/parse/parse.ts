@@ -7,7 +7,7 @@ import { isVr } from "./typeGuards.js";
 import { decodeValue, decodeVr } from "./valueDecoders.js";
 
 export type PartialTag = Buffer | null;
-export type Elements = Map<TagStr, Element>; // e.g. Map<"(0008,0008)", Element>
+export type DataSet = Record<string, Element>;
 export type Element = {
    tag: TagStr;
    name: string;
@@ -105,13 +105,13 @@ export function walk(buffer: Buffer, streamBundle: StreamBundle): PartialTag {
       lastTagStartPosition = cursor;
 
       try {
-         // Tag Group Number and Element Number Decoding
+         // Group & Element Number decoding
          const tagBuffer = buffer.subarray(cursor, cursor + ByteLen.TAG_NUM);
          el.tag = decodeTagNum(tagBuffer);
          el.name = TagDictByHex[el.tag.toUpperCase()]?.["name"] ?? "Private or Unrecognised Tag";
          cursor += ByteLen.TAG_NUM;
 
-         // VR Decoding
+         // VR decoding
          const vrBuffer = buffer.subarray(cursor, cursor + ByteLen.VR);
          el.vr = decodeVr(vrBuffer);
          cursor += ByteLen.VR;
@@ -125,15 +125,14 @@ export function walk(buffer: Buffer, streamBundle: StreamBundle): PartialTag {
 
          if (isExtVr) {
             cursor += ByteLen.EXT_VR_RESERVED; // 2 reserved bytes can be ignored
-            el.length = useLE ? buffer.readUInt32LE(cursor) : buffer.readUInt32BE(cursor); // Extended VR tags' lengths are 4 bytes because they can be huge
+            el.length = useLE ? buffer.readUInt32LE(cursor) : buffer.readUInt32BE(cursor); // Extended VR tags' lengths are 4 bytes, may be enormous
 
-            // see notes in UndefinedLength class. Fucking DICOM honestly.
-            const isUndefinedLength = el.length === 4294967295;
+            const isUndefinedLength = el.length === 4_294_967_295; // see notes in UndefinedLength class
             if (isUndefinedLength) {
                throw new UndefinedLength(`${el.tag} => SQ of undefined length - unsupported ATM.`);
-            } else {
-               cursor += ByteLen.UINT_32;
             }
+
+            cursor += ByteLen.UINT_32;
          }
 
          if (!isExtVr) {
@@ -141,39 +140,36 @@ export function walk(buffer: Buffer, streamBundle: StreamBundle): PartialTag {
             cursor += ByteLen.UINT_16;
          }
 
-         // Value Decoding
+         // Value decoding
          if (valueIsTruncated(buffer, cursor, el.length)) {
             throw new BufferBoundaryError(`Tag ${el.tag} is truncated, will try to stitch...`);
          }
-
          const valueBuffer = buffer.subarray(cursor, cursor + el.length);
          el.val = decodeValue(el.vr, valueBuffer, streamBundle);
 
          // Debug printing
-         if (el.vr !== VR.SQ && el.vr !== VR.OB) {
-            printElement(el);
-         } else {
+         const longAsFuck = [VR.SQ, VR.OB, VR.UN];
+         if (longAsFuck.includes(el.vr)) {
             el.devNote = UNIMPLEMENTED_VR_PARSING(el.vr);
             printMinusValue(el);
+         } else {
+            printElement(el);
          }
 
-         streamBundle.dataSet.set(el.tag, el); // Store fully parsed elements
-         streamBundle._dataSet[el.tag] = el; // Store fully parsed elements
-
-         cursor += el.length; // Move cursor to the start of the next tag
+         streamBundle.dataSet[el.tag] = el; // Store fully parsed elements only
+         cursor += el.length; // Move cursor to the start of next tag
       } catch (error) {
-         const presumedNotTruncationError =
-            !(error instanceof BufferBoundaryError) && !(error instanceof DicomError);
+         const boundaryErr = [BufferBoundaryError, DicomError]; // can refine DicomError here because a bit broad but does work atm.
+         const presumedNotTruncationError = boundaryErr.every(ex => !(error instanceof ex));
 
          if (presumedNotTruncationError) {
             throw error; // halt parsing, unrecoverable error
-         } else {
-            break; // triggers return + stitch control flow
          }
+
+         return buffer.subarray(lastTagStartPosition, buffer.length);
+         // break; // else buffer stitching
       }
    }
-
-   return buffer.subarray(lastTagStartPosition, buffer.length);
 }
 
 /**

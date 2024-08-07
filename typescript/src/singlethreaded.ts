@@ -17,7 +17,6 @@ export async function singleTheaded(cfg: Global.Config) {
    for (let i = 0; i < paths.length; i++) {
       const elements = await streamParse(paths[i]);
       dataSets.push(elements);
-      // dataSets.push(prettyPrintMap(elements));
    }
 
    const end = performance.now();

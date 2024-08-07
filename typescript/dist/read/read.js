@@ -3,6 +3,8 @@ import { DicomErrorType, TransferSyntaxUid } from "../globalEnums.js";
 import { createReadStream } from "fs";
 import { DICOM_HEADER_END, validateDicomHeader, validateDicomPreamble, walk, } from "../parse/parse.js";
 import { DicomError, UnsupportedTSN } from "../error/errors.js";
+const SMALL_BUF_THRESHOLD = 1024;
+const SMALL_BUF_ADVISORY = `PER_BUF_MAX is less than ${SMALL_BUF_THRESHOLD} bytes. This will work but isn't ideal for I/O efficiency`;
 /**
  * streamParse() takes advantage of the behaviour of streaming
  * from disk in a way that doesn't require the conclusion of the
@@ -16,26 +18,15 @@ import { DicomError, UnsupportedTSN } from "../error/errors.js";
  * @throws DicomError
  */
 export function streamParse(path, skipPixelData = true) {
-    const bundle = {
-        dataSet: new Map(),
-        _dataSet: {}, // undecided whether map or obj is better, obj is more compatible with JSON and IPC but Map is more efficient for access
-        partialTag: Buffer.alloc(0),
-        perBufMax: Number(process.env.PER_BUF_MAX ?? 1024 * 12), // default to 12KB
-        firstBytes: true,
-        path: path,
-        nByteArray: 0,
-        totalBytes: 0,
-        skipPixelData, // TODO
-        transferSyntaxUid: TransferSyntaxUid.ExplicitVRLittleEndian, // file meta info always in this TSN and we update it if we find a different one
-    };
+    const bundle = bundleFactory(path, null, true, skipPixelData);
     if (bundle.perBufMax < DICOM_HEADER_END + 1) {
         throw new DicomError({
             message: `PER_BUF_MAX must be at least ${DICOM_HEADER_END + 1} bytes.`,
-            errorType: DicomErrorType.READ,
+            errorType: DicomErrorType.BUNDLE_CONFIG,
         });
     }
-    if (bundle.perBufMax < 1024) {
-        write(`PER_BUF_MAX is ${bundle.perBufMax} bytes. This will work but isn't ideal.`, "WARN");
+    if (bundle.perBufMax < SMALL_BUF_THRESHOLD) {
+        write(SMALL_BUF_ADVISORY, "WARN");
     }
     return new Promise((resolve, reject) => {
         const stream = createReadStream(path, {
@@ -50,7 +41,7 @@ export function streamParse(path, skipPixelData = true) {
         stream.on("end", () => {
             write(`Finished: read a total of ${bundle.totalBytes} bytes from ${path}`, "DEBUG");
             write(`Parsed ${bundle.dataSet.size} elements from ${path}`, "DEBUG");
-            resolve(bundle._dataSet);
+            resolve(bundle.dataSet);
             stream.close();
         });
         stream.on("error", error => {
@@ -142,6 +133,34 @@ function stitchBytes(bundle, currBytes) {
  * @returns T
  */
 function getElementValue(tag, elements) {
-    return elements.get(tag).val;
+    return (elements[tag]?.val ?? "NOT FOUND");
+}
+/**
+ * bundleFactory() is a factory function for creating a StreamBundle
+ * with default values for the first buffer read from disk.
+ * @param path
+ * @param skipPixels
+ * @returns
+ */
+function bundleFactory(path, opts = null, assumeDefaults = true, skipPixels = true) {
+    if (assumeDefaults) {
+        return {
+            firstBytes: true,
+            dataSet: {},
+            partialTag: Buffer.alloc(0),
+            perBufMax: Number(process.env.PER_BUF_MAX ?? 1024 * 12),
+            totalBytes: 0,
+            path,
+            nByteArray: 0,
+            skipPixelData: skipPixels,
+            transferSyntaxUid: TransferSyntaxUid.ExplicitVRLittleEndian,
+        };
+    }
+    else {
+        return {
+            ...opts,
+            path,
+        };
+    }
 }
 //# sourceMappingURL=read.js.map

@@ -1,10 +1,10 @@
 import { write } from "../logging/logQ.js";
 import { DicomErrorType, TransferSyntaxUid } from "../globalEnums.js";
-import { createReadStream, readFileSync } from "fs";
+import { createReadStream } from "fs";
 import {
+   DataSet,
    DICOM_HEADER_END,
    Element,
-   Elements,
    PartialTag,
    validateDicomHeader,
    validateDicomPreamble,
@@ -13,12 +13,9 @@ import {
 import { TagStr } from "../parse/tagNums.js";
 import { DicomError, UnsupportedTSN } from "../error/errors.js";
 
-type DataSet = Record<string, Element>;
-
 export type StreamBundle = {
    firstBytes: boolean;
-   dataSet: Elements;
-   _dataSet: Record<string, Element>;
+   dataSet: DataSet;
    partialTag: Buffer;
    perBufMax: number;
    totalBytes: number;
@@ -27,6 +24,9 @@ export type StreamBundle = {
    skipPixelData: boolean;
    transferSyntaxUid: string;
 };
+
+const SMALL_BUF_THRESHOLD = 1024;
+const SMALL_BUF_ADVISORY = `PER_BUF_MAX is less than ${SMALL_BUF_THRESHOLD} bytes. This will work but isn't ideal for I/O efficiency`;
 
 /**
  * streamParse() takes advantage of the behaviour of streaming
@@ -41,28 +41,17 @@ export type StreamBundle = {
  * @throws DicomError
  */
 export function streamParse(path: string, skipPixelData = true): Promise<DataSet> {
-   const bundle: StreamBundle = {
-      dataSet: new Map<TagStr, Element>(),
-      _dataSet: {}, // undecided whether map or obj is better, obj is more compatible with JSON and IPC but Map is more efficient for access
-      partialTag: Buffer.alloc(0),
-      perBufMax: Number(process.env.PER_BUF_MAX ?? 1024 * 12), // default to 12KB
-      firstBytes: true,
-      path: path,
-      nByteArray: 0,
-      totalBytes: 0,
-      skipPixelData, // TODO
-      transferSyntaxUid: TransferSyntaxUid.ExplicitVRLittleEndian, // file meta info always in this TSN and we update it if we find a different one
-   };
+   const bundle = bundleFactory(path, null, true, skipPixelData);
 
    if (bundle.perBufMax < DICOM_HEADER_END + 1) {
       throw new DicomError({
          message: `PER_BUF_MAX must be at least ${DICOM_HEADER_END + 1} bytes.`,
-         errorType: DicomErrorType.READ,
+         errorType: DicomErrorType.BUNDLE_CONFIG,
       });
    }
 
-   if (bundle.perBufMax < 1024) {
-      write(`PER_BUF_MAX is ${bundle.perBufMax} bytes. This will work but isn't ideal.`, "WARN");
+   if (bundle.perBufMax < SMALL_BUF_THRESHOLD) {
+      write(SMALL_BUF_ADVISORY, "WARN");
    }
 
    return new Promise<DataSet>((resolve, reject) => {
@@ -80,7 +69,7 @@ export function streamParse(path: string, skipPixelData = true): Promise<DataSet
       stream.on("end", () => {
          write(`Finished: read a total of ${bundle.totalBytes} bytes from ${path}`, "DEBUG");
          write(`Parsed ${bundle.dataSet.size} elements from ${path}`, "DEBUG");
-         resolve(bundle._dataSet);
+         resolve(bundle.dataSet);
          stream.close();
       });
 
@@ -183,6 +172,39 @@ function stitchBytes(bundle: StreamBundle, currBytes: Buffer): Buffer {
  * @param elements
  * @returns T
  */
-function getElementValue<T = unknown>(tag: TagStr, elements: Elements): T {
-   return elements.get(tag).val as T;
+function getElementValue<T = unknown>(tag: TagStr, elements: DataSet): T {
+   return (elements[tag]?.val ?? "NOT FOUND") as T;
+}
+
+/**
+ * bundleFactory() is a factory function for creating a StreamBundle
+ * with default values for the first buffer read from disk.
+ * @param path
+ * @param skipPixels
+ * @returns
+ */
+function bundleFactory(
+   path: string,
+   opts = null,
+   assumeDefaults = true,
+   skipPixels = true
+): StreamBundle {
+   if (assumeDefaults) {
+      return {
+         firstBytes: true,
+         dataSet: {},
+         partialTag: Buffer.alloc(0),
+         perBufMax: Number(process.env.PER_BUF_MAX ?? 1024 * 12),
+         totalBytes: 0,
+         path,
+         nByteArray: 0,
+         skipPixelData: skipPixels,
+         transferSyntaxUid: TransferSyntaxUid.ExplicitVRLittleEndian,
+      };
+   } else {
+      return {
+         ...opts,
+         path,
+      };
+   }
 }
