@@ -1,21 +1,28 @@
 import { cfg, init } from "./init/init.js";
 import { write } from "./logging/logQ.js";
-import { streamParse } from "./read/read.js";
-import { prettyPrintMap } from "./utilts.js";
+import { multiThreaded } from "./multithreaded.js";
+import { singleTheaded } from "./singlethreaded.js";
 
-(async function (cfg: Global.Config) {
-   if (cfg.verbose) write(`Starting up...`, "INFO");
+/**
+ * Main entry point for the application.
+ * Initializes the application, runs the
+ * multi-threaded and/or single-threaded
+ * DICOM parsing, and shuts down the application.
+ * @param cfg
+ * @returns void
+ */
+(async function main(cfg: Global.Config) {
+   if (cfg.verbose) {
+      write(`Starting up...`, "INFO");
+   }
 
    await init();
+   await multiThreaded(cfg);
+   await singleTheaded(cfg);
 
-   try {
-      const path = `../data/report_structured_report_PI-Contrast.dcm`;
-      // const path = `/Users/chriskennedy/Desktop/aesirax/data/IMG00001.dcm`;
-      // const path =`/Users/chriskennedy/Desktop/aesirax/data/brokenSiemensCT/DICOM/24070314/34580002/40820056`
-      const elements = await streamParse(path);
-      write(`dumping tag data for debug...\n` + prettyPrintMap(elements), "DEBUG");
-   } catch (error) {
-      console.log(error.message);
-      throw error;
+   if (cfg.verbose) {
+      write(`Shutting down...`, "INFO");
    }
+
+   process.exit(0);
 })(cfg);
