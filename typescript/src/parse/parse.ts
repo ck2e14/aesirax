@@ -13,7 +13,7 @@ export type Element = {
    name: string;
    vr: VR;
    length: number;
-   val: string | number | Buffer;
+   value: string | number | Buffer;
    devNote?: string;
 };
 
@@ -92,10 +92,8 @@ export function walk(buffer: Buffer, streamBundle: StreamBundle): PartialTag {
    let cursor = 0;
    let lastTagStart: number = cursor;
 
-   const useLE =
-      streamBundle.transferSyntaxUid === TransferSyntaxUid.ExplicitVRLittleEndian ||
-      streamBundle.transferSyntaxUid === TransferSyntaxUid.ImplicitVRLittleEndian ||
-      streamBundle.transferSyntaxUid === TransferSyntaxUid.JPEG2000Lossless; // WARN VERIFY THIS IS ACCEPTABLE
+   const usingLE = useLE(streamBundle.transferSyntaxUid);
+   write(`Will decode using ${useLE ? "Little Endian" : "Big Endian"} byte order`, "DEBUG");
 
    // This loop works by walking a cursor forward by the appropriate
    // number of bytes after each decode. The amount to walk forward by
@@ -146,7 +144,7 @@ export function walk(buffer: Buffer, streamBundle: StreamBundle): PartialTag {
             throw new BufferBoundaryError(`Tag ${el.tag} is incompletely represeneted in bytes`);
          }
          const valueBuffer = buffer.subarray(cursor, cursor + el.length);
-         el.val = decodeValue(el.vr, valueBuffer, streamBundle);
+         el.value = decodeValue(el.vr, valueBuffer, streamBundle);
 
          // ** Debug printing **
          const longAsFuck = [VR.SQ, VR.OB, VR.UN];
@@ -271,7 +269,7 @@ export function validateDicomHeader(buffer: Buffer): void | never {
  * @param el
  */
 export function printElement(el: Element): void {
-   let str = `Tag: ${el.tag}, Name: ${el.name}, VR: ${el.vr}, Length: ${el.length}, Value: ${el.val}`;
+   let str = `Tag: ${el.tag}, Name: ${el.name}, VR: ${el.vr}, Length: ${el.length}, Value: ${el.value}`;
    if (el.devNote) str += ` DevNote: ${el.devNote}`;
    write(str, "DEBUG");
 }
@@ -293,15 +291,31 @@ export function newElement(): Element {
    return {
       vr: null,
       tag: null,
-      val: null,
+      value: null,
       name: null,
       length: null,
    };
 }
 
 /**
- * Placeholder for implementation
+ * Placeholder for implementation of future VR parsing.
+ * @param vr
  */
 export function UNIMPLEMENTED_VR_PARSING(vr: Global.VR) {
    return `Byte parsing support for VR: ${vr} is unimplemeted in this version`;
+}
+
+/**
+ * Determine whether to use Little Endian byte order
+ * based on the Transfer Syntax UID.
+ * @param tsn
+ * @returns
+ */
+function useLE(tsn: TransferSyntaxUid): boolean {
+   return [
+      TransferSyntaxUid.ExplicitVRLittleEndian,
+      TransferSyntaxUid.ImplicitVRLittleEndian,
+      TransferSyntaxUid.JPEG2000Lossless,
+      TransferSyntaxUid.DeflatedExplicitVRLittleEndian,
+   ].includes(tsn);
 }
