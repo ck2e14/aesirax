@@ -1,3 +1,44 @@
+MAKE INTO A CLI TO SPECIFY OPTIONS/OVERRIDES
+
+
+SUPPORT DICOMDIR TO GET TRANSFER SYNTAXES ETC
+
+
+CRYPTOGRAPHIC TRANSPORT WRAPPING
+- use HTTP(S) for secure TLS out of the box
+- firewall-friendly
+- rich crypto & web ecosystem for HTTP
+- Good excuse to continue using Go & Typescript
+- Lends itself to REST API design 
+- Seamless DICOMWeb integration opportunity 
+- Secured websocket opportunity for realtime transfer at very high speed
+- Integrate OAuth & JWT etc for a very modern feel
+- 
+
+GROUPING BY STUDY 
+should be able to pass a directory that has 1-n study UID's SOP instances present in it, and if there is more than 
+one then it should appropriately segregate the imaging and associate. 
+Would be also cool to have it structure it in a way that directly reflects the DICOM hierarchy.
+This should be as efficient as possible, i.e. at point of parsing, rather than re-iterating through
+parsed datasets to segregate which may be more straightforward but more expensive and slow
+
+DATA REPLACEMENT/ANONYMISATION/PSEUDONYMISATION
+you could look at doing in-place byte replacement. This would require carefully managing 
+value lengths, including possible null byte padding to respect existing lengths, splicing
+bytes in to extend lengths if the existing value length is not sufficient, or 0-lengthing 
+and removing bytes to reflect that new 0 length. Would not bother with pixel data, that sounds
+hella complex tbh. Maybe dabble just to see what's up with pixel data which is just RGB (or similar)
+at the end of the day so perhaps it's not *too* bad(?)
+
+DE/RE-IDENTIFICATION
+Like RSH - only not using libraries, from scratch :)
+
+
+TEST SUITE
+bit concerned this controls the development direction too much and is perhaps better served once 
+the library is a bit more mature. It's only a few days old right now after all. 
+
+
 TRANSFORM STREAM PLUGIN
 // TODO in a future implementation I might consider writing a tranform stream
 // to emit elements as they are parsed from the buffer, which we can then handle

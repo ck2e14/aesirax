@@ -2,7 +2,7 @@ import { write } from "../logging/logQ.js";
 import { DicomErrorType, TransferSyntaxUid } from "../globalEnums.js";
 import { createReadStream } from "fs";
 import { DicomError, UnsupportedTSN } from "../error/errors.js";
-import { HEADER_END, validateHeader, validatePreamble, walk, } from "../parse/parse.js";
+import { HEADER_END, validateHeader, validatePreamble, parse, } from "../parse/parse.js";
 const SMALL_BUF_THRESHOLD = 1024;
 const SMALL_BUF_ADVISORY = `PER_BUF_MAX is less than ${SMALL_BUF_THRESHOLD} bytes. This will work but isn't ideal for I/O efficiency`;
 /**
@@ -40,7 +40,7 @@ export function streamParse(path, skipPixelData = true) {
         });
         stream.on("end", () => {
             write(`Finished: read a total of ${bundle.totalBytes} bytes from ${path}`, "DEBUG");
-            write(`Parsed ${bundle.dataSet.size} elements from ${path}`, "DEBUG");
+            write(`Parsed ${Object.keys(bundle.dataSet).length} elements from ${path}`, "DEBUG");
             resolve(bundle.dataSet);
             stream.close();
         });
@@ -74,7 +74,7 @@ export function handleDicomBytes(bundle, currBytes) {
     }
     else {
         const stichedBuffer = stitchBytes(bundle, currBytes);
-        return walk(stichedBuffer, bundle);
+        return parse(stichedBuffer, bundle);
     }
 }
 /**
@@ -98,7 +98,7 @@ function handleFirstBuffer(bundle, buffer) {
     validateHeader(buffer); // throws if not void
     // window the buffer beyond 'DICM' header
     buffer = buffer.subarray(HEADER_END, buffer.length);
-    const partialElement = walk(buffer, bundle);
+    const partialElement = parse(buffer, bundle);
     const tsn = getElementValue("(0002,0010)", bundle.dataSet);
     // no need to accomodate TSN not present in the first buffer because put a
     // a hard-lock on the min size of buffers to avoid unnecessary complexity

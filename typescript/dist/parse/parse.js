@@ -32,7 +32,7 @@ export const HEADER_END = PREAMBLE_LENGTH + 4;
  * As the name suggests Extended Format VRs are for VRs that may store
  * very large amounts of data, like OB VRs for pixel data.
  *
- * When parsing the byte streams of DICOM files' Tags, we need to walk
+ * When parsing the byte streams of DICOM files' Tags, we need to parse
  * the cursor forward a little differently based on whether its a standard
  * or extended format VR.
  *
@@ -60,7 +60,7 @@ export const HEADER_END = PREAMBLE_LENGTH + 4;
  * Note as well that for futureproofing the DICOM spec demands that there are
  * 2 reserved bytes in the extended format VRs, which aren't yet implemented
  * in the spec as anything, but are still always present (as 0x0000), so we need
- * to know about these so we can walk the cursor forward by the right amount.
+ * to know about these so we can parse the cursor forward by the right amount.
  *
  * Note that this function assumes you've chekced 0-128 bytes for the preamble,
  * and 128-132 bytes for 'DICM' header.
@@ -70,78 +70,159 @@ export const HEADER_END = PREAMBLE_LENGTH + 4;
  * When I say special case I mean it's a shocking design decision by the DICOM
  * committee but one that is far too deeply ingrained as legacy code to remove.
  *
+ * WARN currently with massive pixel data values we're still loading it all into
+ * memory based on our 'is trunated? return and concat' approach. Okay for now.
+ * Can do a discard approach where it's still streamed into memory, which is
+ * pretty much unavoidable, but then instead of returning the buffer we just
+ * return a Buffer.alloc(0) which will fit into the existing strcuture I think.
+ *
  * @param buffer
  * @param elements
  * @returns PartialTag
  */
-export function walk(buffer, streamBundle) {
+export function parse(buffer, streamBundle) {
     const usingLE = useLE(streamBundle.transferSyntaxUid);
-    write(`Decoding using ${usingLE ? "Little Endian" : "Big Endian"} byte order`, "DEBUG");
-    let cursor = 0;
-    let lastTagStart = cursor;
+    const cursor = createCursor();
+    let lastTagStart = cursor.pos;
+    write(`Decoding as ${usingLE ? "Little Endian" : "Big Endian"} byte order`, "DEBUG");
     // This loop works by walking a cursor forward by the appropriate
-    // number of bytes after each decode. The amount to walk forward by
+    // number of bytes after each decode. The amount to parse forward by
     // is governed primarily by the DICOM specification and datatype sizes.
-    while (cursor < buffer.length) {
-        lastTagStart = cursor;
+    while (cursor.pos < buffer.length) {
+        lastTagStart = cursor.pos;
         const el = newElement();
         try {
-            // ** Group & Element Number decoding **
-            const tagBuffer = buffer.subarray(cursor, cursor + ByteLen.TAG_NUM);
-            el.tag = decodeTagNum(tagBuffer);
-            el.name = TagDictByHex[el.tag.toUpperCase()]?.["name"] ?? "Private or Unrecognised Tag";
-            cursor += ByteLen.TAG_NUM;
-            // ** VR decoding **
-            const vrBuffer = buffer.subarray(cursor, cursor + ByteLen.VR);
-            el.vr = decodeVr(vrBuffer);
-            cursor += ByteLen.VR;
-            if (!isVr(el.vr)) {
-                throwUnrecognisedVr(el.vr, vrBuffer);
-            }
-            // ** Value length decoding **
-            el.length = 0;
-            const isExtVr = isExtendedFormatVr(el.vr);
-            if (isExtVr) {
-                cursor += ByteLen.EXT_VR_RESERVED; // 2 reserved bytes can be ignored
-                el.length = useLE ? buffer.readUInt32LE(cursor) : buffer.readUInt32BE(cursor); // Extended VR tags' lengths are 4 bytes, may be enormous
-                cursor += ByteLen.UINT_32;
-                const isUndefinedLength = el.length === 4294967295; // see notes in UndefinedLength class. Spec flaw.
-                if (isUndefinedLength) {
-                    throw new UndefinedLength(`${el.tag} => SQ of undefined length - unsupported ATM.`);
-                }
-            }
-            if (!isExtVr) {
-                el.length = useLE ? buffer.readUInt16LE(cursor) : buffer.readUInt16BE(cursor); // Standard VR tags' lengths are 2 bytes, so max length is 65,535
-                cursor += ByteLen.UINT_16;
-            }
-            // ** Value decoding **
-            if (valueIsTruncated(buffer, cursor, el.length)) {
-                throw new BufferBoundaryError(`Tag ${el.tag} is incompletely represeneted in bytes`);
-            }
-            const valueBuffer = buffer.subarray(cursor, cursor + el.length);
-            el.value = decodeValue(el.vr, valueBuffer, streamBundle);
-            // ** Debug printing **
-            const longAsFuck = [VR.SQ, VR.OB, VR.UN];
-            if (longAsFuck.includes(el.vr)) {
-                el.devNote = UNIMPLEMENTED_VR_PARSING(el.vr);
-                printMinusValue(el);
-            }
-            else {
-                printElement(el);
-            }
-            streamBundle.dataSet[el.tag] = el; // Store fully parsed elements only
-            cursor += el.length; // Move cursor to the start of next tag
+            decodeTagAndMoveCursor(buffer, cursor, el);
+            decodeVRAndMoveCursor(buffer, cursor, el);
+            decodeValueLengthAndMoveCursor(el, cursor, buffer);
+            decodeValueAndMoveCursor(buffer, cursor, el, streamBundle);
+            debugPrint(el);
+            streamBundle.dataSet[el.tag] = el;
+            cursor.walk(el.length); // to next tag
         }
         catch (error) {
-            const partialled = [BufferBoundaryError, DicomError]; // can refine DicomError here because a bit broad but does work atm.
-            const parsingError = partialled.every(ex => !(error instanceof ex));
-            if (parsingError) {
-                throw error; // halt parsing, unrecoverable error. Partialled is because streamed buffer boundaries, parsing error is when unable to handle.
-            }
-            // else trigger buffer stitching by returning our partialled tag in bytes
-            return buffer.subarray(lastTagStart, buffer.length);
+            return handleErrorPathways(error, buffer, lastTagStart);
         }
     }
+}
+/**
+ * Create a cursor object to track the
+ * current position in the buffer.
+ * @returns Cursor
+ */
+function createCursor() {
+    return {
+        pos: 0,
+        walk: function (n) {
+            this.pos += n;
+        },
+    };
+}
+/**
+ * Handle errors that occur during the parsing
+ * of a DICOM file. If the error is unrecoverable
+ * then throw it, otherwise return the partialled
+ * tag in bytes to be stitched to the next buffer.
+ * Partialled is because streamed buffer boundaries,
+ * parsing error is for when the parser is  unable
+ * to handle for some other reason.
+ * @param error
+ * @param buffer
+ * @param lastTagStart
+ * @throws Error
+ * @returns PartialTag
+ */
+function handleErrorPathways(error, buffer, lastTagStart) {
+    const partialled = [BufferBoundaryError, DicomError]; // can refine DicomError here because a bit broad but does work atm.
+    const parsingError = partialled.every(ex => !(error instanceof ex));
+    if (parsingError) {
+        throw error;
+    }
+    return buffer.subarray(lastTagStart, buffer.length);
+}
+/**
+ * Print an element to the console.
+ * @param Element
+ * @returns void
+ */
+function debugPrint(el) {
+    const longAsFuck = [VR.SQ, VR.OB, VR.UN];
+    if (longAsFuck.includes(el.vr)) {
+        el.devNote = UNIMPLEMENTED_VR_PARSING(el.vr);
+        printMinusValue(el);
+    }
+    else {
+        printElement(el);
+    }
+}
+/**
+ * Decode the current element's value and
+ * parse the cursor forward appropriately.
+ * @param buffer
+ * @param cursor
+ * @param el
+ * @param streamBundle
+ * @returns void
+ */
+function decodeValueAndMoveCursor(buffer, cursor, el, streamBundle) {
+    if (valueIsTruncated(buffer, cursor.pos, el.length)) {
+        throw new BufferBoundaryError(`Tag ${el.tag} is incompletely represeneted in bytes`);
+    }
+    const valueBuffer = buffer.subarray(cursor.pos, cursor.pos + el.length);
+    el.value = decodeValue(el.vr, valueBuffer, streamBundle);
+}
+/**
+ * Decode the current element's value length
+ * and parse the cursor forward appropriately.
+ * @param el
+ * @param cursor
+ * @param buffer
+ */
+function decodeValueLengthAndMoveCursor(el, cursor, buffer) {
+    const isExtVr = isExtendedFormatVr(el.vr);
+    if (isExtVr) {
+        cursor.walk(ByteLen.EXT_VR_RESERVED); // 2 reserved bytes can be ignored
+        el.length = useLE ? buffer.readUInt32LE(cursor.pos) : buffer.readUInt32BE(cursor.pos); // Extended VR tags' lengths are 4 bytes, may be enormous
+        cursor.walk(ByteLen.UINT_32);
+    }
+    const isUndefinedLength = el.length === 4294967295; // see notes in UndefinedLength class. Spec flaw.
+    if (isUndefinedLength) {
+        throw new UndefinedLength(`${el.tag} => SQ has undefined length - unsupported ATM.`);
+    }
+    if (!isExtVr) {
+        el.length = useLE ? buffer.readUInt16LE(cursor.pos) : buffer.readUInt16BE(cursor.pos); // Standard VR tags' lengths are 2 bytes, so max length is 65,535
+        cursor.walk(ByteLen.UINT_16);
+    }
+}
+/**
+ * Decode the current element's VR and
+ * parse the cursor forward appropriately.
+ * @param buffer
+ * @param cursor
+ * @param el
+ * @returns void
+ */
+function decodeVRAndMoveCursor(buffer, cursor, el) {
+    const vrBuffer = buffer.subarray(cursor.pos, cursor.pos + ByteLen.VR);
+    el.vr = decodeVr(vrBuffer);
+    cursor.walk(ByteLen.VR);
+    if (!isVr(el.vr)) {
+        throwUnrecognisedVr(el.vr, vrBuffer);
+    }
+}
+/**
+ * Decode the current element's tag and
+ * parse the cursor forward appropriately.
+ * @param buffer
+ * @param cursor
+ * @param el
+ * @returns void
+ */
+function decodeTagAndMoveCursor(buffer, cursor, el) {
+    const tagBuffer = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM);
+    el.tag = decodeTagNum(tagBuffer);
+    el.name = TagDictByHex[el.tag.toUpperCase()]?.["name"] ?? "Private or Unrecognised Tag";
+    cursor.walk(ByteLen.TAG_NUM);
 }
 /**
  * Assess whether there are any bytes left in the buffer
@@ -156,7 +237,7 @@ function bytesLeft(buffer, cursor) {
 /**
  * Assess whether there are enough bytes left in the buffer to
  * decode the next tag. If not, return the truncated tag. Saves
- * redundant work and allows early return in walk() to pass back
+ * redundant work and allows early return in parse() to pass back
  * a buffer to be stitched to the next streamed buffer.
  * @param buffer
  * @param cursor

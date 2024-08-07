@@ -9,7 +9,7 @@ import {
    PartialTag,
    validateHeader,
    validatePreamble,
-   walk,
+   parse,
 } from "../parse/parse.js";
 
 export type StreamBundle = {
@@ -67,7 +67,7 @@ export function streamParse(path: string, skipPixelData = true): Promise<DataSet
 
       stream.on("end", () => {
          write(`Finished: read a total of ${bundle.totalBytes} bytes from ${path}`, "DEBUG");
-         write(`Parsed ${bundle.dataSet.size} elements from ${path}`, "DEBUG");
+         write(`Parsed ${Object.keys(bundle.dataSet).length} elements from ${path}`, "DEBUG");
          resolve(bundle.dataSet);
          stream.close();
       });
@@ -105,7 +105,7 @@ export function handleDicomBytes(bundle: StreamBundle, currBytes: Buffer): Parti
       return handleFirstBuffer(bundle, currBytes);
    } else {
       const stichedBuffer = stitchBytes(bundle, currBytes);
-      return walk(stichedBuffer, bundle);
+      return parse(stichedBuffer, bundle);
    }
 }
 
@@ -132,7 +132,7 @@ function handleFirstBuffer(bundle: StreamBundle, buffer: Buffer): PartialTag {
    // window the buffer beyond 'DICM' header
    buffer = buffer.subarray(HEADER_END, buffer.length);
 
-   const partialElement = walk(buffer, bundle);
+   const partialElement = parse(buffer, bundle);
    const tsn = getElementValue<string>("(0002,0010)", bundle.dataSet);
    // no need to accomodate TSN not present in the first buffer because put a
    // a hard-lock on the min size of buffers to avoid unnecessary complexity

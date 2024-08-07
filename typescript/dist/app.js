@@ -1,11 +1,12 @@
 import { cfg, init } from "./init/init.js";
 import { write } from "./logging/logQ.js";
-import { singleTheaded } from "./singlethreaded.js";
+import { multiThreaded } from "./multithreaded.js";
 /**
  * Main entry point for the application.
  * Initializes the application, runs the
  * multi-threaded and/or single-threaded
  * DICOM parsing, and shuts down the application.
+ *
  * @param cfg
  * @returns void
  */
@@ -14,8 +15,8 @@ import { singleTheaded } from "./singlethreaded.js";
         write(`Starting up...`, "INFO");
     }
     await init();
-    // await multiThreaded(cfg);
-    await singleTheaded(cfg);
+    await multiThreaded(cfg);
+    // await singleTheaded(cfg);
     setTimeout(() => {
         if (cfg.verbose) {
             write(`Completed work - shutting down.`, "INFO");
