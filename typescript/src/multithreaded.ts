@@ -42,31 +42,43 @@ export async function multiThreaded(cfg: Global.Config) {
  */
 function createWork(dataSets: any[], dicomFiles: string[]) {
    const worker = new Worker("./dist/worker.js");
-   
+
    const workerPromise = new Promise<void>((resolve, reject) => {
-      worker.on("message", (msg: any) => {
-         dataSets.push(msg.data);
-
-         if (dicomFiles.length > 0) {
-            worker.postMessage({ filepath: dicomFiles.pop() });
-         } else {
-            worker.terminate();
-            resolve();
-         }
-      });
-
-      worker.on("error", error => {
-         reject(error);
-      });
-
-      worker.on("exit", code => {
-         if (code !== 0) {
-            reject(new Error(`Worker stopped with exit code ${code}`));
-         }
-      });
-
+      addEvents(worker, dataSets, dicomFiles, resolve, reject);
       worker.postMessage({ filepath: dicomFiles.pop() });
    });
 
    return workerPromise;
+}
+
+/**
+ * Add event listeners to the worker thread
+ * @param worker
+ * @param dataSets
+ * @param dicomFiles
+ * @param resolve
+ * @param reject
+ * @returns void
+ */
+function addEvents(worker: Worker, dataSets: any[], dicomFiles: string[], resolve, reject) {
+   worker.on("message", (msg: any) => {
+      dataSets.push(msg.data);
+
+      if (dicomFiles.length > 0) {
+         worker.postMessage({ filepath: dicomFiles.pop() });
+      } else {
+         worker.terminate();
+         resolve();
+      }
+   });
+
+   worker.on("error", error => {
+      reject(error);
+   });
+
+   worker.on("exit", code => {
+      if (code !== 0) {
+         reject(new Error(`Worker stopped with exit code ${code}`));
+      }
+   });
 }
