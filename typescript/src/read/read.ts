@@ -23,6 +23,8 @@ export type StreamBundle = {
    skipPixelData: boolean;
    transferSyntaxUid: TransferSyntaxUid;
    usingLE: boolean;
+   currentlyWithinSequence?: boolean;
+   currSqTag?: string
 };
 
 const SMALL_BUF_THRESHOLD = 1024;
@@ -71,6 +73,7 @@ export function streamParse(path: string, skipPixelData = true): Promise<DataSet
          write(`Parsed ${Object.keys(bundle.dataSet).length} elements from ${path}`, "DEBUG");
          resolve(bundle.dataSet);
          stream.close();
+         3;
       });
 
       stream.on("error", error => {

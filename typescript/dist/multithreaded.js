@@ -10,6 +10,7 @@ import { findDICOM } from "./utilts.js";
 export async function multiThreaded(cfg) {
     const start = performance.now();
     const workerPromises = [];
+    // const dicomFiles = findDICOM( `/Users/chriskennedy/Desktop/aesirax/data/Pi`);
     const dicomFiles = findDICOM(cfg.targetDir ?? `/Users/chriskennedy/Desktop/aesirax/data/Pi`);
     const dataSets = [];
     const nWorkers = cpus().length > dicomFiles.length ? dicomFiles.length : cpus().length; // this could be refined because one massive file also benefits from multiple workers
@@ -59,11 +60,12 @@ function addEvents(worker, dataSets, dicomFiles, resolve, reject) {
         }
     });
     worker.on("error", error => {
-        console.log("!!! Unhandled error", error);
+        console.log(`error handler reached`);
         reject(error);
     });
     worker.on("exit", code => {
         if (code !== 0) {
+            console.log(`exit handler reached`);
             reject(new Error(`Worker stopped with exit code ${code}`));
         }
     });

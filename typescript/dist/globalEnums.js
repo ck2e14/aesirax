@@ -47380,6 +47380,12 @@ export const TagDictByName = {
     },
 };
 export const TagDictByHex = {
+    "(fffe,e000)": {
+        tag: "(fffe,e000)",
+        vr: 'special',
+        name: "Item",
+        version: "DICOM"
+    },
     "(0000,0000)": {
         tag: "(0000,0000)",
         vr: "UL",
