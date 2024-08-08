@@ -15,4 +15,8 @@ parentPort.on("message", async (msg) => {
         });
     }
 });
+process.on("uncaughtException", error => {
+    console.error("Uncaught Exception22222222:", error);
+    parentPort.postMessage({ error: error.message });
+});
 //# sourceMappingURL=worker.js.map

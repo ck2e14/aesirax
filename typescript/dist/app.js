@@ -1,6 +1,6 @@
 import { cfg, init } from "./init/init.js";
 import { write } from "./logging/logQ.js";
-import { multiThreaded } from "./multithreaded.js";
+import { singleTheaded } from "./singlethreaded.js";
 /**
  * Main entry point for the application.
  * Initializes the application, runs the
@@ -14,9 +14,10 @@ import { multiThreaded } from "./multithreaded.js";
     if (cfg.verbose) {
         write(`Starting up...`, "INFO");
     }
+    cfg.targetDir = "/Users/chriskennedy/Desktop/aesirax/data/isolat";
     await init();
-    await multiThreaded(cfg);
-    // await singleTheaded(cfg);
+    // await multiThreaded(cfg);
+    await singleTheaded(cfg);
     setTimeout(() => {
         if (cfg.verbose) {
             write(`Completed work - shutting down.`, "INFO");

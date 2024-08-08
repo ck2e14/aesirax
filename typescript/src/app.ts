@@ -8,7 +8,7 @@ import { singleTheaded } from "./singlethreaded.js";
  * Initializes the application, runs the
  * multi-threaded and/or single-threaded
  * DICOM parsing, and shuts down the application.
- * 
+ *
  * @param cfg
  * @returns void
  */
@@ -17,9 +17,11 @@ import { singleTheaded } from "./singlethreaded.js";
       write(`Starting up...`, "INFO");
    }
 
+   cfg.targetDir = "/Users/chriskennedy/Desktop/aesirax/data/isolat";
+
    await init();
-   await multiThreaded(cfg);
-   // await singleTheaded(cfg);
+   // await multiThreaded(cfg);
+   await singleTheaded(cfg);
 
    setTimeout(() => {
       if (cfg.verbose) {

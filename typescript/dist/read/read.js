@@ -43,6 +43,7 @@ export function streamParse(path, skipPixelData = true) {
             write(`Parsed ${Object.keys(bundle.dataSet).length} elements from ${path}`, "DEBUG");
             resolve(bundle.dataSet);
             stream.close();
+            3;
         });
         stream.on("error", error => {
             reject(DicomError.from(error, DicomErrorType.READ));

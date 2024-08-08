@@ -20,7 +20,7 @@ export async function singleTheaded(cfg: Global.Config) {
    }
 
    const end = performance.now();
-   console.log(dataSets);
+   // console.log(dataSets);
 
    // dataSets.forEach((data, i) =>
    //    console.log(`Dataset ${i + 1}: ${JSON.stringify(data, null, 3)}`, "DEBUG")
