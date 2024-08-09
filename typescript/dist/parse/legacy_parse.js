@@ -1,7 +1,7 @@
 // import { DicomError } from "../error/dicomError.js";
 // import { ByteLen, DicomErrorType } from "../globalEnums.js";
 // import { write } from "../logging/logQ.js";
-// import { StreamBundle } from "../read/read.js";
+// import { StreamContext } from "../read/read.js";
 // import { decodeTagNum } from "./tagNums.js";
 // import { isVr } from "./typeGuards.js";
 // import { decodeVr, decodeValue } from "./valueDecoders.js";

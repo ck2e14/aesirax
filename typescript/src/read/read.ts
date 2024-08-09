@@ -12,7 +12,7 @@ import {
    parse,
 } from "../parse/parse.js";
 
-export type StreamBundle = {
+export type StreamContext = {
    firstBytes: boolean;
    dataSet: DataSet;
    partialTag: Buffer;
@@ -23,7 +23,7 @@ export type StreamBundle = {
    skipPixelData: boolean;
    transferSyntaxUid: TransferSyntaxUid;
    usingLE: boolean;
-   currentlyWithinSequence?: boolean;
+   inSequence?: boolean;
    currSqTag?: string;
    sequenceBytesTraversed?: number; // TODO make sure we are resetting this at the end of each SQ parse.
 };
@@ -101,7 +101,7 @@ function isSupportedTSN(uid: string): uid is TransferSyntaxUid {
  * @param currBytes
  * @returns PartialTag (byte[])
  */
-export function handleDicomBytes(bundle: StreamBundle, currBytes: Buffer): PartialTag {
+export function handleDicomBytes(bundle: StreamContext, currBytes: Buffer): PartialTag {
    const { path, nByteArray } = bundle;
 
    write(`Reading buffer (#${nByteArray} - ${currBytes.length} bytes) (${path})`, "DEBUG");
@@ -130,7 +130,7 @@ export function handleDicomBytes(bundle: StreamBundle, currBytes: Buffer): Parti
  * @throws DicomError
  * @returns PartialTag (byte[])
  */
-function handleFirstBuffer(bundle: StreamBundle, buffer: Buffer): PartialTag {
+function handleFirstBuffer(bundle: StreamContext, buffer: Buffer): PartialTag {
    validatePreamble(buffer); // throws if not void
    validateHeader(buffer); // throws if not void
 
@@ -158,7 +158,7 @@ function handleFirstBuffer(bundle: StreamBundle, buffer: Buffer): PartialTag {
  * @param currBytes
  * @returns Buffer
  */
-function stitchBytes(bundle: StreamBundle, currBytes: Buffer): Buffer {
+function stitchBytes(bundle: StreamContext, currBytes: Buffer): Buffer {
    const { partialTag, path } = bundle;
    write(`Stitching ${partialTag.length} + ${currBytes.length} bytes (${path})`, "DEBUG");
    return Buffer.concat([partialTag, currBytes]);
@@ -181,7 +181,7 @@ function getElementValue<T = unknown>(tag: TagStr, elements: DataSet): T {
 }
 
 /**
- * bundleFactory() is a factory function for creating a StreamBundle
+ * bundleFactory() is a factory function for creating a StreamContext
  * with default values for the first buffer read from disk.
  * @param path
  * @param skipPixels
@@ -192,7 +192,7 @@ function bundleFactory(
    opts = null,
    assumeDefaults = true,
    skipPixels = true
-): StreamBundle {
+): StreamContext {
    if (assumeDefaults) {
       return {
          firstBytes: true,
