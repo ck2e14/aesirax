@@ -87,7 +87,7 @@ export const HEADER_END = PREAMBLE_LENGTH + 4;
 export function parse(buffer, ctx) {
     var _a, _b;
     ctx.usingLE = useLE(ctx.transferSyntaxUid);
-    if (ctx.firstBytes) {
+    if (ctx.first) {
         write(`Decoding as ${ctx.usingLE ? "Little Endian" : "Big Endian"} byte order`, "DEBUG");
     }
     const cursor = newCursor();
@@ -240,6 +240,8 @@ function decodeValueAndMoveCursor(buffer, cursor, el, StreamContext) {
  * properties as we enter and exit nested sequences. Not going to be too hard to implement.
  *
  * So far I've tested this on a sequence with undefined length and undefined length items.
+ * "/Users/chriskennedy/Desktop/aesirax/data/isolat";
+ *
  * Need to test on:
  *   - a sequence with undefined length, but defined item lengths
  *   - a sequence with defined length, but undefined item lengths
@@ -301,25 +303,25 @@ function decodeValueLengthAndMoveCursor(el, cursor, buffer, context) {
         _decodeValueLength(el, buffer, cursor, context); // Extended VR tags' lengths are 4 bytes, may be enormous
         cursor.walk(ByteLen.UINT_32);
     }
-    // if SQ, length is defined, and its not 0, parse it according to table:
-    // https://dicom.nema.org/medical/dicom/current/output/chtml/part05/sect_7.5.2.html#table_7.5-1
     const definedLength = el.vr === VR.SQ && el.length !== 0 && el.length !== 4294967295;
     if (isExtVr && definedLength) {
+        // if SQ, length is defined, and its not 0, parse it according to table:
+        // https://dicom.nema.org/medical/dicom/current/output/chtml/part05/sect_7.5.2.html#table_7.5-1
         // TODO
         throw new Error("Defined length SQs are not yet supported");
     }
-    // if SQ, & length is specified, but its 0, we don't need to handle it
-    // and have no further walking to do. We can just return early.
     const definedLengthButZero = el.vr === VR.SQ && el.length === 0;
     if (isExtVr && definedLengthButZero) {
+        // if SQ, & length is specified, but its 0, we don't need to handle it
+        // and have no further walking to do. We can just return early.
         return true;
     }
-    // if SQ, & length is undefined, parse it according to table:
-    // https://dicom.nema.org/medical/dicom/current/output/chtml/part05/sect_7.5.2.html#table_7.5-3
     const undefinedLength = el.vr === VR.SQ && el.length === 4294967295;
     if (isExtVr && undefinedLength) {
         write("Encountered an SQ - will recursively parse. SQ tag: " + el.tag, "DEBUG");
-        // first we want to isolate the bytes from the start of the first item in the sequence.
+        // if SQ, & length is undefined, parse it according to table:
+        // https://dicom.nema.org/medical/dicom/current/output/chtml/part05/sect_7.5.2.html#table_7.5-3
+        // First, we want to isolate the bytes from the start of the first item in the sequence.
         // we don't know where the end is, or even if the current buffer is long enough to contain
         // the entire sequence. So we'll pass all bytes, even if that's beyond the end of the sequence,
         // to our sequence parsing logic. We've amended parse() so that it knows when to return early

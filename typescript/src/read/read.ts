@@ -13,8 +13,9 @@ import {
 } from "../parse/parse.js";
 
 export type StreamContext = {
-   firstBytes: boolean;
+   first: boolean;
    dataSet: DataSet;
+   dataSetStack: DataSet[];
    partialTag: Buffer;
    perBufMax: number;
    lastTagStart: number;
@@ -45,35 +46,35 @@ const SMALL_BUF_ADVISORY = `PER_BUF_MAX is less than ${SMALL_BUF_THRESHOLD} byte
  * @throws DicomError
  */
 export function streamParse(path: string, skipPixelData = true): Promise<DataSet> {
-   const bundle = bundleFactory(path, null, true, skipPixelData);
+   const ctx = ctxFactory(path, null, true, skipPixelData);
 
-   if (bundle.perBufMax < HEADER_END + 1) {
+   if (ctx.perBufMax < HEADER_END + 1) {
       throw new DicomError({
          message: `PER_BUF_MAX must be at least ${HEADER_END + 1} bytes.`,
          errorType: DicomErrorType.BUNDLE_CONFIG,
       });
    }
 
-   if (bundle.perBufMax < SMALL_BUF_THRESHOLD) {
+   if (ctx.perBufMax < SMALL_BUF_THRESHOLD) {
       write(SMALL_BUF_ADVISORY, "WARN");
    }
 
    return new Promise<DataSet>((resolve, reject) => {
       const stream = createReadStream(path, {
-         highWaterMark: bundle.perBufMax,
+         highWaterMark: ctx.perBufMax,
       });
 
       stream.on("data", (currBytes: Buffer) => {
          write(`Received ${currBytes.length} bytes from ${path}`, "DEBUG");
-         bundle.nByteArray = bundle.nByteArray + 1;
-         bundle.totalBytes = bundle.totalBytes + currBytes.length;
-         bundle.partialTag = handleDicomBytes(bundle, currBytes); // update partialTag with any partially read tag from current buffer
+         ctx.nByteArray = ctx.nByteArray + 1;
+         ctx.totalBytes = ctx.totalBytes + currBytes.length;
+         ctx.partialTag = handleDicomBytes(ctx, currBytes); // update partialTag with any partially read tag from current buffer
       });
 
       stream.on("end", () => {
-         write(`Finished: read a total of ${bundle.totalBytes} bytes from ${path}`, "DEBUG");
-         write(`Parsed ${Object.keys(bundle.dataSet).length} elements from ${path}`, "DEBUG");
-         resolve(bundle.dataSet);
+         write(`Finished: read a total of ${ctx.totalBytes} bytes from ${path}`, "DEBUG");
+         write(`Parsed ${Object.keys(ctx.dataSet).length} elements from ${path}`, "DEBUG");
+         resolve(ctx.dataSet);
          stream.close();
          3;
       });
@@ -98,20 +99,20 @@ function isSupportedTSN(uid: string): uid is TransferSyntaxUid {
  * handleDicomBytes() is a helper function for streamParse()
  * to handle the logic of reading a new buffer from disk, and
  * stitching it to the previous bytes where required.
- * @param bundle
+ * @param ctx
  * @param currBytes
  * @returns PartialTag (byte[])
  */
-export function handleDicomBytes(bundle: StreamContext, currBytes: Buffer): PartialTag {
-   const { path, nByteArray } = bundle;
+export function handleDicomBytes(ctx: StreamContext, currBytes: Buffer): PartialTag {
+   const { path, nByteArray } = ctx;
 
    write(`Reading buffer (#${nByteArray} - ${currBytes.length} bytes) (${path})`, "DEBUG");
 
-   if (bundle.firstBytes) {
-      return handleFirstBuffer(bundle, currBytes);
+   if (ctx.first) {
+      return handleFirstBuffer(ctx, currBytes);
    } else {
-      const stichedBuffer = stitchBytes(bundle, currBytes);
-      return parse(stichedBuffer, bundle);
+      const stichedBuffer = stitchBytes(ctx, currBytes);
+      return parse(stichedBuffer, ctx);
    }
 }
 
@@ -126,28 +127,28 @@ export function handleDicomBytes(bundle: StreamContext, currBytes: Buffer): Part
  * Little Endian Transfer Syntax, as laid out in the DICOM spec at PS3.5
  * https://dicom.nema.org/medical/dicom/current/output/chtml/part05/PS3.5.html
  *
- * @param bundle
+ * @param ctx
  * @param buffer
  * @throws DicomError
  * @returns PartialTag (byte[])
  */
-function handleFirstBuffer(bundle: StreamContext, buffer: Buffer): PartialTag {
+function handleFirstBuffer(ctx: StreamContext, buffer: Buffer): PartialTag {
    validatePreamble(buffer); // throws if not void
    validateHeader(buffer); // throws if not void
 
    // window the buffer beyond 'DICM' header
    buffer = buffer.subarray(HEADER_END, buffer.length);
 
-   const partialElement = parse(buffer, bundle);
-   const tsn = getElementValue<string>("(0002,0010)", bundle.dataSet);
+   const partialElement = parse(buffer, ctx);
+   const tsn = getElementValue<string>("(0002,0010)", ctx.dataSet);
    // no need to accomodate TSN not present in the first buffer because put a
    // a hard-lock on the min size of buffers to avoid unnecessary complexity
 
    if (tsn && !isSupportedTSN(tsn)) {
       throw new UnsupportedTSN(`TSN: ${tsn} is unsupported.`);
    } else if (isSupportedTSN(tsn)) {
-      bundle.transferSyntaxUid = tsn ?? TransferSyntaxUid.ExplicitVRLittleEndian;
-      bundle.firstBytes = false;
+      ctx.transferSyntaxUid = tsn ?? TransferSyntaxUid.ExplicitVRLittleEndian;
+      ctx.first = false;
       return partialElement;
    }
 }
@@ -159,8 +160,8 @@ function handleFirstBuffer(bundle: StreamContext, buffer: Buffer): PartialTag {
  * @param currBytes
  * @returns Buffer
  */
-function stitchBytes(bundle: StreamContext, currBytes: Buffer): Buffer {
-   const { partialTag, path } = bundle;
+function stitchBytes(ctx: StreamContext, currBytes: Buffer): Buffer {
+   const { partialTag, path } = ctx;
    write(`Stitching ${partialTag.length} + ${currBytes.length} bytes (${path})`, "DEBUG");
    return Buffer.concat([partialTag, currBytes]);
 }
@@ -182,13 +183,13 @@ function getElementValue<T = unknown>(tag: TagStr, elements: DataSet): T {
 }
 
 /**
- * bundleFactory() is a factory function for creating a StreamContext
+ * ctxFactory() is a factory function for creating a StreamContext
  * with default values for the first buffer read from disk.
  * @param path
  * @param skipPixels
  * @returns
  */
-function bundleFactory(
+function ctxFactory(
    path: string,
    opts = null,
    assumeDefaults = true,
@@ -196,7 +197,7 @@ function bundleFactory(
 ): StreamContext {
    if (assumeDefaults) {
       return {
-         firstBytes: true,
+         first: true,
          dataSet: {},
          partialTag: Buffer.alloc(0),
          perBufMax: Number(process.env.PER_BUF_MAX ?? 1024 * 12),
