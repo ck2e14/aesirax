@@ -191,6 +191,10 @@
   },
   "(0008,1032)": {
     "tag": "(0008,1032)",
+    "name": "ProcedureCodeSequence",
+    "vr": "SQ",
+    "length": null,
+    "value": null,
     "items": [
       {
         "(0008,0100)": {
@@ -215,11 +219,7 @@
           "length": 18
         }
       }
-    ],
-    "vr": "SQ",
-    "length": null,
-    "value": null,
-    "name": "ProcedureCodeSequence"
+    ]
   },
   "(0008,103e)": {
     "vr": "LO",
@@ -251,6 +251,10 @@
   },
   "(0008,1110)": {
     "tag": "(0008,1110)",
+    "name": "ReferencedStudySequence",
+    "vr": "SQ",
+    "length": null,
+    "value": null,
     "items": [
       {
         "(0008,1150)": {
@@ -268,11 +272,7 @@
           "length": 48
         }
       }
-    ],
-    "vr": "SQ",
-    "length": null,
-    "value": null,
-    "name": "ReferencedStudySequence"
+    ]
   },
   "(0010,0010)": {
     "vr": "PN",
@@ -766,6 +766,10 @@
   },
   "(0040,0275)": {
     "tag": "(0040,0275)",
+    "name": "RequestAttributesSequence",
+    "vr": "SQ",
+    "length": null,
+    "value": null,
     "items": [
       {
         "(0032,1060)": {
@@ -797,11 +801,7 @@
           "length": 8
         }
       }
-    ],
-    "vr": "SQ",
-    "length": null,
-    "value": null,
-    "name": "RequestAttributesSequence"
+    ]
   },
   "(7005,0010)": {
     "vr": "LO",
