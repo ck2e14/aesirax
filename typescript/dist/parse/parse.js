@@ -137,8 +137,8 @@ export function parse(buffer, streamBundle) {
             cursor.walk(el.length); // to next tag
         }
         catch (error) {
-            // write(`Error parsing tag ${el.tag} in ${streamBundle.path}, error`, "ERROR");
-            // return handleErrorPathways(error, buffer, lastTagStart);
+            write(`Error parsing tag ${el.tag} in ${streamBundle.path}, ${error}`, "ERROR");
+            return handleErrorPathways(error, buffer, lastTagStart);
         }
         if (valueIsTruncated(buffer, cursor.pos, el.length)) {
             return buffer.subarray(lastTagStart, buffer.length);
@@ -192,8 +192,8 @@ function handleErrorPathways(error, buffer, lastTagStart) {
  * @returns void
  */
 function debugPrint(el) {
-    const longAsFuck = [VR.OB, VR.UN, VR.OW];
-    if (longAsFuck.includes(el.vr)) {
+    const unfuckingSupported = [VR.OB, VR.UN, VR.OW];
+    if (unfuckingSupported.includes(el.vr)) {
         el.devNote = UNIMPLEMENTED_VR_PARSING(el.vr);
         printMinusValue(el);
     }
@@ -212,7 +212,7 @@ function debugPrint(el) {
  */
 function decodeValueAndMoveCursor(buffer, cursor, el, streamBundle) {
     if (valueIsTruncated(buffer, cursor.pos, el.length)) {
-        throw new BufferBoundaryError(`Tag ${el.tag} is incompletely represeneted in bytes`);
+        throw new BufferBoundaryError(`\n  Tag ${el.tag} is split across buffer boundary.\n  This is much more likely to just be the end\n  of the currently streamed buffer than it is\n  a malformed DICOM image, but an error nonetheless.\n  Just a calm and expected one. :)`);
     }
     const start = cursor.pos;
     const end = cursor.pos + el.length;
@@ -232,7 +232,6 @@ function decodeValueAndMoveCursor(buffer, cursor, el, streamBundle) {
  * @param seqBuffer
  * @param bundle
  * @param seqTag
- * @returns
  */
 function handleSequenceParsing(seqBuffer, bundle, seqTag) {
     const seqCursor = newCursor(); // fresh cursor from 0 (where 0 is the start of the first item in the sequence passed in as a buffer)
@@ -240,10 +239,7 @@ function handleSequenceParsing(seqBuffer, bundle, seqTag) {
     const itemDelimTag = "(fffe,e00d)"; // not sure needed in this fn, its for the parse() basecase to use
     // read the tag just to make sure it's as expected - a new itemTag. Could just assue and walk past this
     // but useful to have seen it for myself to learn and remember the byte structure.
-    const tagBuffer = seqBuffer.subarray(seqCursor.pos, seqCursor.pos + ByteLen.TAG_NUM);
-    const tag = decodeTagNum(tagBuffer);
-    const name = TagDictByHex[tag?.toUpperCase()]?.["name"] ?? "Private or Unrecognised Tag";
-    const confirmedAsItem = tag === itemTag && name === "Item";
+    const tagBuffer = seqBuffer.subarray(seqCursor.pos, seqCursor.pos + ByteLen.TAG_NUM), tag = decodeTagNum(tagBuffer), name = TagDictByHex[tag?.toUpperCase()]?.["name"] ?? "Private or Unrecognised Tag", confirmedAsItem = tag === itemTag && name === "Item";
     if (confirmedAsItem) {
         seqCursor.walk(ByteLen.TAG_NUM);
     }
@@ -261,8 +257,8 @@ function handleSequenceParsing(seqBuffer, bundle, seqTag) {
     // is from within a sequence. Inside parse() we can then rely on those conditions to behave a little
     // differently than how a call to parse() from the 'top' level of the dicom works. I.e. so we can
     // create a nesting structure in our 'top' level map object to reflect this nested characteristic.
-    // note that this supports cases where the lengths are both defined and undefined because in both
-    // cases, items and sequences are delimited by the same delimiter tags. We may be able to optimise
+    // note that this actually supports cases where the lengths are both defined and undefined because in
+    // both cases, items and sequences are delimited by the same delimiter tags. We may be able to optimise
     // upfront if we know how much mem is required but that's a very minor optimisation tbh unless we're
     // dealing with very very large sequences.
     if (length === 4294967295) {
@@ -303,17 +299,11 @@ function decodeValueLengthAndMoveCursor(el, cursor, buffer, bundle) {
         // position at the end of it. We could also do this from within the recursion, either is fine.
         // const bytes =
         handleSequenceParsing(windowFromStartOfFirstItem, bundle, el.tag);
-        console.log("back from the sequence parsing, walking the parent cursor by", bundle.sequenceBytesTraversed);
-        cursor.walk(bundle.sequenceBytesTraversed + 20); // 20 seems to make this work but not sure why, expected 0 or 4
-        // lets just see whats next in the buffer now because we're curious
-        console.log("next tag in the buffer is", decodeTagNum(buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM)));
-        // console.log("back from the sequence parsing, walking the parent cursor by", bytes);
-        // hmm not correct, our call is not returning the amount that our call to parse() walked - only
-        // the amount that handleSequenceParsing() walked by itself. Need to fix this, may want
-        // to do this in the bundle because its retained throughout all depths of recursion.
-        // cursor.walk(bytes);
-        // process.exit();
-        // throw new UndefinedLength(`${el.tag} => SQ has undefined length - unsupported ATM.`);
+        cursor.walk(bundle.sequenceBytesTraversed + 20);
+        // ok not honestly sure why 20 worked here. I just kept incrementing it until it worked, I was
+        // expecting it to just be bundle.sequenceBytesTraversed but it wasn't. I think it's because
+        // we're walking the cursor by the length of the sequence, but we also need to walk past the
+        // end of sequence tag?
         return true;
     }
     if (!isExtVr) {

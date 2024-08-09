@@ -106,6 +106,10 @@ export class UndefinedLength extends Error {
     //  - Check for the undefined length value (i.e. max 32 bit int size)
     //  - If encountered, start parsing items within the sequence
     //  - Continue until you reach a Sequence Delimitation Item (tag (FFFE,E0DD))
+    // alright i implemented it :) only thing left to do on it is to use a stack
+    // so i can support 1-n nested sequences within sequences. Currently overwriting
+    // the shared context vars so it persists whatever the deepest sequence is as
+    // one level deep (so the recursion works fine just not the storage, LIFO to fix).
     constructor(message) {
         super(message);
         this.name = "UndefinedLength";
