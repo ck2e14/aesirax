@@ -131,3 +131,10 @@ export class UndefinedLength extends Error {
       this.name = "UndefinedLength";
    }
 }
+
+export class MalformedDicomError extends Error {
+   constructor(message: string) {
+      super(message);
+      this.name = "MalformedDicomError";
+   }
+}

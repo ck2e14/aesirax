@@ -24,7 +24,8 @@ export type StreamBundle = {
    transferSyntaxUid: TransferSyntaxUid;
    usingLE: boolean;
    currentlyWithinSequence?: boolean;
-   currSqTag?: string
+   currSqTag?: string;
+   sequenceBytesTraversed?: number; // TODO make sure we are resetting this at the end of each SQ parse.
 };
 
 const SMALL_BUF_THRESHOLD = 1024;

@@ -111,4 +111,10 @@ export class UndefinedLength extends Error {
         this.name = "UndefinedLength";
     }
 }
+export class MalformedDicomError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = "MalformedDicomError";
+    }
+}
 //# sourceMappingURL=errors.js.map

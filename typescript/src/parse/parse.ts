@@ -1,4 +1,9 @@
-import { BufferBoundaryError, DicomError, UndefinedLength } from "../error/errors.js";
+import {
+   BufferBoundaryError,
+   DicomError,
+   MalformedDicomError,
+   UndefinedLength,
+} from "../error/errors.js";
 import { ByteLen, DicomErrorType, TagDictByHex, TransferSyntaxUid, VR } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
 import { StreamBundle } from "../read/read.js";
@@ -139,20 +144,23 @@ export function parse(buffer: Buffer, streamBundle: StreamBundle) {
          if (streamBundle.currentlyWithinSequence && el.tag === ("(fffe,e00d)" as TagStr)) {
             console.log("end of the entire sequence, returning from recursion");
             streamBundle.dataSet[streamBundle.currSqTag].items.push(itemDataSet);
-            // the next 4 bytes represent the Item Length of the End of Sequence Item which will
-            // also be a max 32bit int. We can skip these bytes and move to the next tag. We'll
-            // do this in the caller function however.
+            streamBundle.sequenceBytesTraversed = cursor.pos;
             return;
          }
 
          decodeVRAndMoveCursor(buffer, cursor, el);
-         decodeValueLengthAndMoveCursor(el, cursor, buffer, streamBundle);
+
+         const wasSeq = decodeValueLengthAndMoveCursor(el, cursor, buffer, streamBundle);
+
+         if (wasSeq) {
+            continue; // already handled decoding value the value (nested items) and walked the cursor
+         }
+
          decodeValueAndMoveCursor(buffer, cursor, el, streamBundle);
          debugPrint(el);
 
          if (streamBundle.currentlyWithinSequence) {
-            // if we're in a sequence add it to the nested item's
-            // dataset
+            // if we're in a sequence add it to the nested item's dataset
             itemDataSet[el.tag] = el;
          } else {
             // if not in a sequence add to the top level dataset
@@ -161,8 +169,8 @@ export function parse(buffer: Buffer, streamBundle: StreamBundle) {
 
          cursor.walk(el.length); // to next tag
       } catch (error) {
-         write(`Error parsing tag ${el.tag} in ${streamBundle.path}`, "ERROR");
-         return handleErrorPathways(error, buffer, lastTagStart);
+         // write(`Error parsing tag ${el.tag} in ${streamBundle.path}, error`, "ERROR");
+         // return handleErrorPathways(error, buffer, lastTagStart);
       }
 
       if (valueIsTruncated(buffer, cursor.pos, el.length)) {
@@ -260,20 +268,14 @@ function decodeValueAndMoveCursor(
    el.value = decodeValue(el.vr, valueBuffer, streamBundle);
 }
 
-//
-//
-//
-//
 type TraversedBytes = number;
-function parseSequenceStartingAtFirstItem(
-   seqBuffer: Buffer,
-   bundle: StreamBundle,
-   seqTag: string
-): TraversedBytes {
-   let n: TraversedBytes = 0; // required to sync our parent cursor
-   const itemTag: TagStr = "(fffe,e000)" as TagStr;
-   const itemDelimTag: TagStr = "(fffe,e00d)" as TagStr;
+// the seqBuffer starts immediately within
+// the first item in the sequence.
+function handleSequenceParsing(seqBuffer: Buffer, bundle: StreamBundle, seqTag: string) {
    const seqCursor = newCursor(); // fresh cursor from 0 (where 0 is the start of the first item in the sequence passed in as a buffer)
+
+   const itemTag: TagStr = "(fffe,e000)" as TagStr;
+   const itemDelimTag: TagStr = "(fffe,e00d)" as TagStr; // not sure needed in this fn, its for the parse() basecase, not here
 
    // read the tag just to make sure it's as expected - a new itemTag. Could just assue and walk past this
    // but useful to have seen it for myself to learn and remember the byte structure.
@@ -284,15 +286,15 @@ function parseSequenceStartingAtFirstItem(
    seqCursor.walk(ByteLen.TAG_NUM);
 
    if (meetsExpectedNewItemIdentifiers) {
-      console.log("start of new sequence item");
-      // tbf im not sure this is necessary to have done this decoding?
-      // we know we're being passed an item tag here regardless of whether
-      // the item is defined or undefined length. But let's leave it in anyway.
+      console.log("Confirmed start of new sequence item");
+   } else {
+      throw new MalformedDicomError(
+         `Expected tag ${itemTag} but got ${tag}. We're in a sequence and this is the start of a new item but didn't see the expected tag.`
+      );
    }
 
    // alright now we need to see if we can decode the length.
    // if not then its an item of undefined length.
-
    const length = bundle.usingLE //
       ? seqBuffer.readUInt32LE(seqCursor.pos)
       : seqBuffer.readUInt32BE(seqCursor.pos);
@@ -310,25 +312,22 @@ function parseSequenceStartingAtFirstItem(
       bundle.currentlyWithinSequence = true;
       bundle.currSqTag = seqTag;
 
-      parse(seqBuffer.subarray(seqCursor.pos), bundle);
+      parse(seqBuffer.subarray(seqCursor.pos), bundle); // base case will be the end of the sequence via detecting the End of Sequence tag
 
       console.log(
          "alright then, lets check our bundle dataset and hopefully it persisted properly..."
       );
-
       console.log(bundle.dataSet["(0008,1032)"].items[0]["(0008,0104)"]);
-
       // good lord that actually seems to have worked. Haven't tested with more than 1 item, nor with
       // a nested sequence inside this sequence, so needs LOTS of testing, but it's promising!
-
-      // alright now we want to return the amount to walk the parent cursor forward by. But we need to
-      // have known how far our call to parse() walked by.
-
-      // process.exit();
-      return seqCursor.pos;
+      return;
+   } else {
+      console.log("this item has a defined length of", length);
+      // im not honestly sure it really matters at this point if we know the length of the item
+      // if we already have the above parsing logic for unknown length, as long as the delimiters
+      // exist in both caes (CHECK THIS). If that's correct then this else block is not going to
+      // be necessary and we should remove it.
    }
-
-   return seqCursor.pos;
 }
 
 /**
@@ -337,14 +336,13 @@ function parseSequenceStartingAtFirstItem(
  * @param el
  * @param cursor
  * @param buffer
- * @returns void
  */
 function decodeValueLengthAndMoveCursor(
    el: Element,
    cursor: { pos: number; walk: (n: number) => void },
    buffer: Buffer,
    bundle: StreamBundle
-): void {
+) {
    const isExtVr = isExtendedFormatVr(el.vr);
 
    if (isExtVr) {
@@ -367,11 +365,28 @@ function decodeValueLengthAndMoveCursor(
       // the most logically consistent and easy-to-reason-about method would be to track how many
       // bytes in total we progress throughout the recursion, and synchronise our 'top' level cursor
       // position at the end of it. We could also do this from within the recursion, either is fine.
-      const bytes = parseSequenceStartingAtFirstItem(windowFromStartOfFirstItem, bundle, el.tag);
-      cursor.pos += bytes;
+      // const bytes =
+      handleSequenceParsing(windowFromStartOfFirstItem, bundle, el.tag);
+      console.log(
+         "back from the sequence parsing, walking the parent cursor by",
+         bundle.sequenceBytesTraversed
+      );
+      cursor.walk(bundle.sequenceBytesTraversed + 20); // 20 seems to make this work but not sure why, expected 0 or 4
+      // lets just see whats next in the buffer now because we're curious
+      console.log(
+         "next tag in the buffer is",
+         decodeTagNum(buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM))
+      );
+
+      // console.log("back from the sequence parsing, walking the parent cursor by", bytes);
+      // hmm not correct, our call is not returning the amount that our call to parse() walked - only
+      // the amount that handleSequenceParsing() walked by itself. Need to fix this, may want
+      // to do this in the bundle because its retained throughout all depths of recursion.
+      // cursor.walk(bytes);
 
       // process.exit();
       // throw new UndefinedLength(`${el.tag} => SQ has undefined length - unsupported ATM.`);
+      return true;
    }
 
    if (!isExtVr) {
