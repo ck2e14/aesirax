@@ -1,3 +1,4 @@
+import { writeFileSync } from "fs";
 import { write } from "./logging/logQ.js";
 import { streamParse } from "./read/read.js";
 import { findDICOM } from "./utilts.js";
@@ -17,7 +18,8 @@ export async function singleTheaded(cfg) {
     }
     const end = performance.now();
     // console.log(dataSets);
-    dataSets.forEach((data, i) => console.log(`Dataset ${i + 1}: ${JSON.stringify(data, null, 3)}`, "DEBUG"));
+    // const [x] = dataSets.map((data, i) => `Dataset ${i + 1}: ${JSON.stringify(data, null, 3)}`);
+    writeFileSync("./___output.json", JSON.stringify(dataSets[0], null, 3));
     write(`Parsed ${dataSets.length} datasets`, "INFO");
     write(`Time elapsed: ${end - start} ms`, "INFO");
 }

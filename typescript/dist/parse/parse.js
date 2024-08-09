@@ -120,6 +120,8 @@ export function parse(buffer, streamBundle) {
             decodeVRAndMoveCursor(buffer, cursor, el);
             const wasSeq = decodeValueLengthAndMoveCursor(el, cursor, buffer, streamBundle);
             if (wasSeq) {
+                streamBundle.currentlyWithinSequence = false;
+                streamBundle.currSqTag = null;
                 continue; // already handled decoding value the value (nested items) and walked the cursor
             }
             decodeValueAndMoveCursor(buffer, cursor, el, streamBundle);
@@ -217,21 +219,33 @@ function decodeValueAndMoveCursor(buffer, cursor, el, streamBundle) {
     const valueBuffer = buffer.subarray(start, end);
     el.value = decodeValue(el.vr, valueBuffer, streamBundle);
 }
-// the seqBuffer starts immediately within
-// the first item in the sequence.
+/**
+ * This handles recursive parsing of nested items and their datasets according to
+ * the DICOM specification for the byte structures of sequenced VRs.
+ * Note that I don't think it currently handles more than one level of nesting
+ * because it would overwrite the shared bundle sequence properties but we can use
+ * a LIFO stack structure to easily handle this by pushing and popping the sequence
+ * properties as we enter and exit nested sequences. Not going to be too hard to implement.
+ *
+ * For the table I used to help implement this logic, that illustrates adjacent bytes, see:
+ * dicom.nema.org/medical/dicom/current/output/chtml/part05/sect_7.5.2.html#table_7.5-3
+ * @param seqBuffer
+ * @param bundle
+ * @param seqTag
+ * @returns
+ */
 function handleSequenceParsing(seqBuffer, bundle, seqTag) {
     const seqCursor = newCursor(); // fresh cursor from 0 (where 0 is the start of the first item in the sequence passed in as a buffer)
     const itemTag = "(fffe,e000)";
-    const itemDelimTag = "(fffe,e00d)"; // not sure needed in this fn, its for the parse() basecase, not here
+    const itemDelimTag = "(fffe,e00d)"; // not sure needed in this fn, its for the parse() basecase to use
     // read the tag just to make sure it's as expected - a new itemTag. Could just assue and walk past this
     // but useful to have seen it for myself to learn and remember the byte structure.
     const tagBuffer = seqBuffer.subarray(seqCursor.pos, seqCursor.pos + ByteLen.TAG_NUM);
     const tag = decodeTagNum(tagBuffer);
     const name = TagDictByHex[tag?.toUpperCase()]?.["name"] ?? "Private or Unrecognised Tag";
-    const meetsExpectedNewItemIdentifiers = tag === itemTag && name === "Item";
-    seqCursor.walk(ByteLen.TAG_NUM);
-    if (meetsExpectedNewItemIdentifiers) {
-        console.log("Confirmed start of new sequence item");
+    const confirmedAsItem = tag === itemTag && name === "Item";
+    if (confirmedAsItem) {
+        seqCursor.walk(ByteLen.TAG_NUM);
     }
     else {
         throw new MalformedDicomError(`Expected tag ${itemTag} but got ${tag}. We're in a sequence and this is the start of a new item but didn't see the expected tag.`);
@@ -247,25 +261,18 @@ function handleSequenceParsing(seqBuffer, bundle, seqTag) {
     // is from within a sequence. Inside parse() we can then rely on those conditions to behave a little
     // differently than how a call to parse() from the 'top' level of the dicom works. I.e. so we can
     // create a nesting structure in our 'top' level map object to reflect this nested characteristic.
+    // note that this supports cases where the lengths are both defined and undefined because in both
+    // cases, items and sequences are delimited by the same delimiter tags. We may be able to optimise
+    // upfront if we know how much mem is required but that's a very minor optimisation tbh unless we're
+    // dealing with very very large sequences.
     if (length === 4294967295) {
-        console.log("this item has undefined length. walking 4 bytes to the start of its dataset...");
-        seqCursor.walk(ByteLen.UINT_32);
-        bundle.currentlyWithinSequence = true;
-        bundle.currSqTag = seqTag;
-        parse(seqBuffer.subarray(seqCursor.pos), bundle); // base case will be the end of the sequence via detecting the End of Sequence tag
-        console.log("alright then, lets check our bundle dataset and hopefully it persisted properly...");
-        console.log(bundle.dataSet["(0008,1032)"].items[0]["(0008,0104)"]);
-        // good lord that actually seems to have worked. Haven't tested with more than 1 item, nor with
-        // a nested sequence inside this sequence, so needs LOTS of testing, but it's promising!
-        return;
+        console.log(`Item has undefined length but no problemo`);
     }
-    else {
-        console.log("this item has a defined length of", length);
-        // im not honestly sure it really matters at this point if we know the length of the item
-        // if we already have the above parsing logic for unknown length, as long as the delimiters
-        // exist in both caes (CHECK THIS). If that's correct then this else block is not going to
-        // be necessary and we should remove it.
-    }
+    seqCursor.walk(ByteLen.UINT_32);
+    bundle.currentlyWithinSequence = true;
+    bundle.currSqTag = seqTag;
+    parse(seqBuffer.subarray(seqCursor.pos), bundle); // base case will be the end of the sequence via detecting the End of Sequence tag
+    return;
 }
 /**
  * Decode the current element's value length
