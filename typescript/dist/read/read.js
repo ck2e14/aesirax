@@ -154,6 +154,7 @@ function bundleFactory(path, opts = null, assumeDefaults = true, skipPixels = tr
             partialTag: Buffer.alloc(0),
             perBufMax: Number(process.env.PER_BUF_MAX ?? 1024 * 12),
             totalBytes: 0,
+            lastTagStart: 0,
             path,
             nByteArray: 0,
             skipPixelData: skipPixels,

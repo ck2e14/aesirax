@@ -15,7 +15,6 @@ import { multiThreaded } from "./multithreaded.js";
         write(`Starting up...`, "INFO");
     }
     cfg.targetDir = "/Users/chriskennedy/Desktop/aesirax/data/isolat";
-    // cfg.targetDir = "/Users/chriskennedy/Desktop/aesirax/data/Pi";
     await init();
     await multiThreaded(cfg);
     // await singleTheaded(cfg);
