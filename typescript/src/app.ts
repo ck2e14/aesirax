@@ -18,10 +18,11 @@ import { singleTheaded } from "./singlethreaded.js";
    }
 
    cfg.targetDir = "/Users/chriskennedy/Desktop/aesirax/data/isolat";
+   // cfg.targetDir = "/Users/chriskennedy/Desktop/aesirax/data/Pi";
 
    await init();
-   // await multiThreaded(cfg);
-   await singleTheaded(cfg);
+   await multiThreaded(cfg);
+   // await singleTheaded(cfg);
 
    setTimeout(() => {
       if (cfg.verbose) {

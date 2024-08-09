@@ -8,6 +8,11 @@ export const DICOM_HEADER = "DICM";
 export const PREAMBLE_LENGTH = 128;
 export const DICOM_HEADER_START = PREAMBLE_LENGTH;
 export const HEADER_END = PREAMBLE_LENGTH + 4;
+// TODO so far not supporting pixel data nor SQ's with a defined length (because
+// these don't have delimiter tags to signify the end of the sequence), and we also
+// need a LIFO stack to support sequences within sequences - the recursion does work
+// but overwrites the sequence properties in the context, breaking persistence of the
+// sequences in between highest and lowest sequence levels.
 /**
  * Walk through a buffer containing a subset of a DICOM file's bytes, and
  * parse the tags.
@@ -84,25 +89,28 @@ export const HEADER_END = PREAMBLE_LENGTH + 4;
  * @param elements
  * @returns PartialTag
  */
-export function parse(buffer, streamBundle) {
+function newSeqElement(context) {
+    const name = TagDictByHex[context.currSqTag?.toUpperCase()]?.["name"] ?? "Private or Unrecognised Tag";
+    return {
+        tag: context.currSqTag,
+        name,
+        vr: VR.SQ,
+        length: null, // TODO for SR
+        value: null,
+        items: [],
+    };
+}
+export function parse(buffer, StreamContext) {
     var _a, _b;
-    streamBundle.usingLE = useLE(streamBundle.transferSyntaxUid);
+    StreamContext.usingLE = useLE(StreamContext.transferSyntaxUid);
     const cursor = newCursor();
+    const itemDataSet = {}; // ignored if not in a sequence
     let lastTagStart = cursor.pos;
-    // handling sequencing
-    if (streamBundle.currentlyWithinSequence) {
-        (_a = streamBundle.dataSet)[_b = streamBundle.currSqTag] ?? (_a[_b] = {
-            tag: streamBundle.currSqTag,
-            items: [],
-            vr: VR.SQ,
-            length: null,
-            value: null,
-            name: TagDictByHex[streamBundle.currSqTag?.toUpperCase()]?.["name"] ??
-                "Private or Unrecognised Tag",
-        });
+    // handling sequence contexts - need LIFO stack use here
+    if (StreamContext.inSequence) {
+        (_a = StreamContext.dataSet)[_b = StreamContext.currSqTag] ?? (_a[_b] = newSeqElement(StreamContext));
     }
-    const itemDataSet = {};
-    write(`Decoding as ${streamBundle.usingLE ? "Little Endian" : "Big Endian"} byte order`, "DEBUG");
+    write(`Decoding as ${StreamContext.usingLE ? "Little Endian" : "Big Endian"} byte order`, "DEBUG");
     while (cursor.pos < buffer.length) {
         lastTagStart = cursor.pos;
         const el = newElement();
@@ -110,34 +118,32 @@ export function parse(buffer, streamBundle) {
             decodeTagAndMoveCursor(buffer, cursor, el);
             // if we're parsing a sequence, and we've reached the end of sequence tag
             // we need to return up the recursion stack. Before doing that we need to
-            // add the current itemDataSet to the current sequence's dataset.
-            if (streamBundle.currentlyWithinSequence && el.tag === "(fffe,e00d)") {
+            // add the current itemDataSet to the current sequence's dataset. LIFO needed.
+            if (StreamContext.inSequence && el.tag === "(fffe,e00d)") {
                 console.log("end of the entire sequence, returning from recursion");
-                streamBundle.dataSet[streamBundle.currSqTag].items.push(itemDataSet);
-                streamBundle.sequenceBytesTraversed = cursor.pos;
+                StreamContext.dataSet[StreamContext.currSqTag].items.push(itemDataSet);
+                StreamContext.sequenceBytesTraversed = cursor.pos;
                 return;
             }
             decodeVRAndMoveCursor(buffer, cursor, el);
-            const wasSeq = decodeValueLengthAndMoveCursor(el, cursor, buffer, streamBundle);
+            const wasSeq = decodeValueLengthAndMoveCursor(el, cursor, buffer, StreamContext);
             if (wasSeq) {
-                streamBundle.currentlyWithinSequence = false;
-                streamBundle.currSqTag = null;
+                StreamContext.inSequence = false;
+                StreamContext.currSqTag = null;
                 continue; // already handled decoding value the value (nested items) and walked the cursor
             }
-            decodeValueAndMoveCursor(buffer, cursor, el, streamBundle);
-            debugPrint(el);
-            if (streamBundle.currentlyWithinSequence) {
-                // if we're in a sequence add it to the nested item's dataset
-                itemDataSet[el.tag] = el;
+            decodeValueAndMoveCursor(buffer, cursor, el, StreamContext);
+            if (StreamContext.inSequence) {
+                itemDataSet[el.tag] = el; // if we're in a sequence add it to the nested item's dataset. LIFO needed.
             }
             else {
-                // if not in a sequence add to the top level dataset
-                streamBundle.dataSet[el.tag] = el;
+                StreamContext.dataSet[el.tag] = el; // if not in a sequence add to the top level dataset.
             }
             cursor.walk(el.length); // to next tag
+            debugPrint(el);
         }
         catch (error) {
-            write(`Error parsing tag ${el.tag} in ${streamBundle.path}, ${error}`, "ERROR");
+            write(`Error parsing tag ${el.tag} in ${StreamContext.path}, ${error}`, "ERROR");
             return handleErrorPathways(error, buffer, lastTagStart);
         }
         if (valueIsTruncated(buffer, cursor.pos, el.length)) {
@@ -207,36 +213,35 @@ function debugPrint(el) {
  * @param buffer
  * @param cursor
  * @param el
- * @param streamBundle
+ * @param StreamContext
  * @returns void
  */
-function decodeValueAndMoveCursor(buffer, cursor, el, streamBundle) {
+function decodeValueAndMoveCursor(buffer, cursor, el, StreamContext) {
     if (valueIsTruncated(buffer, cursor.pos, el.length)) {
         throw new BufferBoundaryError(`\n  Tag ${el.tag} is split across buffer boundary.\n  This is much more likely to just be the end\n  of the currently streamed buffer than it is\n  a malformed DICOM image, but an error nonetheless.\n  Just a calm and expected one. :)`);
     }
     const start = cursor.pos;
     const end = cursor.pos + el.length;
     const valueBuffer = buffer.subarray(start, end);
-    el.value = decodeValue(el.vr, valueBuffer, streamBundle);
+    el.value = decodeValue(el.vr, valueBuffer, StreamContext);
 }
 /**
  * This handles recursive parsing of nested items and their datasets according to
  * the DICOM specification for the byte structures of sequenced VRs.
  * Note that I don't think it currently handles more than one level of nesting
- * because it would overwrite the shared bundle sequence properties but we can use
+ * because it would overwrite the shared context sequence properties but we can use
  * a LIFO stack structure to easily handle this by pushing and popping the sequence
  * properties as we enter and exit nested sequences. Not going to be too hard to implement.
  *
  * For the table I used to help implement this logic, that illustrates adjacent bytes, see:
  * dicom.nema.org/medical/dicom/current/output/chtml/part05/sect_7.5.2.html#table_7.5-3
  * @param seqBuffer
- * @param bundle
+ * @param context
  * @param seqTag
  */
-function handleSequenceParsing(seqBuffer, bundle, seqTag) {
-    const seqCursor = newCursor(); // fresh cursor from 0 (where 0 is the start of the first item in the sequence passed in as a buffer)
+function handleUndefinedLengthSQ(seqBuffer, context, seqTag) {
+    const seqCursor = newCursor(); // fresh cursor from pos 0 in the sequence buffer
     const itemTag = "(fffe,e000)";
-    const itemDelimTag = "(fffe,e00d)"; // not sure needed in this fn, its for the parse() basecase to use
     // read the tag just to make sure it's as expected - a new itemTag. Could just assue and walk past this
     // but useful to have seen it for myself to learn and remember the byte structure.
     const tagBuffer = seqBuffer.subarray(seqCursor.pos, seqCursor.pos + ByteLen.TAG_NUM), tag = decodeTagNum(tagBuffer), name = TagDictByHex[tag?.toUpperCase()]?.["name"] ?? "Private or Unrecognised Tag", confirmedAsItem = tag === itemTag && name === "Item";
@@ -244,11 +249,11 @@ function handleSequenceParsing(seqBuffer, bundle, seqTag) {
         seqCursor.walk(ByteLen.TAG_NUM);
     }
     else {
-        throw new MalformedDicomError(`Expected tag ${itemTag} but got ${tag}. We're in a sequence and this is the start of a new item but didn't see the expected tag.`);
+        throw new MalformedDicomError(`Expected ${itemTag} but got ${tag}, in sequence: ${seqTag})`);
     }
     // alright now we need to see if we can decode the length.
     // if not then its an item of undefined length.
-    const length = bundle.usingLE //
+    const length = context.usingLE //
         ? seqBuffer.readUInt32LE(seqCursor.pos)
         : seqBuffer.readUInt32BE(seqCursor.pos);
     // if its a max 32bit UInt then that signifies, per the spec, that this item does not have a defined
@@ -265,52 +270,61 @@ function handleSequenceParsing(seqBuffer, bundle, seqTag) {
         console.log(`Item has undefined length but no problemo`);
     }
     seqCursor.walk(ByteLen.UINT_32);
-    bundle.currentlyWithinSequence = true;
-    bundle.currSqTag = seqTag;
-    parse(seqBuffer.subarray(seqCursor.pos), bundle); // base case will be the end of the sequence via detecting the End of Sequence tag
+    context.inSequence = true;
+    context.currSqTag = seqTag;
+    parse(seqBuffer.subarray(seqCursor.pos), context); // base case will be the end of the sequence via detecting the End of Sequence tag
     return;
 }
-/**
- * Decode the current element's value length
- * and parse the cursor forward appropriately.
- * @param el
- * @param cursor
- * @param buffer
- */
-function decodeValueLengthAndMoveCursor(el, cursor, buffer, bundle) {
+function decodeValueLengthAndMoveCursor(el, cursor, buffer, context) {
     const isExtVr = isExtendedFormatVr(el.vr);
+    if (!isExtVr) {
+        el.length = context.usingLE
+            ? buffer.readUInt16LE(cursor.pos)
+            : buffer.readUInt16BE(cursor.pos); // Standard VR tags' lengths are 2 bytes, so max length is 65,535
+        cursor.walk(ByteLen.UINT_16);
+        return false;
+    }
     if (isExtVr) {
         cursor.walk(ByteLen.EXT_VR_RESERVED); // 2 reserved bytes can be ignored
-        _decodeValueLength(el, buffer, cursor, bundle); // Extended VR tags' lengths are 4 bytes, may be enormous
+        _decodeValueLength(el, buffer, cursor, context); // Extended VR tags' lengths are 4 bytes, may be enormous
         cursor.walk(ByteLen.UINT_32);
     }
-    const isUndefinedLengthSQ = el.length === 4294967295 && el.vr === VR.SQ; // see notes in UndefinedLength class. Spec flaw tbh but w/e.
-    if (isUndefinedLengthSQ) {
-        console.log("Encountered an SQ of undefined length, will recursively parse. SQ tag:", el.tag);
+    // if SQ, length is defined, and its not 0, parse it according to table:
+    // https://dicom.nema.org/medical/dicom/current/output/chtml/part05/sect_7.5.2.html#table_7.5-1
+    const definedLength = el.vr === VR.SQ && el.length !== 0;
+    if (!isExtVr && el.vr === VR.SQ && el.length !== 0) {
+        // TODO
+        throw new Error("Defined length SQs are not yet supported");
+    }
+    // if SQ, & length is specified, but its 0, we don't need to handle it
+    // and have no further walking to do. We can just return early.
+    const definedLengthButZero = el.vr === VR.SQ && el.length === 0;
+    if (definedLengthButZero) {
+        return true;
+    }
+    // if SQ, & length is undefined, parse it according to table:
+    // https://dicom.nema.org/medical/dicom/current/output/chtml/part05/sect_7.5.2.html#table_7.5-3
+    const undefinedLength = el.vr === VR.SQ && el.length === 4294967295;
+    if (undefinedLength) {
+        write("Encountered an SQ - will recursively parse. SQ tag: " + el.tag, "DEBUG");
         // first we want to isolate the bytes from the start of the first item in the sequence.
         // we don't know where the end is, or even if the current buffer is long enough to contain
         // the entire sequence. So we'll pass all bytes, even if that's beyond the end of the sequence,
         // to our sequence parsing logic. We've amended parse() so that it knows when to return early
-        // from this based on detecting the end of the sequence via byte decoding so its fine to pass too many.
-        const windowFromStartOfFirstItem = buffer.subarray(cursor.pos, buffer.length);
+        // from this based on detecting sequence's end via byte decoding - so its fine to pass too many.
+        const seqBuffer = buffer.subarray(cursor.pos, buffer.length);
         // note that we are about to start a recursive branch, which does its own cursor walking.
         // the most logically consistent and easy-to-reason-about method would be to track how many
         // bytes in total we progress throughout the recursion, and synchronise our 'top' level cursor
         // position at the end of it. We could also do this from within the recursion, either is fine.
         // const bytes =
-        handleSequenceParsing(windowFromStartOfFirstItem, bundle, el.tag);
-        cursor.walk(bundle.sequenceBytesTraversed + 20);
-        // ok not honestly sure why 20 worked here. I just kept incrementing it until it worked, I was
-        // expecting it to just be bundle.sequenceBytesTraversed but it wasn't. I think it's because
-        // we're walking the cursor by the length of the sequence, but we also need to walk past the
-        // end of sequence tag?
+        handleUndefinedLengthSQ(seqBuffer, context, el.tag);
+        cursor.walk(context.sequenceBytesTraversed + 20);
+        // ok not honestly sure why +20 made it work here. I just kept incrementing it until it worked,
+        // I was expecting it to just be context.sequenceBytesTraversed but it wasn't. I think it's
+        // because we're walking the cursor by the length of the sequence, but we also need to walk
+        // past the end of sequence tag?
         return true;
-    }
-    if (!isExtVr) {
-        el.length = bundle.usingLE
-            ? buffer.readUInt16LE(cursor.pos)
-            : buffer.readUInt16BE(cursor.pos); // Standard VR tags' lengths are 2 bytes, so max length is 65,535
-        cursor.walk(ByteLen.UINT_16);
     }
 }
 /**
@@ -319,11 +333,11 @@ function decodeValueLengthAndMoveCursor(el, cursor, buffer, bundle) {
  * @param el
  * @param buffer
  * @param cursor
- * @param bundle
+ * @param context
  * @returns void
  */
-function _decodeValueLength(el, buffer, cursor, bundle) {
-    el.length = bundle.usingLE //
+function _decodeValueLength(el, buffer, cursor, context) {
+    el.length = context.usingLE //
         ? buffer.readUInt32LE(cursor.pos)
         : buffer.readUInt32BE(cursor.pos);
 }

@@ -65,12 +65,12 @@ const decodersBE = {
  * @param value
  * @returns string
  */
-export function decodeValue(vr, value, streamBundle, checkNullPadding = false // debug only
+export function decodeValue(vr, value, StreamContext, checkNullPadding = false // debug only
 ) {
     if (checkNullPadding) {
         countNullBytes(value);
     }
-    const decoders = streamBundle.transferSyntaxUid === TransferSyntaxUid.ExplicitVRLittleEndian
+    const decoders = StreamContext.transferSyntaxUid === TransferSyntaxUid.ExplicitVRLittleEndian
         ? decodersLE
         : decodersBE;
     if (decoders.hasOwnProperty(vr)) {

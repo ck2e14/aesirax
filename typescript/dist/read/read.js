@@ -140,7 +140,7 @@ function getElementValue(tag, elements) {
     return (elements[tag]?.value ?? "NOT FOUND");
 }
 /**
- * bundleFactory() is a factory function for creating a StreamBundle
+ * bundleFactory() is a factory function for creating a StreamContext
  * with default values for the first buffer read from disk.
  * @param path
  * @param skipPixels

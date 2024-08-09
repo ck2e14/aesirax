@@ -9,19 +9,17 @@ import { findDICOM } from "./utilts.js";
  */
 export async function multiThreaded(cfg) {
     const start = performance.now();
-    const workerPromises = [];
-    // const dicomFiles = findDICOM( `/Users/chriskennedy/Desktop/aesirax/data/Pi`);
     const dicomFiles = findDICOM(cfg.targetDir ?? `/Users/chriskennedy/Desktop/aesirax/data/Pi`);
+    const nWorkers = cpus().length > dicomFiles.length ? dicomFiles.length : cpus().length; // this could be refined because one massive file also benefits from multiple workers but currently doing 1 file per worker. Future improvement.
+    const workerPromises = [];
     const dataSets = [];
-    const nWorkers = cpus().length > dicomFiles.length ? dicomFiles.length : cpus().length; // this could be refined because one massive file also benefits from multiple workers
     write(`Spawning ${nWorkers} workers to read ${dicomFiles.length} DICOM files`, "INFO");
     for (let i = 0; i < nWorkers; i++) {
-        const worker = createWork(dataSets, dicomFiles);
+        const worker = createWork(dataSets, dicomFiles, "./output.json");
         workerPromises.push(worker);
     }
     await Promise.all(workerPromises);
     const end = performance.now();
-    dataSets.forEach((data, i) => write(`Dataset ${i + 1}: ${data}`, "INFO"));
     write(`Parsed ${dataSets.length} datasets`, "INFO");
     write(`Time elapsed (minus end printing): ${end - start} ms`, "INFO");
     return workerPromises;
@@ -32,11 +30,14 @@ export async function multiThreaded(cfg) {
  * @param dicomFiles
  * @returns promised worker thread's completion (void)
  */
-function createWork(dataSets, dicomFiles) {
+function createWork(dataSets, dicomFiles, writePath) {
     const worker = new Worker("./dist/worker.js");
     return new Promise((resolve, reject) => {
         addEvents(worker, dataSets, dicomFiles, resolve, reject);
-        worker.postMessage({ filepath: dicomFiles.pop() });
+        worker.postMessage({
+            filepath: dicomFiles.pop(),
+            writePath,
+        });
     });
 }
 /**

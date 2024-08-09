@@ -1,7 +1,7 @@
 import { DicomError } from "../error/errors.js";
 import { ByteLen, DicomErrorType, TransferSyntaxUid, VR } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
-import { StreamBundle } from "../read/read.js";
+import { StreamContext } from "../read/read.js";
 
 type Decoder = (value: Buffer) => string;
 type DecoderMap = Record<Global.VR | "default", Decoder>;
@@ -75,7 +75,7 @@ const decodersBE: Partial<DecoderMap> = {
 export function decodeValue(
    vr: string,
    value: Buffer,
-   streamBundle: StreamBundle,
+   StreamContext: StreamContext,
    checkNullPadding = false // debug only
 ): string {
    if (checkNullPadding) {
@@ -83,7 +83,7 @@ export function decodeValue(
    }
 
    const decoders =
-      streamBundle.transferSyntaxUid === TransferSyntaxUid.ExplicitVRLittleEndian
+      StreamContext.transferSyntaxUid === TransferSyntaxUid.ExplicitVRLittleEndian
          ? decodersLE
          : decodersBE;
 
