@@ -1,4 +1,3 @@
-
 import { ByteLen, DicomErrorType, TagDictByHex, TransferSyntaxUid, VR } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
 import { StreamContext } from "../read/read.js";
@@ -29,12 +28,6 @@ export const DICOM_HEADER = "DICM";
 export const PREAMBLE_LENGTH = 128;
 export const DICOM_HEADER_START = PREAMBLE_LENGTH;
 export const HEADER_END = PREAMBLE_LENGTH + 4;
-
-// TODO so far not supporting pixel data nor SQ's with a defined length (because
-// these don't have delimiter tags to signify the end of the sequence), and we also
-// need a LIFO stack to support sequences within sequences - the recursion does work
-// but overwrites the sequence properties in the context, breaking persistence of the
-// sequences in between highest and lowest sequence levels.
 
 /**
  * Walk through a buffer containing a subset of a DICOM file's bytes, and
@@ -114,7 +107,7 @@ export function parse(buffer: Buffer, ctx: StreamContext): PartialTag {
       write(`Decoding as ${ctx.usingLE ? "LE" : "BE"} byte order`, "DEBUG");
    }
 
-   // TODO work out how to implement LIFO stack for nested sequencing
+   // TODO implement LIFO stack for nested sequencing
 
    const cursor = newCursor(),
       newItem = "(fffe,e000)",
@@ -137,9 +130,6 @@ export function parse(buffer: Buffer, ctx: StreamContext): PartialTag {
       try {
          decodeTagAndMoveCursor(buffer, cursor, el);
 
-         // if we're parsing a sequence, and we've reached the end of sequence tag
-         // we need to return up the recursion stack. Before doing that we need to
-         // add the current itemDataSet to the current sequence's dataset. LIFO needed.
          const reachedSqEnd = ctx.inSequence && el.tag === (itemEnd as TagStr);
          if (reachedSqEnd) {
             write(
@@ -148,24 +138,25 @@ export function parse(buffer: Buffer, ctx: StreamContext): PartialTag {
                "DEBUG"
             );
 
-            cursor.walk(4); // ignore VR, its 00000000H on itemEnd tags per the spec
+            cursor.walk(4); // walk past & ignore VR, its 00000000H on itemEnd tags per the spec
 
             ctx.dataSet[ctx.currSqTag].items.push({
-               ...itemDataSet, // must copy value not reference otherwise each previously
-               // added item data set will equal the last item in the sequence's dataset.
-               // LIFO stack in future for nested sequences to add to correct SQ's items[]
+               ...itemDataSet, // must copy this object's value -  not pass it by reference - otherwise each previously
+               // added item data set will equal the last item in the sequence's dataset. LIFO stack in future for nested
+               // sequences to add to correct SQ's items[]
             });
 
             // now we should peek the next tag to determine what to do next.
             const nextTagBytes = buffer.subarray(cursor.pos, cursor.pos + 4);
             const nextTag = decodeTagNum(nextTagBytes);
-
             cursor.walk(ByteLen.UINT_32); // walk past the tag string we just decoded
             cursor.walk(ByteLen.UINT_32); // walk past the sqEnds' length (0) - can ignore it
 
             // (A) the next tag is a new start of item tag. So we just want
             // to continue to the next while() decode the next tag.
-            if (nextTag === (newItem as TagStr)) continue;
+            if (nextTag === (newItem as TagStr)) {
+               continue;
+            }
 
             // (B) the next tag is the sqEnd tag, at which point we should return from the recursion.
             // For sequences nested inside other sequences, need to LIFO .pop() a stack of sequences?
@@ -174,8 +165,6 @@ export function parse(buffer: Buffer, ctx: StreamContext): PartialTag {
                return;
             }
 
-            // probably could throw an error here because at the end of the
-            // SQ expect always a new item tag or the end of sequence tag.
             throw new MalformedDicomError(
                `Detected the end of an item's dataset but then saw neither a new item nor a sequence delimiter`
             );
@@ -188,9 +177,7 @@ export function parse(buffer: Buffer, ctx: StreamContext): PartialTag {
             ctx.inSequence = false;
             ctx.currSqTag = null;
             ctx.sequenceBytesTraversed = null;
-            // continue to decode the next tag - sequence ended and each
-            // while() represents an attempt to decode the next tag.
-            continue;
+            continue; // continue to decode the next tag
          } else {
             decodeValueAndMoveCursor(buffer, cursor, el, ctx);
          }
@@ -230,15 +217,14 @@ function newSeqElement(ctx: StreamContext): Element {
       tag: ctx.currSqTag as TagStr,
       name,
       vr: VR.SQ,
-      length: null, // TODO for SR
+      length: null, // TODO for undefined len SQ
       value: null,
       items: [],
    };
 }
 
 /**
- * Create a cursor object to track the
- * current position in the buffer.
+ * Create a cursor object to track the current position in the buffer.
  * @returns Cursor
  */
 function newCursor(pos = 0) {
@@ -256,12 +242,10 @@ function newCursor(pos = 0) {
 }
 
 /**
- * Handle errors that occur during the parsing
- * of a DICOM file. If the error is unrecoverable
- * then throw it, otherwise return the partialled
- * tag in bytes to be stitched to the next buffer.
- * Partialled is because streamed buffer boundaries,
- * parsing error is for when the parser is  unable
+ * Handle errors that occur during the parsing of a DICOM file. If the error
+ * is unrecoverable then throw it, otherwise return the partialled tag in bytes
+ * to be stitched to the next buffer. Partialled is for handling stitching across
+ * streamed buffers' boundaries, parsing error is for when the parser is unable
  * to handle for some other reason.
  * @param error
  * @param buffer
@@ -306,8 +290,7 @@ function debugPrint(el: Element) {
 }
 
 /**
- * Decode the current element's value and
- * parse the cursor forward appropriately.
+ * Decode the current element's value and move the cursor forwards.
  * @param buffer
  * @param cursor
  * @param el
@@ -341,28 +324,20 @@ function decodeValueAndMoveCursor(
  * because it would overwrite the shared context sequence properties but we can use
  * a LIFO stack structure to easily handle this by pushing and popping the sequence
  * properties as we enter and exit nested sequences. Not going to be too hard to implement.
- *
- * So far I've tested this on a sequence with undefined length and undefined length items.
- * "/Users/chriskennedy/Desktop/aesirax/data/isolat";
- *
- * Need to test on:
- *   - a sequence with undefined length, but defined item lengths
- *   - a sequence with defined length, but undefined item lengths
- *   - a sequence with defined length, and defined item lengths
- *
- * Implemented following spec at:
- * https://dicom.nema.org/medical/dicom/current/output/chtml/part05/sect_7.5.html
+
+ * Implemented following SQ DICOM spec:
+ * dicom.nema.org/medical/dicom/current/output/chtml/part05/sect_7.5.html
  *
  * @param seqBuffer
  * @param context
  * @param seqTag
  */
-function handleUndefinedLengthSQ(seqBuffer: Buffer, context: StreamContext, seqTag: string) {
+function handleUndefinedLengthSQ(seqBuffer: Buffer, ctx: StreamContext, seqTag: string) {
    const seqCursor = newCursor(); // fresh cursor from pos 0 in the sequence buffer
    const itemTag: TagStr = "(fffe,e000)" as TagStr;
 
-   // read the tag just to make sure it's as expected - a new itemTag. Could just assue and walk past this
-   // but useful to have seen it for myself to learn and remember the byte structure.
+   // read the tag just to make sure it's as expected - a new itemTag. Could just assume a
+   // nd walk past this but useful to have seen it for myself to help learn the byte structure.
    const tagBuffer = seqBuffer.subarray(seqCursor.pos, seqCursor.pos + ByteLen.TAG_NUM),
       tag = decodeTagNum(tagBuffer),
       name = TagDictByHex[tag?.toUpperCase()]?.["name"] ?? "Private or Unrecognised Tag",
@@ -374,32 +349,23 @@ function handleUndefinedLengthSQ(seqBuffer: Buffer, context: StreamContext, seqT
       throw new MalformedDicomError(`Expected ${itemTag} but got ${tag}, in sequence: ${seqTag})`);
    }
 
-   // alright now we need to see if we can decode the length.
-   // if not then its an item of undefined length. Need to check if different handling required for this.
-   // testing so far has been on SQ with undefined length AND undefiend length items. So far so good but
-   // sequences can have mixes of defined and undefined length items so we need to be able to handle that.
-   // not sure which unhinged developer would mix them but it's permitted by the spec so needs handling.
-   const length = context.usingLE //
+   // now we decode the length. Per spec, SQ's with a max UInt32 signifiy 'undefined' length. This
+   // type of SQ depends on presence of item start, item end, and sequence end delimitation tags.
+   const length = ctx.usingLE //
       ? seqBuffer.readUInt32LE(seqCursor.pos)
       : seqBuffer.readUInt32BE(seqCursor.pos);
 
-   // if its a max 32bit UInt then that signifies, per the spec, that this item does not have a defined
-   // length. This means that we should walk the seqCursor forward by 4 bytes, to reach the start of the
-   // items dataset (of elements). We can then recurse into parse() and notify it that this invocation
-   // is from within a sequence. Inside parse() we can then rely on those conditions to behave a little
-   // differently than how a call to parse() from the 'top' level of the dicom works. I.e. so we can
-   // create a nesting structure in our 'top' level map object to reflect this nested characteristic.
-   // LIFO needed.
+   // walk the cursor past the UInt32 we just decoded (4bytes) so we are now at the start of the
+   // first tag in the item's dataset.
+   seqCursor.walk(ByteLen.UINT_32);
+
+   // now we're going to recurse into parse() with some added context so that different behaviour
+   // and basecases can be followed. Return case is detecting an end of sequence tag.
    if (length === 4_294_967_295) {
-      seqCursor.walk(ByteLen.UINT_32); // walk cursor up to the start of the item's dataset because parse wants to start at the the bytes of a tag whether that's file meta information or an item in a sequence etc.
-
-      context.inSequence = true;
-      context.currSqTag = seqTag;
-
-      parse(seqBuffer.subarray(seqCursor.pos), context); // base case will be the end of the sequence via detecting the End of Sequence tag
+      ctx.inSequence = true; // WARN: the context we set here should specify that we're in an undef length SQ because parse() will need to behave differently once we implement defined length SQ handling logic.
+      ctx.currSqTag = seqTag;
+      parse(seqBuffer.subarray(seqCursor.pos), ctx); // we're already in a callstack generated by parse(), so calling it again here is recursive.
    }
-
-   return;
 }
 
 /**
