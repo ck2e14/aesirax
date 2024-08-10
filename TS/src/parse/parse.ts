@@ -3,6 +3,7 @@ import { StreamContext } from "../read/read.js";
 import { decodeTagNum, TagStr } from "./tagNums.js";
 import { isVr } from "./typeGuards.js";
 import { decodeValue, decodeVr } from "./valueDecoders.js";
+import { BufferBoundary, DicomError, MalformedDicom, UndefinedLength } from "../error/errors.js";
 import {
    ByteLen,
    DicomErrorType,
@@ -11,14 +12,6 @@ import {
    TransferSyntaxUid,
    VR,
 } from "../globalEnums.js";
-import {
-   BufferBoundary,
-   DicomError,
-   MalformedDicom,
-   UndefinedLength,
-   Unrecoverable,
-} from "../error/errors.js";
-import { buffer } from "stream/consumers";
 
 export type TruncatedBuffer = Buffer | null; // because streaming will guarantee cutting tags up
 export type ParsingResult = { returnReason: string | null; truncatedBuffer: TruncatedBuffer };
@@ -109,7 +102,6 @@ export function parse(buffer: Buffer, ctx: StreamContext): ParsingResult {
          const wasSeq = decodeValueLengthAndMoveCursor(el, cursor, buffer, ctx);
          // * STAGE 3.5 - Reset ctx flags if we've left SQ & move onto next tag after the SQ * //
          if (wasSeq) {
-            console.log("here", ctx.sequenceBytesTraversed);
             ctx.inSequence = false;
             ctx.currSqTag = null;
             ctx.sequenceBytesTraversed = 0; // this is getting reset by a nested sequence which we don't want.
@@ -123,6 +115,19 @@ export function parse(buffer: Buffer, ctx: StreamContext): ParsingResult {
          // * STAGE 5 - SAVE ELEMENT * //
          if (ctx.inSequence) {
             itemDataSet[el.tag] = el; // add to the item dataset.
+            // we can detect the end of a defined-length sequence here based on
+            // doing a traversedBytes+8 = currSeqLength.
+            // But first I think we need to implement supporting nested SQs because
+            // its getting painfully complicated to not have support for them and
+            // its going to just be better to focus on that now. So go and work through
+            // that logic, and probably do so with a DICOM that uses undefined lengths
+            // since we're handling those properly so far. If you do it for undefined length SQs,
+            // which aren't supported yet whether nested or not, it becomes really challenging to know
+            // where we are and whether things aren't working because our logic is broken or because
+            // our lack of nested support is interfering with it.
+            // Actually i think a better route would be to find a non-nested, but defined length SQ,
+            // and implement handling for that. Then go and handle LIFO stacking for BOTH types in the same
+            // code. Yeah lets do that. But for now lets fuck this off because you've been at this way too long today.
          } else {
             ctx.dataSet[el.tag] = el; // add to the top level dataset.
          }
