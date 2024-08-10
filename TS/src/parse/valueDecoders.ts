@@ -90,7 +90,26 @@ export function decodeValue(
    if (decoders.hasOwnProperty(vr)) {
       return decoders[vr](value);
    } else {
-      return decoders.default(value);
+      // case VR.OB:
+      // case VR.OW:
+      // case VR.OF:
+
+      try {
+         if (vr === VR.OB || vr === VR.OW || vr === VR.OF) {
+            return `Binary data (${vr}): ${value.length} bytes`;
+         }
+
+         if (vr === VR.UN) {
+         }
+
+         if (value.length > 1024) {
+            return "Assumed to be binary data, not supported for decoding/display";
+         } else {
+            return value.toString();
+         }
+      } catch (error) {
+         return decoders.default(value);
+      }
    }
 }
 

@@ -50,8 +50,8 @@ export function parse(buffer, ctx) {
                 if (nextTag === ITEM_START_TAG)
                     continue; // to the next while() decode the next tag.
                 if (nextTag === SEQ_END_TAG) {
-                    ctx.sequenceBytesTraversed = cursor.pos; // to sync with parent cursor
-                    return; // recursive base case for this context - end of sequence.
+                    ctx.sequenceBytesTraversed = cursor.pos; // to sync recursive cursor with parent cursor
+                    return; // base case - end of SQ
                 }
                 throw new MalformedDicom(`Got ${nextTag} but expected ${ITEM_END_TAG} or ${SEQ_END_TAG}`);
             }
@@ -59,9 +59,9 @@ export function parse(buffer, ctx) {
             decodeVRAndMoveCursor(buffer, cursor, el);
             // * STAGE 3 - DECODE VALUE LENGTH * //
             const wasSeq = decodeValueLengthAndMoveCursor(el, cursor, buffer, ctx);
-            // * STAGE 3.5 - HANDLE RETURN FROM SEQUENCE PARSING * //
+            // * STAGE 3.5 - RESET CONTEXT FLAGS IF WE'VE RETURNED FROM SQ RECURSION AND CONTINUE TO NEXT TAG * //
             if (wasSeq) {
-                ctx.inSequence = false; // WARN see comments in decodeValueLengthAndMoveCursor()
+                ctx.inSequence = false;
                 ctx.currSqTag = null;
                 ctx.sequenceBytesTraversed = 0;
                 continue; // continue to decode the next tag (outside of the current sequence)
@@ -132,10 +132,15 @@ function newSeqElement(ctx) {
 function newCursor(pos = 0) {
     return {
         pos,
-        walk: function (n) {
+        walk: function (n, buffer) {
+            if (buffer && this.pos + n > buffer.length) {
+                throw new BufferBoundary(`Cursor walk would exceed buffer length`);
+            }
             this.pos += n;
         },
         retreat: function (n) {
+            // TODO implement a check to ensure we don't
+            // retreat past the start of the buffer
             this.pos -= n;
         },
     };
@@ -153,13 +158,19 @@ function newCursor(pos = 0) {
  * @returns TruncatedBuffer
  */
 function handleErrorPathways(error, buffer, lastTagStart, tag) {
-    const partialled = [BufferBoundary, DicomError]; // can refine
+    // range error is thrown by calls to things like Buffer.readUInt32LE(0) where we didn't catch a range issue when walking the cursor
+    // because we didn't walk it out of bounds, but then we didn't have the required number of bytes left in the array to parse the UInt32
+    // e.g. we called cursor.walk(4) to take the cursor to position 150, but the Buffer has only 153 bytes. Our walk() function doesn't
+    // need to know about what context its being used in so it can only throw a BufferBoundary error when it tries to go out of bounds itself.
+    // how we then use that cursor position, e.g. to try to read a 4byte UInt32, is easiest managed by just letting the exception get thrown
+    // and catching it as a partialled buffer below.
+    const partialled = [BufferBoundary, RangeError];
     const isUndefinedLength = error instanceof UndefinedLength;
-    const parsingError = partialled.every(ex => !(error instanceof ex));
+    const parsingError = partialled.every(ex => !(error instanceof ex)); // not a truncation error but some unanticipated parsing error
     if (parsingError && !isUndefinedLength) {
         throw error;
     }
-    if (error instanceof BufferBoundary) {
+    if (error instanceof BufferBoundary || error instanceof RangeError) {
         write(`Tag is split across buffer boundary ${tag ?? ""}`, "DEBUG");
         return {
             returnReason: "truncation",
@@ -266,15 +277,18 @@ function getTagName(tag) {
 function decodeValueLengthAndMoveCursor(el, cursor, buffer, ctx) {
     const isExtVr = isExtendedFormatVr(el.vr);
     if (isExtVr) {
-        cursor.walk(ByteLen.EXT_VR_RESERVED); // 2 reserved bytes can be ignored
+        cursor.walk(ByteLen.EXT_VR_RESERVED, buffer); // 2 reserved bytes can be ignored
         _decodeValueLength(el, buffer, cursor, ctx); // Extended VR tags' lengths are 4 bytes, may be enormous
-        cursor.walk(ByteLen.UINT_32);
+        cursor.walk(ByteLen.UINT_32, buffer);
     }
     else {
+        console.log(`cursor pos: ${cursor.pos}, buffer length: ${buffer.length}`);
+        // WARN we need to write something like a 'safeParse' function that will throw specifically a BufferBoundary error
+        // when insufficient bytes are passed to it. readUInt16LE() just throws a RangeError when it hits the end of the buffer.
         el.length = ctx.usingLE //
             ? buffer.readUInt16LE(cursor.pos)
             : buffer.readUInt16BE(cursor.pos); // Standard VR tags' lengths are 2 bytes, so max length is 65,535
-        cursor.walk(ByteLen.UINT_16);
+        cursor.walk(ByteLen.UINT_16, buffer);
         return false;
     }
     const definedLength = el.vr === VR.SQ && el.length !== 0 && el.length !== 4294967295;
@@ -317,6 +331,8 @@ function decodeValueLengthAndMoveCursor(el, cursor, buffer, ctx) {
  * @returns void
  */
 function _decodeValueLength(el, buffer, cursor, ctx) {
+    // WARN hitting an error here sometimes, replicable by setting highWaterMark to 400 and getting an out of bounds error
+    // when parsing: testDirs.noNestedSQ_singleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems;
     el.length = ctx.usingLE //
         ? buffer.readUInt32LE(cursor.pos)
         : buffer.readUInt32BE(cursor.pos);
@@ -478,7 +494,12 @@ export function newElement() {
  * @returns string
  */
 export function UNIMPLEMENTED_VR_PARSING(vr) {
-    return `Byte parsing support for VR: ${vr} is unimplemeted in this version`;
+    if (vr === VR.UN) {
+        return `Byte parsing support for VR: ${vr} is unimplemeted in this version but attempted to decode to string as it doesn't harm the parse process`;
+    }
+    else {
+        return `Byte parsing support for VR: ${vr} is unimplemeted in this version`;
+    }
 }
 /**
  * Determine whether to use Little Endian byte order based on Transfer Syntax UID.
