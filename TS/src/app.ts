@@ -28,7 +28,7 @@ import { singleTheaded } from "./singlethreaded.js";
       nestedSQ_singleItemsInsideSQ_definedLengthSQ_definedLengthItems: "../data/Pi", // not working because haven't implemented handling for SQ's with defined lengths
    };
 
-   cfg.targetDir = testDirs.noNestedSQ_singleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems; // erroring with out of bounds :
+   cfg.targetDir = testDirs.noNestedSQ_multipleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems; // erroring with out of bounds :
    // uncaughtException RangeError [ERR_OUT_OF_RANGE]: The value of "offset" is out of range. It must be >= 0 and <= 464. Received 470
    // at boundsError (node:internal/buffer:88:9)
    // at Buffer.readUInt32LE (node:internal/buffer:222:5)

@@ -27,6 +27,7 @@ export type StreamContext = {
    usingLE: boolean;
    inSequence?: boolean;
    currSqTag?: string;
+   currSqLen?: number
    sequenceBytesTraversed?: number; // TODO make sure we are resetting this at the end of each SQ parse.
 };
 
