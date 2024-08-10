@@ -17,7 +17,7 @@ export type StreamContext = {
    dataSet: DataSet;
    dataSetStack: DataSet[];
    partialTag: Buffer;
-   perBufMax: number;
+   bufWatermark: number;
    lastTagStart: number;
    totalBytes: number;
    path: string;
@@ -45,27 +45,33 @@ const SMALL_BUF_ADVISORY = `PER_BUF_MAX is less than ${SMALL_BUF_THRESHOLD} byte
  * @returns Promise<Element[]>
  * @throws DicomError
  */
-export function streamParse(path: string, skipPixelData = true): Promise<DataSet> {
-   const ctx = ctxFactory(path, null, true, skipPixelData);
+export function streamParse(
+   path: string,
+   cfg: Global.Config = null,
+   skipPixelData = true
+): Promise<DataSet> {
+   const ctx = ctxFactory(path, cfg, true, skipPixelData);
 
-   if (ctx.perBufMax < HEADER_END + 1) {
+   if (ctx.bufWatermark < HEADER_END + 1) {
       throw new DicomError({
          message: `PER_BUF_MAX must be at least ${HEADER_END + 1} bytes.`,
          errorType: DicomErrorType.BUNDLE_CONFIG,
       });
    }
 
-   if (ctx.perBufMax < SMALL_BUF_THRESHOLD) {
+   if (ctx.bufWatermark < SMALL_BUF_THRESHOLD) {
       write(SMALL_BUF_ADVISORY, "WARN");
    }
 
    return new Promise<DataSet>((resolve, reject) => {
+      console.log(ctx.bufWatermark);
       const stream = createReadStream(path, {
-         highWaterMark: ctx.perBufMax,
+         highWaterMark: ctx.bufWatermark,
       });
 
       stream.on("data", (currBytes: Buffer) => {
          write(`Received ${currBytes.length} bytes from ${path}`, "DEBUG");
+         console.log(`stream.on('data')ctx: ${ctx.inSequence}, ${ctx.currSqTag}, ${ctx.sequenceBytesTraversed}`);
          ctx.nByteArray = ctx.nByteArray + 1;
          ctx.totalBytes = ctx.totalBytes + currBytes.length;
          ctx.partialTag = handleDicomBytes(ctx, currBytes); // update partialTag with any partially read tag from current buffer
@@ -105,6 +111,9 @@ function isSupportedTSN(uid: string): uid is TransferSyntaxUid {
  */
 export function handleDicomBytes(ctx: StreamContext, currBytes: Buffer): PartialTag {
    const { path, nByteArray } = ctx;
+   console.log(
+      `handleDicomBytes()ctx: ${ctx.inSequence}, ${ctx.currSqTag}, ${ctx.sequenceBytesTraversed}`
+   );
 
    write(`Reading buffer (#${nByteArray} - ${currBytes.length} bytes) (${path})`, "DEBUG");
 
@@ -191,7 +200,7 @@ function getElementValue<T = unknown>(tag: TagStr, elements: DataSet): T {
  */
 function ctxFactory(
    path: string,
-   opts = null,
+   cfg = null,
    assumeDefaults = true,
    skipPixels = true
 ): StreamContext {
@@ -201,7 +210,7 @@ function ctxFactory(
          dataSet: {},
          dataSetStack: [],
          partialTag: Buffer.alloc(0),
-         perBufMax: Number(process.env.PER_BUF_MAX ?? 1024 * 1024),
+         bufWatermark: cfg?.bufWatermark ?? 1024 * 1024,
          totalBytes: 0,
          lastTagStart: 0,
          path,
@@ -212,7 +221,7 @@ function ctxFactory(
       };
    } else {
       return {
-         ...opts,
+         ...cfg,
          path,
       };
    }

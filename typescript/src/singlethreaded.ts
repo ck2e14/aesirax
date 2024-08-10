@@ -10,22 +10,19 @@ import { findDICOM, prettyPrintMap } from "./utilts.js";
  */
 export async function singleTheaded(cfg: Global.Config) {
    const start = performance.now();
-   const paths = findDICOM(cfg.targetDir ?? `/Users/chriskennedy/Desktop/aesirax/data/isolat`);
-   // const paths = findDICOM(cfg.targetDir ?? `/Users/chriskennedy/Desktop/aesirax/data/Pi`);
-
+   const paths = findDICOM(cfg.targetDir);
    const dataSets = [];
 
    for (let i = 0; i < paths.length; i++) {
-      const elements = await streamParse(paths[i]);
+      const elements = await streamParse(paths[i], cfg);
       dataSets.push(elements);
    }
 
    const end = performance.now();
-   // console.log(dataSets);
 
+   // console.log(dataSets);
    // const [x] = dataSets.map((data, i) => `Dataset ${i + 1}: ${JSON.stringify(data, null, 3)}`);
    writeFileSync("./___output.json", JSON.stringify(dataSets[0], null, 3));
-
    write(`Parsed ${dataSets.length} datasets`, "INFO");
    write(`Time elapsed: ${end - start} ms`, "INFO");
 }

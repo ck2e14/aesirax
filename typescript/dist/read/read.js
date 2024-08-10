@@ -17,23 +17,25 @@ const SMALL_BUF_ADVISORY = `PER_BUF_MAX is less than ${SMALL_BUF_THRESHOLD} byte
  * @returns Promise<Element[]>
  * @throws DicomError
  */
-export function streamParse(path, skipPixelData = true) {
-    const ctx = ctxFactory(path, null, true, skipPixelData);
-    if (ctx.perBufMax < HEADER_END + 1) {
+export function streamParse(path, cfg = null, skipPixelData = true) {
+    const ctx = ctxFactory(path, cfg, true, skipPixelData);
+    if (ctx.bufWatermark < HEADER_END + 1) {
         throw new DicomError({
             message: `PER_BUF_MAX must be at least ${HEADER_END + 1} bytes.`,
             errorType: DicomErrorType.BUNDLE_CONFIG,
         });
     }
-    if (ctx.perBufMax < SMALL_BUF_THRESHOLD) {
+    if (ctx.bufWatermark < SMALL_BUF_THRESHOLD) {
         write(SMALL_BUF_ADVISORY, "WARN");
     }
     return new Promise((resolve, reject) => {
+        console.log(ctx.bufWatermark);
         const stream = createReadStream(path, {
-            highWaterMark: ctx.perBufMax,
+            highWaterMark: ctx.bufWatermark,
         });
         stream.on("data", (currBytes) => {
             write(`Received ${currBytes.length} bytes from ${path}`, "DEBUG");
+            console.log(`stream.on('data')ctx: ${ctx.inSequence}, ${ctx.currSqTag}, ${ctx.sequenceBytesTraversed}`);
             ctx.nByteArray = ctx.nByteArray + 1;
             ctx.totalBytes = ctx.totalBytes + currBytes.length;
             ctx.partialTag = handleDicomBytes(ctx, currBytes); // update partialTag with any partially read tag from current buffer
@@ -69,6 +71,7 @@ function isSupportedTSN(uid) {
  */
 export function handleDicomBytes(ctx, currBytes) {
     const { path, nByteArray } = ctx;
+    console.log(`handleDicomBytes()ctx: ${ctx.inSequence}, ${ctx.currSqTag}, ${ctx.sequenceBytesTraversed}`);
     write(`Reading buffer (#${nByteArray} - ${currBytes.length} bytes) (${path})`, "DEBUG");
     if (ctx.first) {
         return handleFirstBuffer(ctx, currBytes);
@@ -146,14 +149,14 @@ function getElementValue(tag, elements) {
  * @param skipPixels
  * @returns
  */
-function ctxFactory(path, opts = null, assumeDefaults = true, skipPixels = true) {
+function ctxFactory(path, cfg = null, assumeDefaults = true, skipPixels = true) {
     if (assumeDefaults) {
         return {
             first: true,
             dataSet: {},
             dataSetStack: [],
             partialTag: Buffer.alloc(0),
-            perBufMax: Number(process.env.PER_BUF_MAX ?? 1024 * 1024),
+            bufWatermark: cfg?.bufWatermark ?? 1024 * 1024,
             totalBytes: 0,
             lastTagStart: 0,
             path,
@@ -165,7 +168,7 @@ function ctxFactory(path, opts = null, assumeDefaults = true, skipPixels = true)
     }
     else {
         return {
-            ...opts,
+            ...cfg,
             path,
         };
     }

@@ -1,3 +1,11 @@
+ * WARN currently with massive pixel data values we're still loading it all into
+ * memory based on our 'is trunated? return and concat' approach. Okay for now.
+ * Can do a discard approach where it's still streamed into memory, which is
+ * pretty much unavoidable, but then instead of returning the buffer we just
+ * return a Buffer.alloc(0) which will fit into the existing strcuture I think.
+
+
+
 MAKE INTO A CLI TO SPECIFY OPTIONS/OVERRIDES
 
 

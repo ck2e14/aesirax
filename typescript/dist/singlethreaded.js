@@ -9,11 +9,10 @@ import { findDICOM } from "./utilts.js";
  */
 export async function singleTheaded(cfg) {
     const start = performance.now();
-    const paths = findDICOM(cfg.targetDir ?? `/Users/chriskennedy/Desktop/aesirax/data/isolat`);
-    // const paths = findDICOM(cfg.targetDir ?? `/Users/chriskennedy/Desktop/aesirax/data/Pi`);
+    const paths = findDICOM(cfg.targetDir);
     const dataSets = [];
     for (let i = 0; i < paths.length; i++) {
-        const elements = await streamParse(paths[i]);
+        const elements = await streamParse(paths[i], cfg);
         dataSets.push(elements);
     }
     const end = performance.now();

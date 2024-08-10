@@ -2,7 +2,6 @@ import { Worker } from "worker_threads";
 import { cpus } from "os";
 import { write } from "./logging/logQ.js";
 import { findDICOM } from "./utilts.js";
-import { writeFileSync } from "fs";
 
 /**
  * Parse DICOM files using multiple threads
@@ -11,7 +10,6 @@ import { writeFileSync } from "fs";
  */
 export async function multiThreaded(cfg: Global.Config) {
    const start = performance.now();
-
    const dicomFiles = findDICOM(cfg.targetDir);
    const nWorkers = cpus().length > dicomFiles.length ? dicomFiles.length : cpus().length; // this could be refined because one massive file also benefits from multiple workers but currently doing 1 file per worker. Future improvement.
    const workerPromises = [];

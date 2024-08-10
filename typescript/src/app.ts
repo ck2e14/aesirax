@@ -29,11 +29,11 @@ import { singleTheaded } from "./singlethreaded.js";
          "/Users/chriskennedy/Desktop/aesirax/data/Pi", // not working because haven't implemented handling for SQ's with defined lengths
    };
 
-   cfg.targetDir = testDirs.noNestedSQ_singleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems;
+   cfg.targetDir = testDirs.noNestedSQ_multipleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems;
 
    await init();
    // await multiThreaded(cfg);
-   await singleTheaded(cfg); // do based on # files in directory. If 1 file, do single-threaded.
+   await singleTheaded(cfg);
 
    setTimeout(() => {
       if (cfg.verbose) {
