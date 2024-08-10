@@ -13,6 +13,24 @@ export var TransferSyntaxUid;
     TransferSyntaxUid["JPEG2000Lossless"] = "1.2.840.10008.1.2.4.90";
 })(TransferSyntaxUid || (TransferSyntaxUid = {}));
 export const TagDictByName = {
+    ItemStart: {
+        tag: "(fffe,e000)",
+        vr: 'special',
+        name: "ItemStart",
+        version: "DICOM"
+    },
+    ItemEnd: {
+        tag: "(fffe,e00d)",
+        vr: 'special',
+        name: "ItemEnd",
+        version: "DICOM"
+    },
+    SequenceEnd: {
+        tag: "(fffe,e0dd)",
+        vr: 'special',
+        name: "SequenceEnd",
+        version: "DICOM"
+    },
     CommandGroupLength: {
         tag: "(0000,0000)",
         vr: "UL",
@@ -47383,7 +47401,19 @@ export const TagDictByHex = {
     "(fffe,e000)": {
         tag: "(fffe,e000)",
         vr: 'special',
-        name: "Item",
+        name: "ItemStart",
+        version: "DICOM"
+    },
+    "(fffe,e00d)": {
+        tag: "(fffe,e00d)",
+        vr: 'special',
+        name: "ItemEnd",
+        version: "DICOM"
+    },
+    "(fffe,e0dd)": {
+        tag: "(fffe,e0dd)",
+        vr: 'special',
+        name: "SequenceEnd",
         version: "DICOM"
     },
     "(0000,0000)": {
