@@ -9,13 +9,13 @@ import { findDICOM } from "./utilts.js";
  */
 export async function multiThreaded(cfg) {
     const start = performance.now();
-    const dicomFiles = findDICOM(cfg.targetDir ?? `/Users/chriskennedy/Desktop/aesirax/data/Pi`);
+    const dicomFiles = findDICOM(cfg.targetDir);
     const nWorkers = cpus().length > dicomFiles.length ? dicomFiles.length : cpus().length; // this could be refined because one massive file also benefits from multiple workers but currently doing 1 file per worker. Future improvement.
     const workerPromises = [];
     const dataSets = [];
     write(`Spawning ${nWorkers} workers to read ${dicomFiles.length} DICOM files`, "INFO");
     for (let i = 0; i < nWorkers; i++) {
-        const worker = createWork(dataSets, dicomFiles, "./output.json");
+        const worker = createWork(dataSets, dicomFiles, cfg);
         workerPromises.push(worker);
     }
     await Promise.all(workerPromises);
@@ -30,13 +30,13 @@ export async function multiThreaded(cfg) {
  * @param dicomFiles
  * @returns promised worker thread's completion (void)
  */
-function createWork(dataSets, dicomFiles, writePath) {
+function createWork(dataSets, dicomFiles, cfg) {
     const worker = new Worker("./dist/worker.js");
     return new Promise((resolve, reject) => {
-        addEvents(worker, dataSets, dicomFiles, resolve, reject);
+        addEvents(worker, dataSets, dicomFiles, resolve, reject, cfg);
         worker.postMessage({
             filepath: dicomFiles.pop(),
-            writePath,
+            writeDir: cfg.writeDir,
         });
     });
 }
@@ -49,16 +49,17 @@ function createWork(dataSets, dicomFiles, writePath) {
  * @param reject
  * @returns void
  */
-function addEvents(worker, dataSets, dicomFiles, resolve, reject) {
+function addEvents(worker, dataSets, dicomFiles, resolve, reject, cfg) {
     worker.on("message", (msg) => {
         dataSets.push(msg.data);
         if (dicomFiles.length > 0) {
-            worker.postMessage({ filepath: dicomFiles.pop() });
+            return worker.postMessage({
+                filepath: dicomFiles.pop(),
+                writeDir: cfg.writeDir,
+            });
         }
-        else {
-            worker.terminate();
-            resolve();
-        }
+        worker.terminate();
+        resolve();
     });
     worker.on("error", error => {
         console.log(`error handler reached`);

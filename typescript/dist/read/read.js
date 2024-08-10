@@ -151,8 +151,9 @@ function ctxFactory(path, opts = null, assumeDefaults = true, skipPixels = true)
         return {
             first: true,
             dataSet: {},
+            dataSetStack: [],
             partialTag: Buffer.alloc(0),
-            perBufMax: Number(process.env.PER_BUF_MAX ?? 1024 * 12),
+            perBufMax: Number(process.env.PER_BUF_MAX ?? 1024 * 1024),
             totalBytes: 0,
             lastTagStart: 0,
             path,

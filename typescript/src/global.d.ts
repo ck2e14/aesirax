@@ -7,6 +7,7 @@ declare namespace Global {
       logDir: string;
       logName: string;
       targetDir: string;
+      writeDir: string;
    };
 
    enum VR {

@@ -9,6 +9,7 @@ export function config() {
         panic: env.PANIC === "1", // TODO implement panic mode
         logDir: env.LOG_DIR,
         logName: env.LOG_NAME,
+        writeDir: env.WRITE_DIR ?? "../data/dicomDumps",
         targetDir: null,
     };
     return config;

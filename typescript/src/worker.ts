@@ -2,10 +2,12 @@ import { parentPort } from "worker_threads";
 import { streamParse } from "./read/read.js";
 import { writeFileSync } from "fs";
 
-parentPort.on("message", async (msg: { filepath: string; writePath: string }) => {
+parentPort.on("message", async (msg: { filepath: string; writeDir: string }) => {
    if (msg.filepath?.length) {
       const data = await streamParse(msg.filepath);
-      writeFileSync(msg.writePath, JSON.stringify(data, null, 2));
+      const writePath = msg.writeDir + "/" + msg.filepath.split("/").pop() + ".json";
+
+      writeFileSync(writePath, JSON.stringify(data, null, 2));
       // TODO we should stream this back to the main thread
       // as binary data because its expensive to JSON.stringify
       // large datasets but only noticable on pixel data DICOM.
