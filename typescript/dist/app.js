@@ -1,6 +1,6 @@
 import { cfg, init } from "./init/init.js";
 import { write } from "./logging/logQ.js";
-import { multiThreaded } from "./multithreaded.js";
+import { singleTheaded } from "./singlethreaded.js";
 /**
  * Main entry point for the application.
  * Initializes the application, runs the
@@ -14,10 +14,15 @@ import { multiThreaded } from "./multithreaded.js";
     if (cfg.verbose) {
         write(`Starting up...`, "INFO");
     }
-    cfg.targetDir = "/Users/chriskennedy/Desktop/aesirax/data/isolat";
+    const testDirs = {
+        noNestedSQ_multipleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems: "/Users/chriskennedy/Desktop/aesirax/data/with_1-depthSQ_multiple_items_undefined_SQlen_undefinedItemLen", // working atm
+        noNestedSQ_singleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems: "/Users/chriskennedy/Desktop/aesirax/data/with_1-depth_sequences_undefinedSQlen_undefinedItemlen", // working atm
+        nestedSQ_singleItemsInsideSQ_definedLengthSQ_definedLengthItems: "/Users/chriskennedy/Desktop/aesirax/data/Pi", // not working because haven't implemented handling for SQ's with defined lengths
+    };
+    cfg.targetDir = testDirs.noNestedSQ_singleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems;
     await init();
-    await multiThreaded(cfg);
-    // await singleTheaded(cfg);
+    // await multiThreaded(cfg);
+    await singleTheaded(cfg); // do based on # files in directory. If 1 file, do single-threaded.
     setTimeout(() => {
         if (cfg.verbose) {
             write(`Completed work - shutting down.`, "INFO");

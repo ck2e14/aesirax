@@ -88,13 +88,14 @@ export function parse(buffer, ctx) {
     var _a, _b;
     ctx.usingLE = useLE(ctx.transferSyntaxUid);
     if (ctx.first) {
-        write(`Decoding as ${ctx.usingLE ? "Little Endian" : "Big Endian"} byte order`, "DEBUG");
+        write(`Decoding as ${ctx.usingLE ? "LE" : "BE"} byte order`, "DEBUG");
     }
-    const cursor = newCursor();
-    const endOfSqTag = "(fffe,e00d)";
-    const itemDataSet = {}; // ignored if not in a sequence
-    let lastTagStart = cursor.pos; // for truncation handling
-    // handling sequence contexts - need LIFO stack use here
+    // TODO work out how to implement LIFO stack for nested sequencing
+    const cursor = newCursor(), newItem = "(fffe,e000)", itemEnd = "(fffe,e00d)", sqEnd = "(fffe,e0dd)";
+    let lastTagStart = cursor.pos; // for truncation handling of streamed buffers
+    let itemDataSet = {}; // ignored if not in a sequence. Items in a sequence all contain
+    // their own datasets. Is overwritten freely and at point of needing to write value, we
+    // copy by value not pass by reference (using spread operator)
     if (ctx.inSequence) {
         (_a = ctx.dataSet)[_b = ctx.currSqTag] ?? (_a[_b] = newSeqElement(ctx));
     }
@@ -106,36 +107,65 @@ export function parse(buffer, ctx) {
             // if we're parsing a sequence, and we've reached the end of sequence tag
             // we need to return up the recursion stack. Before doing that we need to
             // add the current itemDataSet to the current sequence's dataset. LIFO needed.
-            if (ctx.inSequence && el.tag === endOfSqTag) {
-                write("End of the SQ element; returning from recursion", "DEBUG");
-                ctx.dataSet[ctx.currSqTag].items.push(itemDataSet);
-                ctx.sequenceBytesTraversed = cursor.pos;
-                return;
+            const reachedSqEnd = ctx.inSequence && el.tag === itemEnd;
+            if (reachedSqEnd) {
+                write(`Reached item delimiter: ${el.tag}, there will be no more elements to place inside this item's dataSet. ` +
+                    `Copying the dataset to the current sequence element's (${ctx.currSqTag}) items array`, "DEBUG");
+                cursor.walk(4); // ignore VR, its 00000000H on itemEnd tags per the spec
+                ctx.dataSet[ctx.currSqTag].items.push({
+                    ...itemDataSet, // must copy value not reference otherwise each previously
+                    // added item data set will equal the last item in the sequence's dataset.
+                    // LIFO stack in future for nested sequences to add to correct SQ's items[]
+                });
+                // now we should peek the next tag to determine what to do next.
+                const nextTagBytes = buffer.subarray(cursor.pos, cursor.pos + 4);
+                const nextTag = decodeTagNum(nextTagBytes);
+                cursor.walk(ByteLen.UINT_32); // walk past the tag string we just decoded
+                cursor.walk(ByteLen.UINT_32); // walk past the sqEnds' length (0) - can ignore it
+                // (A) the next tag is a new start of item tag. So we just want
+                // to continue to the next while() decode the next tag.
+                if (nextTag === newItem)
+                    continue;
+                // (B) the next tag is the sqEnd tag, at which point we should return from the recursion.
+                // For sequences nested inside other sequences, need to LIFO .pop() a stack of sequences?
+                if (nextTag === sqEnd) {
+                    ctx.sequenceBytesTraversed = cursor.pos; // for syncing cursor byte position up the call stack to parent cursor.
+                    return;
+                }
+                // probably could throw an error here because at the end of the
+                // SQ expect always a new item tag or the end of sequence tag.
+                throw new MalformedDicomError(`Detected the end of an item's dataset but then saw neither a new item nor a sequence delimiter`);
             }
             decodeVRAndMoveCursor(buffer, cursor, el);
             const wasSeq = decodeValueLengthAndMoveCursor(el, cursor, buffer, ctx);
             if (wasSeq) {
                 ctx.inSequence = false;
                 ctx.currSqTag = null;
-                continue; // already handled decoding value the value (nested items) and walked the cursor
+                ctx.sequenceBytesTraversed = null;
+                // continue to decode the next tag - sequence ended and each
+                // while() represents an attempt to decode the next tag.
+                continue;
             }
-            decodeValueAndMoveCursor(buffer, cursor, el, ctx);
+            else {
+                decodeValueAndMoveCursor(buffer, cursor, el, ctx);
+            }
             if (ctx.inSequence) {
-                itemDataSet[el.tag] = el; // if we're in a sequence add it to the nested item's dataset. LIFO .pop() needed.
+                itemDataSet[el.tag] = el;
             }
             else {
                 ctx.dataSet[el.tag] = el; // if not in a sequence add to the top level dataset.
             }
-            cursor.walk(el.length); // to next tag
             debugPrint(el);
         }
         catch (error) {
             return handleErrorPathways(error, buffer, lastTagStart, el.tag);
         }
-        // required because truncation mid-value doesn't throw a decode error
-        // WARN what about truncation mid-value in SQ that has undefined length?
-        // We need to make sure we're handling that too? Think we are though but check.
         if (valueIsTruncated(buffer, cursor.pos, el.length)) {
+            // this condition is met if we didnt hit a decode error based on unexpectedly
+            // short bytes for decoding, say, a tag num where 4 bytes was required but the
+            // buffer only had 3 left. The 'value' part of a tag needs to be detected for
+            // truncation via comparing expected length to number of bytes between cursor
+            // and the end of the buffer.
             return buffer.subarray(lastTagStart, buffer.length);
         }
     }
@@ -230,6 +260,7 @@ function decodeValueAndMoveCursor(buffer, cursor, el, StreamContext) {
     const end = cursor.pos + el.length;
     const valueBuffer = buffer.subarray(start, end);
     el.value = decodeValue(el.vr, valueBuffer, StreamContext);
+    cursor.walk(el.length); // to get to the start of the next tag
 }
 /**
  * This handles recursive parsing of nested items and their datasets according to
@@ -318,7 +349,8 @@ function decodeValueLengthAndMoveCursor(el, cursor, buffer, context) {
     }
     const undefinedLength = el.vr === VR.SQ && el.length === 4294967295;
     if (isExtVr && undefinedLength) {
-        write("Encountered an SQ - will recursively parse. SQ tag: " + el.tag, "DEBUG");
+        write(`Encountered an SQ at cursor pos ${cursor.pos} - will recursively parse. SQ tag: ` +
+            el.tag, "DEBUG");
         // if SQ, & length is undefined, parse it according to table:
         // https://dicom.nema.org/medical/dicom/current/output/chtml/part05/sect_7.5.2.html#table_7.5-3
         // First, we want to isolate the bytes from the start of the first item in the sequence.
@@ -327,17 +359,11 @@ function decodeValueLengthAndMoveCursor(el, cursor, buffer, context) {
         // to our sequence parsing logic. We've amended parse() so that it knows when to return early
         // from this based on detecting sequence's end via byte decoding - so its fine to pass too many.
         const seqBuffer = buffer.subarray(cursor.pos, buffer.length);
-        // note that we are about to start a recursive branch, which does its own cursor walking.
-        // the most logically consistent and easy-to-reason-about method would be to track how many
-        // bytes in total we progress throughout the recursion, and synchronise our 'top' level cursor
-        // position at the end of it. We could also do this from within the recursion, either is fine.
-        // const bytes =
+        // note that we are about to start a recursive branch, which does its own cursor walking. We
+        // need to keep track of how many bytes that recursive parsing walks through so we can pick up
+        // again in this 'parent' cursor from the right place.
         handleUndefinedLengthSQ(seqBuffer, context, el.tag);
-        cursor.walk(context.sequenceBytesTraversed + 20);
-        // ok not honestly sure why +20 made it work here. I just kept incrementing it until it worked,
-        // I was expecting it to just be context.sequenceBytesTraversed but it wasn't. I think it's
-        // because we're walking the cursor by the length of the sequence, but we also need to walk
-        // past the end of sequence tag?
+        cursor.walk(context.sequenceBytesTraversed + 8); // honestly cant work out why 8. When we peek before returning from recursion its at the right position, but then here its 8 bytes behind and back to the sequence delimiter tag, confusing as fuck;
         return true;
     }
 }
