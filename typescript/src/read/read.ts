@@ -64,14 +64,15 @@ export function streamParse(
    }
 
    return new Promise<DataSet>((resolve, reject) => {
-      console.log(ctx.bufWatermark);
       const stream = createReadStream(path, {
          highWaterMark: ctx.bufWatermark,
       });
 
       stream.on("data", (currBytes: Buffer) => {
          write(`Received ${currBytes.length} bytes from ${path}`, "DEBUG");
-         console.log(`stream.on('data')ctx: ${ctx.inSequence}, ${ctx.currSqTag}, ${ctx.sequenceBytesTraversed}`);
+         console.log(
+            `stream.on('data')ctx: ${ctx.inSequence}, ${ctx.currSqTag}, ${ctx.sequenceBytesTraversed}`
+         );
          ctx.nByteArray = ctx.nByteArray + 1;
          ctx.totalBytes = ctx.totalBytes + currBytes.length;
          ctx.partialTag = handleDicomBytes(ctx, currBytes); // update partialTag with any partially read tag from current buffer
@@ -131,10 +132,9 @@ export function handleDicomBytes(ctx: StreamContext, currBytes: Buffer): Partial
  * DICOM preamble and header. It walks the buffer like in handleDicomBytes()
  * but it also validates the DICOM preamble and header.
  *
- * Note that in all DICOM regardless of the transfer syntax, the File Meta Information
- * which, in the byte stream, precedes the Data Set, will be encoded as the Explicit VR
- * Little Endian Transfer Syntax, as laid out in the DICOM spec at PS3.5
- * https://dicom.nema.org/medical/dicom/current/output/chtml/part05/PS3.5.html
+ * Note that in all DICOM regardless of the transfer syntax, the File
+ * Meta Information which, in the byte stream, precedes the Data Set,
+ * will be encoded as the Explicit VR Little Endian Transfer Syntax.
  *
  * @param ctx
  * @param buffer
@@ -149,6 +149,7 @@ function handleFirstBuffer(ctx: StreamContext, buffer: Buffer): PartialTag {
    buffer = buffer.subarray(HEADER_END, buffer.length);
 
    const partialElement = parse(buffer, ctx);
+
    const tsn = getElementValue<string>("(0002,0010)", ctx.dataSet);
    // no need to accomodate TSN not present in the first buffer because put a
    // a hard-lock on the min size of buffers to avoid unnecessary complexity

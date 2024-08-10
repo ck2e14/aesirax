@@ -29,7 +29,6 @@ export function streamParse(path, cfg = null, skipPixelData = true) {
         write(SMALL_BUF_ADVISORY, "WARN");
     }
     return new Promise((resolve, reject) => {
-        console.log(ctx.bufWatermark);
         const stream = createReadStream(path, {
             highWaterMark: ctx.bufWatermark,
         });
@@ -87,10 +86,9 @@ export function handleDicomBytes(ctx, currBytes) {
  * DICOM preamble and header. It walks the buffer like in handleDicomBytes()
  * but it also validates the DICOM preamble and header.
  *
- * Note that in all DICOM regardless of the transfer syntax, the File Meta Information
- * which, in the byte stream, precedes the Data Set, will be encoded as the Explicit VR
- * Little Endian Transfer Syntax, as laid out in the DICOM spec at PS3.5
- * https://dicom.nema.org/medical/dicom/current/output/chtml/part05/PS3.5.html
+ * Note that in all DICOM regardless of the transfer syntax, the File
+ * Meta Information which, in the byte stream, precedes the Data Set,
+ * will be encoded as the Explicit VR Little Endian Transfer Syntax.
  *
  * @param ctx
  * @param buffer

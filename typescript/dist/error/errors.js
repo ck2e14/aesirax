@@ -45,10 +45,10 @@ export class DicomError extends Error {
  * this is not the correct error to throw.
  * @param message
  */
-export class BufferBoundaryError extends Error {
+export class BufferBoundary extends Error {
     constructor(message) {
         super(message);
-        this.name = "BufferBoundaryError";
+        this.name = "BufferBoundary";
     }
 }
 export class UnrecognisedVR extends Error {
@@ -115,10 +115,10 @@ export class UndefinedLength extends Error {
         this.name = "UndefinedLength";
     }
 }
-export class MalformedDicomError extends Error {
+export class MalformedDicom extends Error {
     constructor(message) {
         super(message);
-        this.name = "MalformedDicomError";
+        this.name = "MalformedDicom";
     }
 }
 //# sourceMappingURL=errors.js.map
