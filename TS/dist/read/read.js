@@ -36,7 +36,7 @@ export function streamParse(path, cfg = null, skipPixelData = true) {
             write(`Received ${currBytes.length} bytes from ${path}`, "DEBUG");
             ctx.nByteArray = ctx.nByteArray + 1;
             ctx.totalBytes = ctx.totalBytes + currBytes.length;
-            ctx.TruncatedBuffer = handleDicomBytes(ctx, currBytes).truncatedBuffer; // update TruncatedBuffer with any partially read tag from current buffer
+            ctx.truncatedBuffer = handleDicomBytes(ctx, currBytes)?.truncatedBuffer; // update TruncatedBuffer with any partially read tag from current buffer
         });
         stream.on("end", () => {
             write(`Finished: read a total of ${ctx.totalBytes} bytes from ${path}`, "DEBUG");
@@ -116,9 +116,9 @@ function handleFirstBuffer(ctx, buffer) {
  * @returns Buffer
  */
 function stitchBytes(ctx, currBytes) {
-    const { TruncatedBuffer, path } = ctx;
-    write(`Stitching ${TruncatedBuffer.length} + ${currBytes.length} bytes (${path})`, "DEBUG");
-    return Buffer.concat([TruncatedBuffer, currBytes]);
+    const { truncatedBuffer, path } = ctx;
+    write(`Stitching ${truncatedBuffer.length} + ${currBytes.length} bytes (${path})`, "DEBUG");
+    return Buffer.concat([truncatedBuffer, currBytes]);
 }
 /**
  * Get the value of an element from an array of elements. Note that without
@@ -148,7 +148,7 @@ function ctxFactory(path, cfg = null, assumeDefaults = true, skipPixels = true) 
             first: true,
             dataSet: {},
             dataSetStack: [],
-            TruncatedBuffer: Buffer.alloc(0),
+            truncatedBuffer: Buffer.alloc(0),
             bufWatermark: cfg?.bufWatermark ?? 1024 * 1024,
             totalBytes: 0,
             lastTagStart: 0,

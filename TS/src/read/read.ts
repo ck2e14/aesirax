@@ -16,7 +16,7 @@ export type StreamContext = {
    first: boolean;
    dataSet: DataSet;
    dataSetStack: DataSet[];
-   TruncatedBuffer: Buffer;
+   truncatedBuffer: Buffer;
    bufWatermark: number;
    lastTagStart: number;
    totalBytes: number;
@@ -72,7 +72,7 @@ export function streamParse(
          write(`Received ${currBytes.length} bytes from ${path}`, "DEBUG");
          ctx.nByteArray = ctx.nByteArray + 1;
          ctx.totalBytes = ctx.totalBytes + currBytes.length;
-         ctx.TruncatedBuffer = handleDicomBytes(ctx, currBytes).truncatedBuffer; // update TruncatedBuffer with any partially read tag from current buffer
+         ctx.truncatedBuffer = handleDicomBytes(ctx, currBytes)?.truncatedBuffer; // update TruncatedBuffer with any partially read tag from current buffer
       });
 
       stream.on("end", () => {
@@ -174,9 +174,9 @@ function handleFirstBuffer(
  * @returns Buffer
  */
 function stitchBytes(ctx: StreamContext, currBytes: Buffer): Buffer {
-   const { TruncatedBuffer, path } = ctx;
-   write(`Stitching ${TruncatedBuffer.length} + ${currBytes.length} bytes (${path})`, "DEBUG");
-   return Buffer.concat([TruncatedBuffer, currBytes]);
+   const { truncatedBuffer, path } = ctx;
+   write(`Stitching ${truncatedBuffer.length} + ${currBytes.length} bytes (${path})`, "DEBUG");
+   return Buffer.concat([truncatedBuffer, currBytes]);
 }
 
 /**
@@ -213,7 +213,7 @@ function ctxFactory(
          first: true,
          dataSet: {},
          dataSetStack: [],
-         TruncatedBuffer: Buffer.alloc(0),
+         truncatedBuffer: Buffer.alloc(0),
          bufWatermark: cfg?.bufWatermark ?? 1024 * 1024,
          totalBytes: 0,
          lastTagStart: 0,

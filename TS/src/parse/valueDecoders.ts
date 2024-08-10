@@ -1,4 +1,4 @@
-import { DicomError } from "../error/errors.js";
+import { BufferBoundary, DicomError } from "../error/errors.js";
 import { ByteLen, DicomErrorType, TransferSyntaxUid, VR } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
 import { StreamContext } from "../read/read.js";
@@ -103,19 +103,15 @@ export function decodeValue(
  */
 export function decodeVr(buf: Buffer): Global.VR {
    if (buf.length !== ByteLen.VR) {
-      return throwBadVrByteLength(buf);
+      throw new BufferBoundary(`decodeVr() expected 2 bytes, got ${buf.length}`);
    }
 
    const decodedVr = buf.toString("ascii", 0, ByteLen.VR);
    const isRecognisedVr = Object.values(VR).includes(decodedVr as VR);
 
-   // disabling validation for now just return whatever is decoded :shrug:
-
-   // if (isRecognisedVr) {
-   return decodedVr as VR;
-   // }
-
-   // return throwUnrecognisedVr(decodedVr, buf);
+   if (isRecognisedVr) {
+      return decodedVr as VR;
+   }
 }
 
 /**
@@ -129,18 +125,6 @@ function throwUnrecognisedVr(vr: string, vrBuf: Buffer): never {
       errorType: DicomErrorType.PARSING,
       message: `Unrecognised VR: ${vr} from buffer: ${vrBuf.toString("ascii")}`,
       buffer: vrBuf,
-   });
-}
-
-/**
- * Throw an error if the buffer length is not 2 bytes.
- * @param buf
- */
-function throwBadVrByteLength(buf: Buffer): never {
-   throw new DicomError({
-      errorType: DicomErrorType.PARSING,
-      message: `decodeVr() expects a 2byte buffer`,
-      buffer: buf,
    });
 }
 
