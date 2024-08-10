@@ -1,9 +1,9 @@
-import { BufferBoundaryError, DicomError, MalformedDicomError, UndefinedLength, } from "../error/errors.js";
 import { ByteLen, DicomErrorType, TagDictByHex, TransferSyntaxUid, VR } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
 import { decodeTagNum } from "./tagNums.js";
 import { isVr } from "./typeGuards.js";
 import { decodeValue, decodeVr } from "./valueDecoders.js";
+import { BufferBoundaryError, DicomError, MalformedDicomError, UndefinedLength, } from "../error/errors.js";
 export const DICOM_HEADER = "DICM";
 export const PREAMBLE_LENGTH = 128;
 export const DICOM_HEADER_START = PREAMBLE_LENGTH;
