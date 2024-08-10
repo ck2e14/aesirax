@@ -1,4 +1,4 @@
-import { DicomError } from "../error/errors.js";
+import { BufferBoundary, DicomError } from "../error/errors.js";
 import { DicomErrorType } from "../globalEnums.js";
 /**
  * Pass in a 4 byte buffer and get back the tag as a string
@@ -10,7 +10,7 @@ import { DicomErrorType } from "../globalEnums.js";
  */
 export function decodeTagNum(buf) {
     if (buf.length !== 4) {
-        return throwBadBufferLength(buf);
+        throw new BufferBoundary(`decodeTagNum() expected 4 bytes, got ${buf.length}`);
     }
     const decode = (offset) => {
         return buf
@@ -24,17 +24,6 @@ export function decodeTagNum(buf) {
         return throwBadHexPattern(buf, `(${grp},${el})`);
     }
     return `(${grp},${el})`;
-}
-/**
- * Throw an error if the buffer length is not 4 bytes.
- * @param buf
- */
-function throwBadBufferLength(buf) {
-    throw new DicomError({
-        errorType: DicomErrorType.PARSING,
-        message: `decodeTagNum() expects a 4byte buffer`,
-        buffer: buf,
-    });
 }
 /**
  * Throw an error if the buffer did not decode to a 4 hex character string.

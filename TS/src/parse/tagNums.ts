@@ -1,4 +1,4 @@
-import { DicomError } from "../error/errors.js";
+import { BufferBoundary, DicomError } from "../error/errors.js";
 import { DicomErrorType, TagDictByHex } from "../globalEnums.js";
 
 export type TagStr = keyof typeof TagDictByHex; // 'keyof' gets the keys of an object type. So this is the union type of all the keys of TagDictByHex
@@ -13,7 +13,7 @@ export type TagStr = keyof typeof TagDictByHex; // 'keyof' gets the keys of an o
  */
 export function decodeTagNum(buf: Buffer): TagStr {
    if (buf.length !== 4) {
-      return throwBadBufferLength(buf);
+      throw new BufferBoundary(`decodeTagNum() expected 4 bytes, got ${buf.length}`);
    }
 
    const decode = (offset: number): string => {
@@ -31,18 +31,6 @@ export function decodeTagNum(buf: Buffer): TagStr {
    }
 
    return `(${grp},${el})` as TagStr;
-}
-
-/**
- * Throw an error if the buffer length is not 4 bytes.
- * @param buf
- */
-function throwBadBufferLength(buf: Buffer): never {
-   throw new DicomError({
-      errorType: DicomErrorType.PARSING,
-      message: `decodeTagNum() expects a 4byte buffer`,
-      buffer: buf,
-   });
 }
 
 /**
