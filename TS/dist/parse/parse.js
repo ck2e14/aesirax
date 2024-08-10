@@ -348,7 +348,6 @@ function decodeVRAndMoveCursor(buffer, cursor, el) {
     const vrBuffer = buffer.subarray(start, end);
     el.vr = decodeVr(vrBuffer);
     cursor.walk(ByteLen.VR);
-    // console.log(buffer.toString('ascii'));
     if (!isVr(el.vr)) {
         throwUnrecognisedVr(el.vr, vrBuffer);
     }
