@@ -6,7 +6,7 @@ import { DicomError, UnsupportedTSN } from "../error/errors.js";
 import {
    DataSet,
    HEADER_END,
-   PartialTag,
+   TruncatedBuffer,
    validateHeader,
    validatePreamble,
    parse,
@@ -16,7 +16,7 @@ export type StreamContext = {
    first: boolean;
    dataSet: DataSet;
    dataSetStack: DataSet[];
-   partialTag: Buffer;
+   TruncatedBuffer: Buffer;
    bufWatermark: number;
    lastTagStart: number;
    totalBytes: number;
@@ -70,12 +70,9 @@ export function streamParse(
 
       stream.on("data", (currBytes: Buffer) => {
          write(`Received ${currBytes.length} bytes from ${path}`, "DEBUG");
-         console.log(
-            `stream.on('data')ctx: ${ctx.inSequence}, ${ctx.currSqTag}, ${ctx.sequenceBytesTraversed}`
-         );
          ctx.nByteArray = ctx.nByteArray + 1;
          ctx.totalBytes = ctx.totalBytes + currBytes.length;
-         ctx.partialTag = handleDicomBytes(ctx, currBytes); // update partialTag with any partially read tag from current buffer
+         ctx.TruncatedBuffer = handleDicomBytes(ctx, currBytes).truncatedBuffer; // update TruncatedBuffer with any partially read tag from current buffer
       });
 
       stream.on("end", () => {
@@ -108,13 +105,16 @@ function isSupportedTSN(uid: string): uid is TransferSyntaxUid {
  * stitching it to the previous bytes where required.
  * @param ctx
  * @param currBytes
- * @returns PartialTag (byte[])
+ * @returns TruncatedBuffer (byte[])
  */
-export function handleDicomBytes(ctx: StreamContext, currBytes: Buffer): PartialTag {
+export function handleDicomBytes(
+   ctx: StreamContext,
+   currBytes: Buffer
+): {
+   returnReason: string;
+   truncatedBuffer: TruncatedBuffer;
+} {
    const { path, nByteArray } = ctx;
-   console.log(
-      `handleDicomBytes()ctx: ${ctx.inSequence}, ${ctx.currSqTag}, ${ctx.sequenceBytesTraversed}`
-   );
 
    write(`Reading buffer (#${nByteArray} - ${currBytes.length} bytes) (${path})`, "DEBUG");
 
@@ -139,41 +139,44 @@ export function handleDicomBytes(ctx: StreamContext, currBytes: Buffer): Partial
  * @param ctx
  * @param buffer
  * @throws DicomError
- * @returns PartialTag (byte[])
+ * @returns TruncatedBuffer (byte[])
  */
-function handleFirstBuffer(ctx: StreamContext, buffer: Buffer): PartialTag {
+function handleFirstBuffer(
+   ctx: StreamContext,
+   buffer: Buffer
+): {
+   returnReason: string;
+   truncatedBuffer: TruncatedBuffer;
+} {
    validatePreamble(buffer); // throws if not void
    validateHeader(buffer); // throws if not void
 
-   // window the buffer beyond 'DICM' header
-   buffer = buffer.subarray(HEADER_END, buffer.length);
-
-   const partialElement = parse(buffer, ctx);
-
+   buffer = buffer.subarray(HEADER_END, buffer.length); // window the buffer beyond 'DICM' header
+   const parseResponse = parse(buffer, ctx);
    const tsn = getElementValue<string>("(0002,0010)", ctx.dataSet);
-   // no need to accomodate TSN not present in the first buffer because put a
-   // a hard-lock on the min size of buffers to avoid unnecessary complexity
 
    if (tsn && !isSupportedTSN(tsn)) {
       throw new UnsupportedTSN(`TSN: ${tsn} is unsupported.`);
-   } else if (isSupportedTSN(tsn)) {
+   }
+
+   if (isSupportedTSN(tsn)) {
       ctx.transferSyntaxUid = tsn ?? TransferSyntaxUid.ExplicitVRLittleEndian;
       ctx.first = false;
-      return partialElement;
+      return parseResponse;
    }
 }
 
 /**
  * stitchBytes() is a helper function for handleDicomBytes()
  * to concatenate the partial tag bytes with the current bytes
- * @param partialTag
+ * @param TruncatedBuffer
  * @param currBytes
  * @returns Buffer
  */
 function stitchBytes(ctx: StreamContext, currBytes: Buffer): Buffer {
-   const { partialTag, path } = ctx;
-   write(`Stitching ${partialTag.length} + ${currBytes.length} bytes (${path})`, "DEBUG");
-   return Buffer.concat([partialTag, currBytes]);
+   const { TruncatedBuffer, path } = ctx;
+   write(`Stitching ${TruncatedBuffer.length} + ${currBytes.length} bytes (${path})`, "DEBUG");
+   return Buffer.concat([TruncatedBuffer, currBytes]);
 }
 
 /**
@@ -210,7 +213,7 @@ function ctxFactory(
          first: true,
          dataSet: {},
          dataSetStack: [],
-         partialTag: Buffer.alloc(0),
+         TruncatedBuffer: Buffer.alloc(0),
          bufWatermark: cfg?.bufWatermark ?? 1024 * 1024,
          totalBytes: 0,
          lastTagStart: 0,
@@ -219,6 +222,9 @@ function ctxFactory(
          skipPixelData: skipPixels,
          transferSyntaxUid: TransferSyntaxUid.ExplicitVRLittleEndian,
          usingLE: true,
+         inSequence: false,
+         currSqTag: null,
+         sequenceBytesTraversed: null,
       };
    } else {
       return {
