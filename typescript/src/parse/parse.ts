@@ -1,18 +1,20 @@
-import {
-   BufferBoundaryError,
-   DicomError,
-   MalformedDicomError,
-   UndefinedLength,
-} from "../error/errors.js";
+
 import { ByteLen, DicomErrorType, TagDictByHex, TransferSyntaxUid, VR } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
 import { StreamContext } from "../read/read.js";
 import { decodeTagNum, TagStr } from "./tagNums.js";
 import { isVr } from "./typeGuards.js";
 import { decodeValue, decodeVr } from "./valueDecoders.js";
+import {
+   BufferBoundaryError,
+   DicomError,
+   MalformedDicomError,
+   UndefinedLength,
+} from "../error/errors.js";
 
 export type PartialTag = Buffer | null; // because streaming will guarantee cutting tags up
 export type DataSet = Record<string, Element>;
+export type Item = DataSet; // items are just datasets contained in sequences
 export type Element = {
    tag: TagStr;
    name: string;
@@ -22,7 +24,6 @@ export type Element = {
    value: string | number | Buffer;
    devNote?: string;
 };
-export type Item = {};
 
 export const DICOM_HEADER = "DICM";
 export const PREAMBLE_LENGTH = 128;
