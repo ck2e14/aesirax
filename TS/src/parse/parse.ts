@@ -12,7 +12,7 @@ import {
    Unrecoverable,
 } from "../error/errors.js";
 
-export type PartialTag = Buffer | null; // because streaming will guarantee cutting tags up
+export type TruncatedBuffer = Buffer | null; // because streaming will guarantee cutting tags up
 export type DataSet = Record<string, Element>;
 export type Item = DataSet; // items are just datasets contained in sequences
 export type Element = {
@@ -41,9 +41,16 @@ export const HEADER_END = PREAMBLE_LENGTH + 4;
  *
  * @param buffer - Bytes[] from a DICOM file
  * @param ctx - StreamContext
- * @returns PartialTag
+ * @returns TruncatedBuffer
  */
-export function parse(buffer: Buffer, ctx: StreamContext): PartialTag {
+export function parse(
+   buffer: Buffer,
+   ctx: StreamContext
+): {
+   returnReason: string | null;
+   truncatedBuffer: TruncatedBuffer;
+} {
+   // export function parse(buffer: Buffer, ctx: StreamContext): TruncatedBuffer {
    const cursor = newCursor();
    const newItem = "(fffe,e000)";
    const itemEnd = "(fffe,e00d)";
@@ -94,7 +101,7 @@ export function parse(buffer: Buffer, ctx: StreamContext): PartialTag {
          }
 
          // * STAGE 2 - DECODE VR * //
-         console.log(`Decoding VR for tag: ${el.tag} in sequence: ${ctx.inSequence}`);
+         // console.log(`Decoding VR for tag: ${el.tag} in sequence: ${ctx.inSequence}`);
          decodeVRAndMoveCursor(buffer, cursor, el);
 
          // * STAGE 3 - DECODE VALUE LENGTH * //
@@ -132,7 +139,10 @@ export function parse(buffer: Buffer, ctx: StreamContext): PartialTag {
       if (valueIsTruncated(buffer, cursor.pos, el.length)) {
          const partial = buffer.subarray(lastTagStart, buffer.length);
          console.log(`Returning buffer length: ${partial.length}, inseq: ${ctx.inSequence}`);
-         return partial;
+         return {
+            returnReason: "truncation",
+            truncatedBuffer: partial,
+         };
       }
    }
 }
@@ -230,14 +240,17 @@ function newCursor(pos = 0): Cursor {
  * @param buffer
  * @param lastTagStart
  * @throws Error
- * @returns PartialTag
+ * @returns TruncatedBuffer
  */
 function handleErrorPathways(
    error: any,
    buffer: Buffer,
    lastTagStart: number,
    tag?: TagStr
-): PartialTag {
+): {
+   returnReason: string | null;
+   truncatedBuffer: Buffer;
+} {
    const partialled = [BufferBoundary, DicomError]; // can refine
    const isUndefinedLength = error instanceof UndefinedLength;
    const parsingError = partialled.every(ex => !(error instanceof ex));
@@ -248,7 +261,10 @@ function handleErrorPathways(
 
    if (error instanceof BufferBoundary) {
       write(`Tag is split across buffer boundary ${tag ?? ""}`, "DEBUG");
-      return buffer.subarray(lastTagStart, buffer.length);
+      return {
+         returnReason: "truncation",
+         truncatedBuffer: buffer.subarray(lastTagStart, buffer.length),
+      };
    }
 }
 
@@ -283,9 +299,7 @@ function decodeValueAndMoveCursor(
    StreamContext: StreamContext
 ): void {
    if (valueIsTruncated(buffer, cursor.pos, el.length)) {
-      throw new BufferBoundary(
-         `Tag ${el.tag} is split across buffer boundary.\n  This is much more likely to just be the end\n  of the currently streamed buffer than it is\n  a malformed DICOM image, but an error nonetheless.\n  Just a calm and expected one. :)`
-      );
+      throw new BufferBoundary(`Tag ${el.tag} is split across buffer boundary`);
    }
 
    const start = cursor.pos;
@@ -309,6 +323,7 @@ function decodeValueAndMoveCursor(
  * @param seqTag
  */
 function handleUndefinedLengthSQ(seqBuffer: Buffer, ctx: StreamContext, seqTag: string) {
+   const lengthIndicatingUndefined = 4_294_967_295;
    const itemTag: TagStr = "(fffe,e000)" as TagStr;
    const seqCursor = newCursor(0);
 
@@ -334,23 +349,27 @@ function handleUndefinedLengthSQ(seqBuffer: Buffer, ctx: StreamContext, seqTag: 
 
    seqCursor.walk(ByteLen.UINT_32); // walk past the length bytes up to the start of the item's dataset
 
-   // Now we're going to recurse into parse() with some added context so that different behaviour
-   // and basecases can be followed. Return case is detecting an end of sequence tag.
-   // WARN_1: the context should include that we're in an undef length SQ, because parse() will need
-   // to behave differently once we implement defined length SQ handling logic.
-   if (length === 4_294_967_295) {
-      // WARN_2: here, our recursive call may return
-      // because of a truncated buffer rather than finishing the sequence, i.e. there are two base
-      // cases and we need to differentiate so that we can correctly instruct the parent parse()
-      // call, which is the one that deals with streamParse() and stitching, otherwise when it tries
-      // to stitch the ctx.inSeq vars are fucked up.
+   // Now recurse into parse() with some context flags to control behaviour in parse().Base case is
+   // either that the sequence is truncated, or that the sequence is finished and we can crack on.
+   if (length === lengthIndicatingUndefined) {
       ctx.currSqTag = seqTag;
       ctx.inSequence = true;
-      parse(seqBuffer.subarray(seqCursor.pos), ctx);
-   } else {
-      throw new Unrecoverable(
-         `Defined length items, in undefined length SQs, are not yet supported. Sequence tag: ${seqTag}`
-      );
+
+      const recursionResult = parse(seqBuffer.subarray(seqCursor.pos), ctx);
+
+      if (recursionResult?.returnReason === "truncation") {
+         // Pop the last item (dataset) from the truncated SQ otherwise when parse() gets called
+         // again with the stitched buffer, parses and pushes to items[], we get duplication.
+         // then trigger the stitching logic by throwing a BufferBoundary error
+         ctx.dataSet[ctx.currSqTag].items.pop();
+         throw new BufferBoundary(`SQ is split across buffer boundary`);
+      } else {
+         return; // base case for the recursion - end of sequence, return control to parent parse()
+      }
+   }
+
+   if (length !== lengthIndicatingUndefined) {
+      throw new Unrecoverable(`Defined len items, in undefined len SQ ${seqTag}, are unsupported`);
    }
 }
 
@@ -421,7 +440,10 @@ function decodeValueLengthAndMoveCursor(
       // Now create a context-led recursion into parse() - which does its own cursor walking with
       // a new cursor. We need to keep track of how many bytes that recursive parsing walks through
       // so we can pick up again in this 'parent' cursor from the right place.
-      handleUndefinedLengthSQ(seqBuffer, ctx, el.tag);
+      const recursionResponse = handleUndefinedLengthSQ(seqBuffer, ctx, el.tag);
+      // if (recursionResponse.returnReason === "truncation") {
+      //    return recursionResponse;
+      // }
 
       // Once we return from the recursion, we need to walk the cursor past the sequence's bytes
       // honestly cant work out why 8. When we peek before returning from recursion its at the

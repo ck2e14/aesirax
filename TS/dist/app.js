@@ -15,9 +15,9 @@ import { singleTheaded } from "./singlethreaded.js";
         write(`Starting up...`, "INFO");
     }
     const testDirs = {
-        noNestedSQ_multipleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems: "/Users/chriskennedy/Desktop/aesirax/data/with_1-depthSQ_multiple_items_undefined_SQlen_undefinedItemLen", // working atm
-        noNestedSQ_singleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems: "/Users/chriskennedy/Desktop/aesirax/data/with_1-depth_sequences_undefinedSQlen_undefinedItemlen", // working atm
-        nestedSQ_singleItemsInsideSQ_definedLengthSQ_definedLengthItems: "/Users/chriskennedy/Desktop/aesirax/data/Pi", // not working because haven't implemented handling for SQ's with defined lengths
+        noNestedSQ_multipleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems: "../data/with_1-depthSQ_multiple_items_undefined_SQlen_undefinedItemLen", // working atm
+        noNestedSQ_singleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems: "../data/with_1-depth_sequences_undefinedSQlen_undefinedItemlen", // working atm
+        nestedSQ_singleItemsInsideSQ_definedLengthSQ_definedLengthItems: "../data/Pi", // not working because haven't implemented handling for SQ's with defined lengths
     };
     cfg.targetDir = testDirs.noNestedSQ_multipleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems;
     await init();

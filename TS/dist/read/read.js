@@ -34,10 +34,9 @@ export function streamParse(path, cfg = null, skipPixelData = true) {
         });
         stream.on("data", (currBytes) => {
             write(`Received ${currBytes.length} bytes from ${path}`, "DEBUG");
-            console.log(`stream.on('data')ctx: ${ctx.inSequence}, ${ctx.currSqTag}, ${ctx.sequenceBytesTraversed}`);
             ctx.nByteArray = ctx.nByteArray + 1;
             ctx.totalBytes = ctx.totalBytes + currBytes.length;
-            ctx.partialTag = handleDicomBytes(ctx, currBytes); // update partialTag with any partially read tag from current buffer
+            ctx.TruncatedBuffer = handleDicomBytes(ctx, currBytes).truncatedBuffer; // update TruncatedBuffer with any partially read tag from current buffer
         });
         stream.on("end", () => {
             write(`Finished: read a total of ${ctx.totalBytes} bytes from ${path}`, "DEBUG");
@@ -66,11 +65,10 @@ function isSupportedTSN(uid) {
  * stitching it to the previous bytes where required.
  * @param ctx
  * @param currBytes
- * @returns PartialTag (byte[])
+ * @returns TruncatedBuffer (byte[])
  */
 export function handleDicomBytes(ctx, currBytes) {
     const { path, nByteArray } = ctx;
-    console.log(`handleDicomBytes()ctx: ${ctx.inSequence}, ${ctx.currSqTag}, ${ctx.sequenceBytesTraversed}`);
     write(`Reading buffer (#${nByteArray} - ${currBytes.length} bytes) (${path})`, "DEBUG");
     if (ctx.first) {
         return handleFirstBuffer(ctx, currBytes);
@@ -93,37 +91,34 @@ export function handleDicomBytes(ctx, currBytes) {
  * @param ctx
  * @param buffer
  * @throws DicomError
- * @returns PartialTag (byte[])
+ * @returns TruncatedBuffer (byte[])
  */
 function handleFirstBuffer(ctx, buffer) {
     validatePreamble(buffer); // throws if not void
     validateHeader(buffer); // throws if not void
-    // window the buffer beyond 'DICM' header
-    buffer = buffer.subarray(HEADER_END, buffer.length);
-    const partialElement = parse(buffer, ctx);
+    buffer = buffer.subarray(HEADER_END, buffer.length); // window the buffer beyond 'DICM' header
+    const parseResponse = parse(buffer, ctx);
     const tsn = getElementValue("(0002,0010)", ctx.dataSet);
-    // no need to accomodate TSN not present in the first buffer because put a
-    // a hard-lock on the min size of buffers to avoid unnecessary complexity
     if (tsn && !isSupportedTSN(tsn)) {
         throw new UnsupportedTSN(`TSN: ${tsn} is unsupported.`);
     }
-    else if (isSupportedTSN(tsn)) {
+    if (isSupportedTSN(tsn)) {
         ctx.transferSyntaxUid = tsn ?? TransferSyntaxUid.ExplicitVRLittleEndian;
         ctx.first = false;
-        return partialElement;
+        return parseResponse;
     }
 }
 /**
  * stitchBytes() is a helper function for handleDicomBytes()
  * to concatenate the partial tag bytes with the current bytes
- * @param partialTag
+ * @param TruncatedBuffer
  * @param currBytes
  * @returns Buffer
  */
 function stitchBytes(ctx, currBytes) {
-    const { partialTag, path } = ctx;
-    write(`Stitching ${partialTag.length} + ${currBytes.length} bytes (${path})`, "DEBUG");
-    return Buffer.concat([partialTag, currBytes]);
+    const { TruncatedBuffer, path } = ctx;
+    write(`Stitching ${TruncatedBuffer.length} + ${currBytes.length} bytes (${path})`, "DEBUG");
+    return Buffer.concat([TruncatedBuffer, currBytes]);
 }
 /**
  * Get the value of an element from an array of elements. Note that without
@@ -153,7 +148,7 @@ function ctxFactory(path, cfg = null, assumeDefaults = true, skipPixels = true) 
             first: true,
             dataSet: {},
             dataSetStack: [],
-            partialTag: Buffer.alloc(0),
+            TruncatedBuffer: Buffer.alloc(0),
             bufWatermark: cfg?.bufWatermark ?? 1024 * 1024,
             totalBytes: 0,
             lastTagStart: 0,
@@ -162,6 +157,9 @@ function ctxFactory(path, cfg = null, assumeDefaults = true, skipPixels = true) 
             skipPixelData: skipPixels,
             transferSyntaxUid: TransferSyntaxUid.ExplicitVRLittleEndian,
             usingLE: true,
+            inSequence: false,
+            currSqTag: null,
+            sequenceBytesTraversed: null,
         };
     }
     else {
