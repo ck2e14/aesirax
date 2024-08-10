@@ -8,6 +8,7 @@ declare namespace Global {
       logName: string;
       targetDir: string;
       writeDir: string;
+      bufWatermark: number;
    };
 
    enum VR {

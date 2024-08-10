@@ -11,6 +11,7 @@ export function config() {
         logName: env.LOG_NAME,
         writeDir: env.WRITE_DIR ?? "../data/dicomDumps",
         targetDir: null,
+        bufWatermark: parseInt(env.BUF_WATERMARK) || 1024,
     };
     return config;
 }

@@ -3,7 +3,7 @@ import { streamParse } from "./read/read.js";
 import { writeFileSync } from "fs";
 parentPort.on("message", async (msg) => {
     if (msg.filepath?.length) {
-        const data = await streamParse(msg.filepath);
+        const data = await streamParse(msg.filepath, null); // TODO get config from main thread
         const writePath = msg.writeDir + "/" + msg.filepath.split("/").pop() + ".json";
         writeFileSync(writePath, JSON.stringify(data, null, 2));
         // TODO we should stream this back to the main thread
