@@ -50,38 +50,50 @@ export function parse(buffer, ctx) {
                     write(`Starting a new item in SQ: ${ctx.currSqTag}`, "DEBUG");
                     continue; // decode next element
                 }
+                // RECURSIVE BASE CASE
                 if (next === SEQ_END_TAG) {
                     write(`End of sequence: ${ctx.currSqTag}`, "DEBUG");
                     ctx.sequenceBytesTraversed = cursor.pos; // to sync recursive cursor with parent cursor
-                    return; // base case, end of SQ
+                    return;
                 }
                 throw new MalformedDicom(`Got ${next} but expected ${ITEM_END_TAG} or ${SEQ_END_TAG}`);
             }
             // STAGE 2 - DECODE VR
             decodeVRAndMoveCursor(buffer, cursor, el, ctx);
             // STAGE 3 - DECODE VALUE LENGTH
-            const wasSeq = decodeValueLengthAndMoveCursor(el, cursor, buffer, ctx); // may or may not trigger recursion
-            // STAGE 3.5 - Handle cases where we've returned from SQ recursive parse()
-            if (wasSeq) {
-                resetSqCtx(ctx);
-                continue; // continue to decode the next tag (outside of the current sequence)
+            const wasSeqRecursion = decodeValueLengthAndMoveCursor(el, cursor, buffer, ctx); // may or may not trigger recursion
+            // STAGE 3.5 - RESET CTX FOLLOWING RECURSIVE SQ PARSE()
+            if (wasSeqRecursion) {
+                continue; // decode the next tag (outside of the current sequence) otherwise will try to decode a VR below in a byte position where a VR isn't.
             }
-            // * STAGE 4 - DECODE VALUE
+            // STAGE 4 - DECODE VALUE
             decodeValueAndMoveCursor(buffer, cursor, el, ctx);
-            // * STAGE 5 - SAVE ELEMENT
+            // STAGE 5 - LOG ELEMENT TO FILE AND/OR CONSOLE NOW WE HAVE ALL THE DATA
+            debugPrint(el);
+            // STAGE 6 - SAVE ELEMENT AND CHECK WHETHER DEFINED-LENGTH SQ TRAVERSAL IS COMPLETE (RECURSIVE BASE CASE)
             if (ctx.inSequence) {
-                if (ctx.currSqLen !== 4294967295) {
-                    // if we're in a SQ that is not of undefined length (which DICOM spec uses a max 32bit UInt to signify)
-                    // then we want to check whether, having decoded this element, we have now traversed the number of bytes
-                    // that we stored in ctx at the beginning of the SQ recursion. +8 for some reason - need to understand that.
-                    // const traversed =
-                }
                 itemDataSet[el.tag] = el; // add to the item dataset.
+                if (ctx.currSqLen === 4294967295) {
+                    continue; // undefined length SQs' end are detected differently elsewhere, see stage 1.5
+                }
+                // Reached end, do things.
+                if (ctx.sequenceBytesTraversed === ctx.currSqLen) {
+                    write(`End of defined length SQ: ${ctx.currSqTag}, ${ctx.currSqLen}. Final element decoded was ${el.tag} - ${el.name} - "${el.value}"`, "DEBUG");
+                    resetSqCtx(ctx);
+                    return;
+                    // process.exit();
+                }
+                if (ctx.sequenceBytesTraversed > ctx.currSqLen) {
+                    throw new MalformedDicom(`Somehow, while ctx.inSequence = true, we've traversed more bytes than the defined length of the SQ. ` +
+                        `This is a bug or malformed DICOM. ` +
+                        `SQ: ${ctx.currSqTag} - ` +
+                        `Expected SQ length: ${ctx.currSqLen}` +
+                        `Traversed: ${ctx.sequenceBytesTraversed} - `);
+                }
             }
             else {
                 ctx.dataSet[el.tag] = el; // add to the top level dataset.
             }
-            debugPrint(el);
         }
         catch (error) {
             return errorPathway(error, buffer, lastTagStart, el.tag);
@@ -196,8 +208,9 @@ function newCursor(pos = 0) {
  * @returns TruncatedBuffer
  */
 function errorPathway(error, buffer, lastTagStart, tag) {
-    // catching range errors so we don't need to write a 'safe parse' function which would
-    // throw a BufferBoundary error anyways - so added it to the list of partialled errors.
+    // catching range errors so we don't need to write a 'safe parse'
+    // function which would throw a BufferBoundary error anyways. So
+    // just added it to the list of partialled errors.
     const partialled = [BufferBoundary, RangeError];
     const isUndefinedLength = error instanceof UndefinedLength;
     const parsingError = partialled.every(ex => !(error instanceof ex)); // not a truncation error but some unanticipated parsing error
@@ -293,21 +306,23 @@ function handleEmptyUndefinedLengthSQ(ctx, seqBuffer, seqCursor) {
  * @param seqTag
  * @returns void
  */
-function handleUndefinedLengthSQ(seqBuffer, ctx, seqTag) {
+function handleSQ(buffer, ctx, el, parentCursor) {
     ctx.inSequence = true;
-    ctx.currSqTag = seqTag;
+    ctx.currSqTag = el.tag;
+    ctx.currSqLen ?? (ctx.currSqLen = el.length); // use nullish assignment atm because we aren't yet supporting nested sequences and we need the currSqLen to remain at the 1-depth SQ's length.
+    write(`Encountered a new SQ element ${el.tag}, ${el.name} at cursor pos ${parentCursor.pos}`, "DEBUG");
     const seqCursor = newCursor(0);
+    const seqBuffer = buffer.subarray(parentCursor.pos, buffer.length);
     const tagBuffer = seqBuffer.subarray(seqCursor.pos, seqCursor.pos + ByteLen.TAG_NUM);
     const tag = decodeTagNum(tagBuffer);
-    // walk past the tag bytes we just decoded
-    seqCursor.walk(ByteLen.TAG_NUM, ctx, seqBuffer);
+    seqCursor.walk(ByteLen.TAG_NUM, ctx, seqBuffer); // walk past the decoded tag bytes
     if (isSeqEnd(ctx, tag)) {
         write(`0 items in this undefined-length SQ, adding empty SQ and resetting ctx`, "DEBUG");
         return handleEmptyUndefinedLengthSQ(ctx, seqBuffer, seqCursor);
     }
     // All SQs should start with an item tag, check for conformity:
     if (!isItemStart(ctx, tag)) {
-        throw new MalformedDicom(`Expected ${ITEM_START_TAG} but got ${tag}, in sequence: ${seqTag})`);
+        throw new MalformedDicom(`Expected ${ITEM_START_TAG} but got ${tag}, in sequence: ${el.tag})`);
     }
     // Length bytes of the item are irrelevant as we're going to handle using
     // delimiter tags for defined and undefined length items. So just walk past.
@@ -345,20 +360,23 @@ function decodeValueLengthAndMoveCursor(el, cursor, buffer, ctx) {
     cursor.walk(ByteLen.EXT_VR_RESERVED, ctx, buffer); // 2 reserved bytes can be ignored
     _decodeValueLength(el, buffer, cursor, ctx); // Extended VR tags' lengths are 4 bytes, may be enormous
     cursor.walk(ByteLen.UINT_32, ctx, buffer);
-    if (el.vr !== VR.SQ)
+    if (el.vr !== VR.SQ) {
         return false;
-    if (el.vr === VR.SQ && el.length === 0)
-        return true;
+    }
+    // -- SQ-ONLY HANDLING BELOW --
+    // If the SQ has a defined length but its zero, just add the emtpy SQ to the dataset
+    // and return false to parse(), indicating we didn't return from SQ recursion.
+    if (el.length === 0) {
+        ctx.dataSet[ctx.currSqTag] = newSeqElement(ctx);
+        resetSqCtx(ctx);
+        return false;
+    }
+    // If the SQ is defined length > 0, or has an undefined length, call handleSQ to
+    // init a context-aware recurse into parse(). Then sync cursors and reset context.
     if (el.vr === VR.SQ) {
-        // SQs handled here, whether they specify a length or not.
-        ctx.currSqLen ?? (ctx.currSqLen = el.length); // use nullish assignment atm because we aren't yet supporting nested sequences and we need the currSqLen to remain at the 1-depth SQ's length.
-        write(`Encountered an undefined length SQ (${el.tag}) at cursor pos ${cursor.pos}`, "DEBUG");
-        // We don'tneed to know the length because parse() uses delimiter tags
-        const seqBuffer = buffer.subarray(cursor.pos, buffer.length);
-        // Create a context-led recursion into parse()
-        handleUndefinedLengthSQ(seqBuffer, ctx, el.tag); // may rename this to just handleSQ and have it deal with both undef/def len SQs
-        // Now sync our parent cursor with the recursive cursor. Not sure right now why +8 but it's working across multiple tests.
-        cursor.walk(ctx.sequenceBytesTraversed + 8, ctx, buffer);
+        handleSQ(buffer, ctx, el, cursor);
+        cursor.walk(ctx.sequenceBytesTraversed + 8, ctx, buffer); // sync cursor with the recursive cursor. TODO work out why +8 made this work, feels like a sq delimitation tag of 4bytes tag and 4bytes length but I thought I had accounted for that already when setting sequenceBytesTraversed inside the recursion so idk :shrug:
+        resetSqCtx(ctx);
         return true;
     }
 }
