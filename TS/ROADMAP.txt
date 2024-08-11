@@ -47,7 +47,7 @@ bit concerned this controls the development direction too much and is perhaps be
 the library is a bit more mature. It's only a few days old right now after all. 
 
 
-TRANSFORM STREAM PLUGIN
+TRANSFORM STREAM PLUGIN(s)
 // TODO in a future implementation I might consider writing a tranform stream
 // to emit elements as they are parsed from the buffer, which we can then handle
 // as they are emitted, rather than a dataset at the end. But not particularly key
@@ -58,7 +58,26 @@ TRANSFORM STREAM PLUGIN
 // dataset represented in memory, the current approach is more applicable. So it would not
 // be a replacement, it would be an option to plug into the readStream parser (hence being
 // a transform stream).
+// Dicomweb transform stream would be pretty incredible project actually. And if you made a bunch of 
+// other plugin transform streams this would be easily plugged in to this pipeline, as many as are 
+// needed. The completion of a project like this would represent the transition into truly expert level
+// fullstack healthcare development 
+i am motivated to make a transform stream option that we can use for instances where it makes sense. 
 
+I would say the following:
+
+1) Where we need a traversable and complete dataset, we have two options:
+(A) For very large files, streaming is still appropriate because we can parallelise the parsing and i/o, 
+rather than sequentially awaiting the i/o. Also we could hit memory constraints depending on how the GC 
+kicks in because we could end up with a lot of the binary and JS object dataset in memory at the same time. 
+(B) for smaller files, streaming is basically pointless and would likely add to both memory overhead and 
+latency. In this case I would just maybe CLI flags or write in-app logic to detect the file size and just 
+read the whole buffer upfront and pass it to parse(). Parse doesn't care what size buffer it gets.
+
+2) Where we want some sort of end goal to be achieved other than a final, traversable dataset, a transform 
+stream is perfect and would be appropriate to plug into the existing readstream code. That's because it 
+would paralleise the read i/o, the parsing/manipulating, perhaps anonymisation for example, and then onwards 
+emitting/piping of the data, e.g. perhaps to a TCP stream for DIMSE or a HTTP stream for DICOMWeb.
 
 // NESTED SEQUENCE DECODING
  * TODO in order to simplify handling of nested sequences, when a

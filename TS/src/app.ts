@@ -27,14 +27,14 @@ const testDirs = {
  * @param cfg
  * @returns void
  */
-(async function main(cfg: Global.Config) {
+async function main(cfg: Global.Config) {
    if (cfg.verbose) {
       write(`Starting up...`, "INFO");
    }
 
    await init();
 
-   cfg.targetDir = testDirs.nestedSQ_singleItemsInsideSQ_definedLengthSQ_definedLengthItems // TODO when back from dogwalk - detect the end of defined length SQs that don't use sequence delmiters to end their sequences. 
+   cfg.targetDir = testDirs.noNestedSQ_singleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems; // TODO when back from dogwalk - detect the end of defined length SQs that don't use sequence delmiters to end their sequences.
    const fileCount = readdirSync(cfg.targetDir).length;
 
    // await multiThreaded(cfg);
@@ -57,6 +57,8 @@ const testDirs = {
       if (cfg.verbose) {
          write(`Completed work - shutting down.`, "INFO");
       }
-      process.exit();// make this robust but its basically always fine but better to check q length
+      process.exit(); // make this robust but its basically always fine but better to check q length
    }, 2_000); // Wait for logs to finish writing
-})(cfg);
+}
+
+main(cfg);

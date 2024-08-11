@@ -1,5 +1,5 @@
 import { readdirSync, statSync } from "fs";
-import path from "path";
+import * as path from "path";
 export function mapToObj(map) {
     const obj = {};
     map.forEach((value, key) => {

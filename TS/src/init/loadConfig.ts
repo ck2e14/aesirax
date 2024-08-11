@@ -1,7 +1,7 @@
-import dotenv from "dotenv";
+import * as dotenv from "dotenv";
 dotenv.config();
 
-export function config(): Global.Config {
+export function config(runtimeEndOverride?: { [key: string]: string | boolean }): Global.Config {
    const env = process.env;
 
    const config: Global.Config = {
@@ -15,6 +15,12 @@ export function config(): Global.Config {
       targetDir: null,
       bufWatermark: parseInt(env.BUF_WATERMARK) || 1024,
    };
+
+   if (runtimeEndOverride) {
+      for (const [key, value] of Object.entries(runtimeEndOverride)) {
+         config[key] = value;
+      }
+   }
 
    return config;
 }

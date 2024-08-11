@@ -1,4 +1,4 @@
-import fs, { mkdirSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { appendFile } from "fs/promises";
 import { cfg } from "../init/init.js";
 import { InitError } from "../error/errors.js";
@@ -68,7 +68,7 @@ export async function createLogFile(depth = 0) {
       throw new InitError(`Passed a 0-length string as the log path`);
    }
 
-   if (!fs.existsSync(path)) {
+   if (!existsSync(path)) {
       const dir = path
          .split("/") // split the path into an array of directories
          .slice(0, -1)
