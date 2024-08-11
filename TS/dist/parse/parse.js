@@ -8,9 +8,9 @@ export const DICOM_HEADER = "DICM";
 export const PREAMBLE_LENGTH = 128;
 export const DICOM_HEADER_START = PREAMBLE_LENGTH;
 export const HEADER_END = PREAMBLE_LENGTH + 4;
-export const ITEM_START_TAG = TagDictByName.ItemStart.tag;
-export const ITEM_END_TAG = TagDictByName.ItemEnd.tag;
-export const SEQ_END_TAG = TagDictByName.SequenceEnd.tag;
+export const ITEM_START_TAG = TagDictByName.ItemStart.tag; // (fffe,e000)
+export const ITEM_END_TAG = TagDictByName.ItemEnd.tag; // (fffe,e00d)
+export const SEQ_END_TAG = TagDictByName.SequenceEnd.tag; // (fffe,e0dd)
 /**
  * Parse the elements in a buffer containing a subset of a DICOM file's bytes,
  * Return a buffer containing the truncated tag if the buffer is incomplete.
@@ -37,26 +37,24 @@ export function parse(buffer, ctx) {
         (_a = ctx.dataSet)[_b = ctx.currSqTag] ?? (_a[_b] = newSeqElement(ctx));
     }
     while (cursor.pos < buffer.length) {
+        lastTagStart = cursor.pos; // For stitch handling
         const el = newElement(); // An element is a tag, VR, length, and value. We decode these in four stages below.
-        lastTagStart = cursor.pos;
-        if (ctx.inSequence) {
-            console.log(`traversed: ${ctx.sequenceBytesTraversed}`);
-        }
         try {
             // * STAGE 1 - DECODE TAG * //
             decodeTagAndMoveCursor(buffer, cursor, el, ctx);
             // * STAGE 1.5 - HANDLE END OF ITEM DATA SET * //
-            // WARN: currently its working fine to do the actual parsing of defined length SQ+Item
-            if (isItemDataSetEnd(ctx, el)) {
-                const nextTag = handleEndOfSequence(ctx, cursor, buffer, itemDataSet);
-                if (nextTag === ITEM_START_TAG) {
-                    continue; // to the next while() decode the next tag.
+            if (isEndOfItem(ctx, el)) {
+                const next = handleEndOfItem(ctx, cursor, buffer, itemDataSet);
+                if (next === ITEM_START_TAG) {
+                    write(`Starting a new item in SQ: ${ctx.currSqTag}`, "DEBUG");
+                    continue; // decode next element
                 }
-                if (nextTag === SEQ_END_TAG) {
+                if (next === SEQ_END_TAG) {
+                    write(`End of sequence: ${ctx.currSqTag}`, "DEBUG");
                     ctx.sequenceBytesTraversed = cursor.pos; // to sync recursive cursor with parent cursor
-                    return; // base case - end of SQ
+                    return; // base case, end of SQ
                 }
-                throw new MalformedDicom(`Got ${nextTag} but expected ${ITEM_END_TAG} or ${SEQ_END_TAG}`);
+                throw new MalformedDicom(`Got ${next} but expected ${ITEM_END_TAG} or ${SEQ_END_TAG}`);
             }
             // * STAGE 2 - DECODE VR * //
             decodeVRAndMoveCursor(buffer, cursor, el, ctx);
@@ -64,10 +62,7 @@ export function parse(buffer, ctx) {
             const wasSeq = decodeValueLengthAndMoveCursor(el, cursor, buffer, ctx);
             // * STAGE 3.5 - Reset ctx flags if we've left SQ & move onto next tag after the SQ * //
             if (wasSeq) {
-                ctx.inSequence = false;
-                ctx.currSqTag = null;
-                ctx.sequenceBytesTraversed = 0; // this is getting reset by a nested sequence which we don't want.
-                ctx.currSqLen = undefined; // important to make this undefined until we start supporting nested SQ
+                resetSqCtx(ctx);
                 continue; // continue to decode the next tag (outside of the current sequence)
             }
             // * STAGE 4 - DECODE VALUE * //
@@ -75,19 +70,6 @@ export function parse(buffer, ctx) {
             // * STAGE 5 - SAVE ELEMENT * //
             if (ctx.inSequence) {
                 itemDataSet[el.tag] = el; // add to the item dataset.
-                // we can detect the end of a defined-length sequence here based on
-                // doing a traversedBytes+8 = currSeqLength.
-                // But first I think we need to implement supporting nested SQs because
-                // its getting painfully complicated to not have support for them and
-                // its going to just be better to focus on that now. So go and work through
-                // that logic, and probably do so with a DICOM that uses undefined lengths
-                // since we're handling those properly so far. If you do it for undefined length SQs,
-                // which aren't supported yet whether nested or not, it becomes really challenging to know
-                // where we are and whether things aren't working because our logic is broken or because
-                // our lack of nested support is interfering with it.
-                // Actually i think a better route would be to find a non-nested, but defined length SQ,
-                // and implement handling for that. Then go and handle LIFO stacking for BOTH types in the same
-                // code. Yeah lets do that. But for now lets fuck this off because you've been at this way too long today.
             }
             else {
                 ctx.dataSet[el.tag] = el; // add to the top level dataset.
@@ -107,16 +89,16 @@ export function parse(buffer, ctx) {
 }
 /**
  * Determine if the current tag is the delimiter for the end of an item data set.
+ * WARN OK here detection needs to work for defined length SQs as well
+ * which means we need to:
+ *    1 - have saved the SQ length to ctx when that was detected before the recursion
+ *    2 - in this function, check for whether we've reached it which I think would be
+ *        ctx.seqBytesTraversed === sq length?? maybe sq length -8?
  * @param ctx
  * @param el
  * @returns
  */
-function isItemDataSetEnd(ctx, el) {
-    // console.log("abcabcabc", ctx.currSqTag, el.tag, el.length); // OK here detection needs to work for defined length SQs as well
-    // which means we need to:
-    // 1 - have saved the SQ length to ctx when that was detected before the recursion
-    // 2 - in this function, check for whether we've reached it which I think would be ctx.seqBytesTraversed === sq length??
-    //          maybe sq length -8?
+function isEndOfItem(ctx, el) {
     return ctx.inSequence && el.tag === ITEM_END_TAG;
 }
 /**
@@ -128,15 +110,17 @@ function isItemDataSetEnd(ctx, el) {
 function isSeqEnd(ctx, el) {
     return ctx.inSequence && el.tag === SEQ_END_TAG;
 }
-function handleEndOfSequence(ctx, cursor, buffer, itemDataSet) {
-    write(`Reached item delimiter; saving item dataset to SQ: ${ctx.currSqTag}'s items`, "DEBUG");
-    cursor.walk(4, ctx, buffer); // walk past & ignore this VR, its always 00000000H on item delimitation tags
+function handleEndOfItem(ctx, cursor, buffer, itemDataSet) {
+    const nTags = Object.keys(itemDataSet).length;
+    write(`Handling end of a dataSet item in SQ: ${ctx.currSqTag}. Storing ${nTags} items`, "DEBUG");
     ctx.dataSet[ctx.currSqTag].items.push({
         // copy, don't pass by ref - otherwise previous items will be overwritten unless a new object
-        // was created in between, e.g. if the the buffer was truncated and we had to stitch it and re-parse
-        // the tag with the requisite bytes.
+        // was created in between, e.g. if the the buffer was truncated and we had to stitch it and
+        // re-parse the tag with the requisite bytes.
         ...itemDataSet,
     });
+    // walk past & ignore this VR, its always 0x00000000 for item delim tags. Could check for conformity though.
+    cursor.walk(4, ctx, buffer);
     // now we should peek the next tag to determine what to do next.
     const nextTagBytes = buffer.subarray(cursor.pos, cursor.pos + 4);
     const nextTag = decodeTagNum(nextTagBytes);
@@ -247,51 +231,85 @@ function decodeValueAndMoveCursor(buffer, cursor, el, ctx) {
     cursor.walk(el.length, ctx, buffer); // to get to the start of the next tag
 }
 /**
+ * Reset context object's SQ vars. Used mostly when reaching the
+ * end of a sequence so that parse's conditionals are not unintentionally
+ * triggered when parsing the next tags.
+ * @param ctx
+ * @returns void
+ */
+function resetSqCtx(ctx) {
+    ctx.inSequence = false;
+    ctx.currSqTag = null;
+    ctx.sequenceBytesTraversed = 0;
+    ctx.currSqLen = undefined; // important to make this undefined until we start supporting nested SQ
+}
+/**
+ * Handle the case where an SQ has an undefined length and no items.
+ * Reset our context flags and push an empty sequence element to the
+ * parent dataset (LIFO unimplemented).
+ * @param ctx
+ * @param seqBuffer
+ * @param seqCursor
+ * @returns void
+ */
+function handleEmptyUndefinedLengthSQ(ctx, seqBuffer, seqCursor) {
+    ctx.dataSet[ctx.currSqTag] = newSeqElement(ctx);
+    resetSqCtx(ctx);
+    // this UInt32 read is a bit superfluous because it will always be 0x00000000 but
+    // an opportunity to check for malformed DICOM I guess. Could just walk and assume.
+    const lengthInt = seqBuffer.subarray(seqCursor.pos, seqCursor.pos + 4).readUInt32LE(0);
+    if (lengthInt !== 0) {
+        throw new MalformedDicom(`Expected 0x00000000 but got ${lengthInt} in SQ: ${ctx.currSqTag})`);
+    }
+    else {
+        return;
+    }
+}
+/**
  * This handles recursive parsing of nested items and their datasets according
  * to the DICOM specification for the byte structures of sequenced VRs.
  *
- * Note that it currently doesn't handle more than one level of nesting because
- * it would overwrite the shared context sequence properties but we can use a
- * LIFO stack structure to easily handle this by pushing and popping the sequence
- * properties as we enter and exit nested sequences.
+ * LIFO stack for nesting unimplemented atm.
  *
  * dicom.nema.org/medical/dicom/current/output/chtml/part05/sect_7.5.html
  * @param seqBuffer
  * @param ctx
  * @param seqTag
+ * @returns void
  */
 function handleUndefinedLengthSQ(seqBuffer, ctx, seqTag) {
+    ctx.inSequence = true;
+    ctx.currSqTag = seqTag;
     const seqCursor = newCursor(0);
-    const itemTag = "(fffe,e000)";
     const tagBuffer = seqBuffer.subarray(seqCursor.pos, seqCursor.pos + ByteLen.TAG_NUM);
     const tag = decodeTagNum(tagBuffer);
     const name = getTagName(tag);
-    seqCursor.walk(ByteLen.TAG_NUM, ctx, seqBuffer); // walk past the tag we just decoded
-    const confirmedAsItem = tag === itemTag && name === "Item";
-    if (!confirmedAsItem) {
-        // In SQs we expect the first tag to be an item tag, if not we throw.
-        throw new MalformedDicom(`Expected ${itemTag} but got ${tag}, in sequence: ${seqTag})`);
+    // walk past the tag bytes we just decoded
+    seqCursor.walk(ByteLen.TAG_NUM, ctx, seqBuffer);
+    if (tag === SEQ_END_TAG) {
+        write(`Zero items in this undefined-length SQ, adding empty SQ and resetting CTX`, "DEBUG");
+        return handleEmptyUndefinedLengthSQ(ctx, seqBuffer, seqCursor);
     }
-    // we don't need to actually know what the item length is because using delimiter tags.
-    // So just walk beyond it, up to the start of the first item's dataset
+    // All SQs should start with an item tag, check for conformity:
+    if (tag !== ITEM_START_TAG && name === "Item") {
+        throw new MalformedDicom(`Expected ${ITEM_START_TAG} but got ${tag}, in sequence: ${seqTag})`);
+    }
+    // Length bytes of the item are irrelevant as we're going to handle using
+    // delimiter tags for defined and undefined length items. So just walk past.
     seqCursor.walk(ByteLen.UINT_32, ctx, seqBuffer);
     // Recurse into parse(), with context flags set to indicate we're in a SQ. Start with the
     // first item's dataset and let parse() continue until one of two bases cases are hit:
     //  (1) the seqBuffer is truncated
     //  (2) the sequence has been fully parsed
-    ctx.currSqTag = seqTag;
-    ctx.inSequence = true;
     const firstItemDataSet = seqBuffer.subarray(seqCursor.pos, seqBuffer.length);
     const recursionResult = parse(firstItemDataSet, ctx);
     if (recursionResult?.returnReason === "truncation") {
-        // we pop the last item datatset because it was only partially parsed and we don't
-        // want to duplicate it after stitching. Need to keep an eye on this logic though.
+        // pop the last datatset item because partially parsed and we don't want to duplicate
+        // it after stitching (because of .push). Keep an eye on this logic though.
         ctx.dataSet[ctx.currSqTag].items.pop();
         throw new BufferBoundary(`SQ is split across buffer boundary`);
     }
-    else {
-        return;
-    }
+    return;
 }
 /**
  * Get the plain text tag name from the Tag Dictionary

@@ -22,18 +22,17 @@ import { singleTheaded } from "./singlethreaded.js";
       noNestedSQ_multipleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems:
          "../data/with_1-depthSQ_multiple_items_undefined_SQlen_undefinedItemLen",
 
+      turkey: "../data/turkey",
+
       noNestedSQ_singleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems:
          "../data/with_1-depth_sequences_undefinedSQlen_undefinedItemlen",
 
       nestedSQ_singleItemsInsideSQ_definedLengthSQ_definedLengthItems: "../data/Pi", // not working because haven't implemented handling for SQ's with defined lengths
+
+      x: "../data/x",
    };
 
-   cfg.targetDir = testDirs.noNestedSQ_multipleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems; // erroring with out of bounds :
-   // uncaughtException RangeError [ERR_OUT_OF_RANGE]: The value of "offset" is out of range. It must be >= 0 and <= 464. Received 470
-   // at boundsError (node:internal/buffer:88:9)
-   // at Buffer.readUInt32LE (node:internal/buffer:222:5)
-   // at _decodeValueLength (file:///Users/chriskennedy/Desktop/SWE/aesirax/TS/dist/parse/parse.js:321:18)
-   // at decodeValueLengthAndMoveCursor (file:///Users/chriskennedy/Desktop/SWE/aesirax/TS/dist/parse/parse.js:270:9)
+   cfg.targetDir = testDirs.x;
 
    await init();
    // await multiThreaded(cfg);
