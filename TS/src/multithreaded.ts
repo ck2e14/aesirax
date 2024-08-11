@@ -23,8 +23,8 @@ export async function multiThreaded(cfg: Global.Config) {
    }
 
    await Promise.all(workerPromises);
-   const end = performance.now();
 
+   const end = performance.now();
    write(`Parsed ${dataSets.length} datasets`, "INFO");
    write(`Time elapsed (minus end printing): ${end - start} ms`, "INFO");
 
