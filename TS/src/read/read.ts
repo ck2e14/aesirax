@@ -184,7 +184,7 @@ function stitchBytes(ctx: StreamContext, currBytes: Buffer): Buffer {
  * Get the value of an element from an array of elements. Note that without
  * accepting a callback for runtime type checking we can't actually guarantee
  * that the value is of the type we expect. This is a limitation of type erasure
- * in TypeScript. Such a flimsy aspect of compile-time-only generics and one
+ * in TypeScript. A flimsy aspect of compile-time-only generics and one
  * that would incur expensive runtime type checking to replicate proper type safety
  * which I guess we could do but I'd rather jump out the window than do that.
  * In Java or Golang you'd use the reflection API to check the type at runtime.
