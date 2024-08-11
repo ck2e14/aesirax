@@ -108,6 +108,12 @@ export function parse(buffer: Buffer, ctx: Ctx): ParsingResult {
 
          // * STAGE 5 - SAVE ELEMENT
          if (ctx.inSequence) {
+            if (ctx.currSqLen !== 4_294_967_295) {
+               // if we're in a SQ that is not of undefined length (which DICOM spec uses a max 32bit UInt to signify)
+               // then we want to check whether, having decoded this element, we have now traversed the number of bytes
+               // that we stored in ctx at the beginning of the SQ recursion. +8 for some reason - need to understand that.
+               // const traversed =
+            }
             itemDataSet[el.tag] = el; // add to the item dataset.
          } else {
             ctx.dataSet[el.tag] = el; // add to the top level dataset.
@@ -468,6 +474,7 @@ function decodeValueLengthAndMoveCursor(
    cursor.walk(ByteLen.UINT_32, ctx, buffer);
 
    if (el.vr !== VR.SQ) return false;
+   if (el.vr === VR.SQ && el.length === 0) return true;
    if (el.vr === VR.SQ) {
       // SQs handled here, whether they specify a length or not.
       ctx.currSqLen ??= el.length; // use nullish assignment atm because we aren't yet supporting nested sequences and we need the currSqLen to remain at the 1-depth SQ's length.

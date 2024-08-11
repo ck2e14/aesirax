@@ -23,7 +23,7 @@ async function main(cfg) {
         write(`Starting up...`, "INFO");
     }
     await init();
-    cfg.targetDir = testDirs.noNestedSQ_singleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems; // TODO when back from dogwalk - detect the end of defined length SQs that don't use sequence delmiters to end their sequences.
+    cfg.targetDir = testDirs.nestedSQ_singleItemsInsideSQ_definedLengthSQ_definedLengthItems; // TODO when back from dogwalk - detect the end of defined length SQs that don't use sequence delmiters to end their sequences.
     const fileCount = readdirSync(cfg.targetDir).length;
     // await multiThreaded(cfg);
     await singleTheaded(cfg);
