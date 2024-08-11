@@ -12,7 +12,7 @@ import {
    parse,
 } from "../parse/parse.js";
 
-export type StreamContext = {
+export type Ctx = {
    first: boolean;
    dataSet: DataSet;
    dataSetStack: DataSet[];
@@ -27,7 +27,7 @@ export type StreamContext = {
    usingLE: boolean;
    inSequence?: boolean;
    currSqTag?: string;
-   currSqLen?: number
+   currSqLen?: number;
    sequenceBytesTraversed?: number; // TODO make sure we are resetting this at the end of each SQ parse.
 };
 
@@ -81,7 +81,6 @@ export function streamParse(
          write(`Parsed ${Object.keys(ctx.dataSet).length} elements from ${path}`, "DEBUG");
          resolve(ctx.dataSet);
          stream.close();
-         3;
       });
 
       stream.on("error", error => {
@@ -109,7 +108,7 @@ function isSupportedTSN(uid: string): uid is TransferSyntaxUid {
  * @returns TruncatedBuffer (byte[])
  */
 export function handleDicomBytes(
-   ctx: StreamContext,
+   ctx: Ctx,
    currBytes: Buffer
 ): {
    returnReason: string;
@@ -143,7 +142,7 @@ export function handleDicomBytes(
  * @returns TruncatedBuffer (byte[])
  */
 function handleFirstBuffer(
-   ctx: StreamContext,
+   ctx: Ctx,
    buffer: Buffer
 ): {
    returnReason: string;
@@ -174,7 +173,7 @@ function handleFirstBuffer(
  * @param currBytes
  * @returns Buffer
  */
-function stitchBytes(ctx: StreamContext, currBytes: Buffer): Buffer {
+function stitchBytes(ctx: Ctx, currBytes: Buffer): Buffer {
    const { truncatedBuffer, path } = ctx;
    write(`Stitching ${truncatedBuffer.length} + ${currBytes.length} bytes (${path})`, "DEBUG");
    return Buffer.concat([truncatedBuffer, currBytes]);
@@ -197,18 +196,18 @@ function getElementValue<T = unknown>(tag: TagStr, elements: DataSet): T {
 }
 
 /**
- * ctxFactory() is a factory function for creating a StreamContext
+ * ctxFactory() is a factory function for creating a Ctx
  * with default values for the first buffer read from disk.
  * @param path
  * @param skipPixels
- * @returns
+ * @returns Ctx
  */
-function ctxFactory(
+export function ctxFactory(
    path: string,
    cfg = null,
    assumeDefaults = true,
    skipPixels = true
-): StreamContext {
+): Ctx {
    if (assumeDefaults) {
       return {
          first: true,

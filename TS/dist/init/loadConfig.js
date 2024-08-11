@@ -1,6 +1,6 @@
-import dotenv from "dotenv";
+import * as dotenv from "dotenv";
 dotenv.config();
-export function config() {
+export function config(runtimeEndOverride) {
     const env = process.env;
     const config = {
         verbose: env.VERBOSE === "1",
@@ -13,6 +13,11 @@ export function config() {
         targetDir: null,
         bufWatermark: parseInt(env.BUF_WATERMARK) || 1024,
     };
+    if (runtimeEndOverride) {
+        for (const [key, value] of Object.entries(runtimeEndOverride)) {
+            config[key] = value;
+        }
+    }
     return config;
 }
 //# sourceMappingURL=loadConfig.js.map

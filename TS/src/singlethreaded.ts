@@ -25,4 +25,6 @@ export async function singleTheaded(cfg: Global.Config) {
    writeFileSync("./___output.json", JSON.stringify(dataSets[0], null, 3));
    write(`Parsed ${dataSets.length} datasets`, "INFO");
    write(`Time elapsed: ${end - start} ms`, "INFO");
+
+   return dataSets;
 }

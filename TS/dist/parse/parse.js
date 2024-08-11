@@ -1,6 +1,5 @@
 import { write } from "../logging/logQ.js";
 import { decodeTagNum } from "./tagNums.js";
-import { isVr } from "./typeGuards.js";
 import { decodeValue, decodeVr } from "./valueDecoders.js";
 import { BufferBoundary, DicomError, MalformedDicom, UndefinedLength } from "../error/errors.js";
 import { ByteLen, DicomErrorType, TagDictByHex, TagDictByName, TransferSyntaxUid, VR, } from "../globalEnums.js";
@@ -17,25 +16,26 @@ export const SEQ_END_TAG = TagDictByName.SequenceEnd.tag; // (fffe,e0dd)
  * This is used to allow on-the-fly parsing of DICOM files as they are read
  * and stitching together truncated tags that span multiple byteArrays.
  *
- * Implicit VR is not supported yet.
+ * Implicit VR is unsupported.
  * TODO implement LIFO stack for nested sequencing
  *
  * @param buffer - Bytes[] from a DICOM file
- * @param ctx - StreamContext
+ * @param ctx - Ctx
  * @returns TruncatedBuffer
  */
 export function parse(buffer, ctx) {
     var _a, _b;
     const cursor = newCursor(0);
-    ctx.usingLE = useLE(ctx.transferSyntaxUid);
+    let itemDataSet = null;
     if (ctx.first) {
+        ctx.usingLE = useLE(ctx.transferSyntaxUid);
         write(`Decoding as ${ctx.usingLE ? "LE" : "BE"} byte order`, "DEBUG");
     }
-    let lastTagStart = cursor.pos;
-    let itemDataSet = {};
     if (ctx.inSequence) {
         (_a = ctx.dataSet)[_b = ctx.currSqTag] ?? (_a[_b] = newSeqElement(ctx)); // stackedDataSets.at(-1) will be req'd here when handling nested SQs
+        itemDataSet = {};
     }
+    let lastTagStart = cursor.pos;
     while (cursor.pos < buffer.length) {
         lastTagStart = cursor.pos; // For stitch handling
         const el = newElement(); // An element is a tag, VR, length, and value. We decode these in four stages below.
@@ -44,6 +44,7 @@ export function parse(buffer, ctx) {
             decodeTagAndMoveCursor(buffer, cursor, el, ctx);
             // * STAGE 1.5 - HANDLE END OF ITEM DATA SET * //
             if (isEndOfItem(ctx, el)) {
+                write(`End of item in SQ: ${ctx.currSqTag}`, "DEBUG");
                 const next = handleEndOfItem(ctx, cursor, buffer, itemDataSet);
                 if (next === ITEM_START_TAG) {
                     write(`Starting a new item in SQ: ${ctx.currSqTag}`, "DEBUG");
@@ -56,18 +57,18 @@ export function parse(buffer, ctx) {
                 }
                 throw new MalformedDicom(`Got ${next} but expected ${ITEM_END_TAG} or ${SEQ_END_TAG}`);
             }
-            // * STAGE 2 - DECODE VR * //
+            // STAGE 2 - DECODE VR
             decodeVRAndMoveCursor(buffer, cursor, el, ctx);
-            // * STAGE 3 - DECODE VALUE LENGTH * //
-            const wasSeq = decodeValueLengthAndMoveCursor(el, cursor, buffer, ctx);
-            // * STAGE 3.5 - Reset ctx flags if we've left SQ & move onto next tag after the SQ * //
+            // STAGE 3 - DECODE VALUE LENGTH
+            const wasSeq = decodeValueLengthAndMoveCursor(el, cursor, buffer, ctx); // may or may not trigger recursion
+            // STAGE 3.5 - Handle cases where we've returned from SQ recursive parse()
             if (wasSeq) {
                 resetSqCtx(ctx);
                 continue; // continue to decode the next tag (outside of the current sequence)
             }
-            // * STAGE 4 - DECODE VALUE * //
+            // * STAGE 4 - DECODE VALUE
             decodeValueAndMoveCursor(buffer, cursor, el, ctx);
-            // * STAGE 5 - SAVE ELEMENT * //
+            // * STAGE 5 - SAVE ELEMENT
             if (ctx.inSequence) {
                 itemDataSet[el.tag] = el; // add to the item dataset.
             }
@@ -205,6 +206,9 @@ function errorPathway(error, buffer, lastTagStart, tag) {
         };
     }
 }
+export const isVr = (vr) => {
+    return vr in VR;
+};
 /**
  * Print an element to the console.
  * @param Element
@@ -225,7 +229,7 @@ function debugPrint(el) {
  * @param buffer
  * @param cursor
  * @param el
- * @param StreamContext
+ * @param Ctx
  * @returns void
  */
 function decodeValueAndMoveCursor(buffer, cursor, el, ctx) {
@@ -323,12 +327,11 @@ function getTagName(tag) {
         "Private or Unrecognised Tag");
 }
 function decodeValueLengthAndMoveCursor(el, cursor, buffer, ctx) {
-    // Check if a standard VR, wich is the simple case:
-    // save val len, walk cursor, return control to parse()
+    // Check if a standard VR, wich is the simple case: save len, walk cursor, return control to parse()
     if (!isExtVr(el.vr)) {
         el.length = ctx.usingLE //
             ? buffer.readUInt16LE(cursor.pos)
-            : buffer.readUInt16BE(cursor.pos); // Std VR tag value lengths are represented as 2 bytes (max len is 65,535)
+            : buffer.readUInt16BE(cursor.pos); // Std VR tag value lengths are represented as 2 bytes (i.e. max len 65,535)
         cursor.walk(ByteLen.UINT_16, ctx, buffer);
         return false;
     }
@@ -336,14 +339,10 @@ function decodeValueLengthAndMoveCursor(el, cursor, buffer, ctx) {
     cursor.walk(ByteLen.EXT_VR_RESERVED, ctx, buffer); // 2 reserved bytes can be ignored
     _decodeValueLength(el, buffer, cursor, ctx); // Extended VR tags' lengths are 4 bytes, may be enormous
     cursor.walk(ByteLen.UINT_32, ctx, buffer);
-    if (el.vr !== VR.SQ) {
+    if (el.vr !== VR.SQ)
         return false;
-    }
-    if (el.length === 0) {
-        return true; // empty bytes to parse, 0 bytes to walk.
-    }
-    // SQs handled here, whether they specify a length or not.
     if (el.vr === VR.SQ) {
+        // SQs handled here, whether they specify a length or not.
         ctx.currSqLen ?? (ctx.currSqLen = el.length); // use nullish assignment atm because we aren't yet supporting nested sequences and we need the currSqLen to remain at the 1-depth SQ's length.
         write(`Encountered an undefined length SQ (${el.tag}) at cursor pos ${cursor.pos}`, "DEBUG");
         // We don'tneed to know the length because parse() uses delimiter tags

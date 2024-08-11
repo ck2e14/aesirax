@@ -43,7 +43,6 @@ export function streamParse(path, cfg = null, skipPixelData = true) {
             write(`Parsed ${Object.keys(ctx.dataSet).length} elements from ${path}`, "DEBUG");
             resolve(ctx.dataSet);
             stream.close();
-            3;
         });
         stream.on("error", error => {
             reject(DicomError.from(error, DicomErrorType.READ));
@@ -136,13 +135,13 @@ function getElementValue(tag, elements) {
     return (elements[tag]?.value ?? "NOT FOUND");
 }
 /**
- * ctxFactory() is a factory function for creating a StreamContext
+ * ctxFactory() is a factory function for creating a Ctx
  * with default values for the first buffer read from disk.
  * @param path
  * @param skipPixels
- * @returns
+ * @returns Ctx
  */
-function ctxFactory(path, cfg = null, assumeDefaults = true, skipPixels = true) {
+export function ctxFactory(path, cfg = null, assumeDefaults = true, skipPixels = true) {
     if (assumeDefaults) {
         return {
             first: true,

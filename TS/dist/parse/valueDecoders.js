@@ -2,7 +2,7 @@ import { BufferBoundary, DicomError } from "../error/errors.js";
 import { ByteLen, DicomErrorType, TransferSyntaxUid, VR } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
 const decodersLE = {
-    // partial because will add VRs incrementally
+    // partial because will add VRs incrementally.
     // currently only support numbers to base 10.
     AE: (val) => utf8Decoder(val),
     AS: (val) => utf8Decoder(val),
@@ -65,37 +65,26 @@ const decodersBE = {
  * @param value
  * @returns string
  */
-export function decodeValue(vr, value, StreamContext, checkNullPadding = false // debug only
+export function decodeValue(vr, value, Ctx, checkNullPadding = false // debug only
 ) {
     if (checkNullPadding) {
         countNullBytes(value);
     }
-    const decoders = StreamContext.transferSyntaxUid === TransferSyntaxUid.ExplicitVRLittleEndian
-        ? decodersLE
-        : decodersBE;
-    if (decoders.hasOwnProperty(vr)) {
-        return decoders[vr](value);
+    const decoders = Ctx.transferSyntaxUid === TransferSyntaxUid.ExplicitVRLittleEndian ? decodersLE : decodersBE;
+    try {
+        if (decoders.hasOwnProperty(vr)) {
+            return decoders[vr](value);
+        }
+        if (vr === VR.OB || vr === VR.OW || vr === VR.OF) {
+            return `Binary data (${vr}): ${value.length} bytes`;
+        }
+        if (value.length > 1024) {
+            return "Assumed to be binary data, not supported for decoding/display";
+        }
+        return value.toString();
     }
-    else {
-        // case VR.OB:
-        // case VR.OW:
-        // case VR.OF:
-        try {
-            if (vr === VR.OB || vr === VR.OW || vr === VR.OF) {
-                return `Binary data (${vr}): ${value.length} bytes`;
-            }
-            if (vr === VR.UN) {
-            }
-            if (value.length > 1024) {
-                return "Assumed to be binary data, not supported for decoding/display";
-            }
-            else {
-                return value.toString();
-            }
-        }
-        catch (error) {
-            return decoders.default(value);
-        }
+    catch (error) {
+        return decoders.default(value);
     }
 }
 /**

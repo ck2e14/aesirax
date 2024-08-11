@@ -1,13 +1,13 @@
 import { BufferBoundary, DicomError } from "../error/errors.js";
 import { ByteLen, DicomErrorType, TransferSyntaxUid, VR } from "../globalEnums.js";
 import { write } from "../logging/logQ.js";
-import { StreamContext } from "../read/read.js";
+import { Ctx } from "../read/read.js";
 
 type Decoder = (value: Buffer) => string;
 type DecoderMap = Record<Global.VR | "default", Decoder>;
 
 const decodersLE: Partial<DecoderMap> = {
-   // partial because will add VRs incrementally
+   // partial because will add VRs incrementally.
    // currently only support numbers to base 10.
    AE: (val: Buffer) => utf8Decoder(val),
    AS: (val: Buffer) => utf8Decoder(val),
@@ -75,7 +75,7 @@ const decodersBE: Partial<DecoderMap> = {
 export function decodeValue(
    vr: string,
    value: Buffer,
-   StreamContext: StreamContext,
+   Ctx: Ctx,
    checkNullPadding = false // debug only
 ): string {
    if (checkNullPadding) {
@@ -83,33 +83,24 @@ export function decodeValue(
    }
 
    const decoders =
-      StreamContext.transferSyntaxUid === TransferSyntaxUid.ExplicitVRLittleEndian
-         ? decodersLE
-         : decodersBE;
+      Ctx.transferSyntaxUid === TransferSyntaxUid.ExplicitVRLittleEndian ? decodersLE : decodersBE;
 
-   if (decoders.hasOwnProperty(vr)) {
-      return decoders[vr](value);
-   } else {
-      // case VR.OB:
-      // case VR.OW:
-      // case VR.OF:
-
-      try {
-         if (vr === VR.OB || vr === VR.OW || vr === VR.OF) {
-            return `Binary data (${vr}): ${value.length} bytes`;
-         }
-
-         if (vr === VR.UN) {
-         }
-
-         if (value.length > 1024) {
-            return "Assumed to be binary data, not supported for decoding/display";
-         } else {
-            return value.toString();
-         }
-      } catch (error) {
-         return decoders.default(value);
+   try {
+      if (decoders.hasOwnProperty(vr)) {
+         return decoders[vr](value);
       }
+
+      if (vr === VR.OB || vr === VR.OW || vr === VR.OF) {
+         return `Binary data (${vr}): ${value.length} bytes`;
+      }
+
+      if (value.length > 1024) {
+         return "Assumed to be binary data, not supported for decoding/display";
+      }
+
+      return value.toString();
+   } catch (error) {
+      return decoders.default(value);
    }
 }
 
