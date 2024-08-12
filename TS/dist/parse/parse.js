@@ -77,7 +77,7 @@ export function parse(buffer, ctx) {
             else {
                 ctx.dataSet[el.tag] = el; // top level dataset
             }
-            // [CTRL FLOW] STAGE 7: Check & handle if we've reached the end of a defined length SQ
+            // [CTRL FLOW] STAGE 7: Handle if we've reached the end of a defined length SQ
             if (ctx.inSequence &&
                 ctx.currSqLen !== 4294967295 &&
                 ctx.sequenceBytesTraversed === ctx.currSqLen) {
@@ -137,7 +137,6 @@ function isEndOfItem(ctx, el) {
 }
 /**
  * Determine if the current tag is the delimiter for the end of a sequence.
- *
  * @param ctx
  * @param el
  * @returns boolean
@@ -158,13 +157,12 @@ function handleEndOfItem(ctx, cursor, buffer, itemDataSet) {
     const nTags = Object.keys(itemDataSet).length;
     write(`Handling end of a dataSet item in SQ: ${ctx.currSqTag}. Storing ${nTags} items`, "DEBUG");
     ctx.dataSet[ctx.currSqTag].items.push({
-        // copy, don't pass by ref - otherwise previous items will be overwritten unless a new object
-        // was created in between, e.g. if the the buffer was truncated and we had to stitch it and
-        // re-parse the tag with the requisite bytes.
+        // important to copy by value not reference here else the next item, unless stitching coincidentally
+        // causes a new parse() call to create a new object, will overwrite the previous item.
         ...itemDataSet,
     });
-    // walk past & ignore this VR, its always 0x00000000 for item delim tags.
-    cursor.walk(4, ctx, buffer);
+    // walk past & ignore this length, its always 0x00000000 for item delim tags.
+    cursor.walk(ByteLen.UINT_32, ctx, buffer);
     // now we should peek the next tag to determine what to do next.
     const nextTagBytes = buffer.subarray(cursor.pos, cursor.pos + 4);
     const nextTag = decodeTagNum(nextTagBytes);
