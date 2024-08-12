@@ -13,7 +13,7 @@ const testDirs = {
    noNestedSQ_singleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems:
       "../data/with_1-depth_sequences_undefinedSQlen_undefinedItemlen", // 130 elements
 
-   nestedSQ_singleItemsInsideSQ_definedLengthSQ_definedLengthItems: "../data/Pi", //42 elements.
+   nestedSQ_singleItemsInsideSQ_definedLengthSQ_definedLengthItems: "../data/Pi", //42 elements. (misplacing elements atm because of nested sequences, see sitrep note below)
 
    x: "../data/x", // 115 elements
 };
@@ -33,7 +33,9 @@ async function main(cfg: Global.Config) {
    }
 
    await init();
-   cfg.targetDir = testDirs.noNestedSQ_multipleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems; // TODO when back from dogwalk - detect the end of defined length SQs that don't use sequence delmiters to end their sequences.
+
+   cfg.targetDir = testDirs.x; // TODO when back from dogwalk - detect the end of defined length SQs that don't use sequence delmiters to end their sequences.
+
    const fileCount = readdirSync(cfg.targetDir).length;
 
    // alright sitrep
@@ -46,7 +48,6 @@ async function main(cfg: Global.Config) {
    // the correctly handled first SQ because it is also a ContentSequence(x0040a730), and they end up sharing a key
    // so it overwrites it :P
    // handling nested sequencing is going to be the final piece of this SQ parsing puzzle. Fuck yeah!
-
 
    // await multiThreaded(cfg);
    await singleTheaded(cfg);

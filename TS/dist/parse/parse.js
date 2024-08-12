@@ -40,59 +40,49 @@ export function parse(buffer, ctx) {
         lastTagStart = cursor.pos; // For stitch handling
         const el = newElement(); // An element is a tag, VR, length, and value. We decode these in four stages below.
         try {
-            // * STAGE 1 - DECODE TAG * //
+            // [DECODING] STAGE 1:TAG (grp num & el num)
             decodeTagAndMoveCursor(buffer, cursor, el, ctx);
-            // * STAGE 1.5 - HANDLE END OF ITEM DATA SET * //
+            // [CTRL FLOW] STAGE 2: handle end of item dataSet & possibly end of SQ
             if (isEndOfItem(ctx, el)) {
                 write(`End of item in SQ: ${ctx.currSqTag}`, "DEBUG");
                 const next = handleEndOfItem(ctx, cursor, buffer, itemDataSet);
                 if (next === ITEM_START_TAG) {
                     write(`Starting a new item in SQ: ${ctx.currSqTag}`, "DEBUG");
-                    continue; // decode next element
+                    continue; // Move parser's focus to the next item dataSet and its first element
                 }
-                // RECURSIVE BASE CASE
                 if (next === SEQ_END_TAG) {
                     write(`End of sequence: ${ctx.currSqTag}`, "DEBUG");
                     ctx.sequenceBytesTraversed = cursor.pos; // to sync recursive cursor with parent cursor
-                    return;
+                    return; // recursive base case
                 }
                 throw new MalformedDicom(`Got ${next} but expected ${ITEM_END_TAG} or ${SEQ_END_TAG}`);
             }
-            // STAGE 2 - DECODE VR
+            // [DECODING] STAGE 2: VR
             decodeVRAndMoveCursor(buffer, cursor, el, ctx);
-            // STAGE 3 - DECODE VALUE LENGTH
-            const wasSeqRecursion = decodeValueLengthAndMoveCursor(el, cursor, buffer, ctx); // may or may not trigger recursion
-            // STAGE 3.5 - RESET CTX FOLLOWING RECURSIVE SQ PARSE()
-            if (wasSeqRecursion) {
-                continue; // decode the next tag (outside of the current sequence) otherwise will try to decode a VR below in a byte position where a VR isn't.
+            // [DECODING] STAGE 3: LENGTH
+            const wasUndefinedLengthSqRecursion = decodeLenMoveAndCursor(el, cursor, buffer, ctx); // may or may not trigger recursion
+            // [CTRL FLOW] STAGE 3.5: Move parser focus to the next tag after SQ
+            if (wasUndefinedLengthSqRecursion) {
+                continue; // otherwise will try to decode a VR below in a byte position where a VR isn't.
             }
-            // STAGE 4 - DECODE VALUE
+            // [DECODING] STAGE 4: VALUE
             decodeValueAndMoveCursor(buffer, cursor, el, ctx);
-            // STAGE 5 - LOG ELEMENT TO FILE AND/OR CONSOLE NOW WE HAVE ALL THE DATA
+            // [DEBUGGING] STAGE 5: Logging
             debugPrint(el);
-            // STAGE 6 - SAVE ELEMENT AND CHECK WHETHER DEFINED-LENGTH SQ TRAVERSAL IS COMPLETE (RECURSIVE BASE CASE)
+            // [DECODING] STAGE 6: Persist element to dataSet
             if (ctx.inSequence) {
-                itemDataSet[el.tag] = el; // add to the item dataset.
-                if (ctx.currSqLen === 4294967295) {
-                    continue; // undefined length SQs' end are detected differently elsewhere, see stage 1.5
-                }
-                // Reached end, do things.
-                if (ctx.sequenceBytesTraversed === ctx.currSqLen) {
-                    write(`End of defined length SQ: ${ctx.currSqTag}, ${ctx.currSqLen}. Final element decoded was ${el.tag} - ${el.name} - "${el.value}"`, "DEBUG");
-                    resetSqCtx(ctx);
-                    return;
-                    // process.exit();
-                }
-                if (ctx.sequenceBytesTraversed > ctx.currSqLen) {
-                    throw new MalformedDicom(`Somehow, while ctx.inSequence = true, we've traversed more bytes than the defined length of the SQ. ` +
-                        `This is a bug or malformed DICOM. ` +
-                        `SQ: ${ctx.currSqTag} - ` +
-                        `Expected SQ length: ${ctx.currSqLen}` +
-                        `Traversed: ${ctx.sequenceBytesTraversed} - `);
-                }
+                console.log(`Adding ${el.tag} to itemDataSet: ${JSON.stringify(itemDataSet, null, 3)}`);
+                itemDataSet[el.tag] = el;
             }
             else {
-                ctx.dataSet[el.tag] = el; // add to the top level dataset.
+                ctx.dataSet[el.tag] = el; // top level dataset
+            }
+            // [CTRL FLOW] STAGE 7: Check & handle if we've reached the end of a defined length SQ
+            if (ctx.inSequence &&
+                ctx.currSqLen !== 4294967295 &&
+                ctx.sequenceBytesTraversed === ctx.currSqLen) {
+                handleDefLenSqEnd(ctx, el, itemDataSet);
+                return; // recursive base case
             }
         }
         catch (error) {
@@ -105,6 +95,31 @@ export function parse(buffer, ctx) {
             };
         }
     }
+}
+/**
+ * Determine if the current tag is the delimiter for the end of a defined length sequence
+ * and persist the completed item dataSet to the sequence's items array.
+ * @param ctx
+ * @param el
+ * @param itemDataSet
+ * @returns
+ */
+function handleDefLenSqEnd(ctx, el, itemDataSet) {
+    if (ctx.sequenceBytesTraversed > ctx.currSqLen) {
+        throw new MalformedDicom(`Somehow, while ctx.inSequence = true, we've traversed more bytes than the defined length of the SQ. ` +
+            `This is a bug or malformed DICOM. ` +
+            `SQ: ${ctx.currSqTag} - ` +
+            `Expected SQ length: ${ctx.currSqLen}` +
+            `Traversed: ${ctx.sequenceBytesTraversed} - `);
+    }
+    write(`End of defined length SQ: ${ctx.currSqTag}, ${ctx.currSqLen}. Final element decoded was ${el.tag} - ${el.name} - "${el.value}"`, "DEBUG");
+    ctx.dataSet[ctx.currSqTag].items.push({
+        // copy, don't pass by ref - otherwise previous items will be overwritten unless a new object
+        // was created in between, e.g. if the the buffer was truncated and we had to stitch it and
+        // re-parse the tag with the requisite bytes.
+        ...itemDataSet,
+    });
+    resetSqCtx(ctx);
 }
 /**
  * Determine if the current tag is the delimiter for the end of an item data set.
@@ -347,7 +362,7 @@ function getTagName(tag) {
     return (TagDictByHex[tag?.toUpperCase()]?.["name"] ?? //
         "Private or Unrecognised Tag");
 }
-function decodeValueLengthAndMoveCursor(el, cursor, buffer, ctx) {
+function decodeLenMoveAndCursor(el, cursor, buffer, ctx) {
     // Check if a standard VR, wich is the simple case: save len, walk cursor, return control to parse()
     if (!isExtVr(el.vr)) {
         el.length = ctx.usingLE //
@@ -374,7 +389,7 @@ function decodeValueLengthAndMoveCursor(el, cursor, buffer, ctx) {
     // If the SQ is defined length > 0, or has an undefined length, call handleSQ to
     // init a context-aware recurse into parse(). Then sync cursors and reset context.
     if (el.vr === VR.SQ) {
-        handleSQ(buffer, ctx, el, cursor);
+        handleSQ(buffer, ctx, el, cursor); // recursive call
         cursor.walk(ctx.sequenceBytesTraversed + 8, ctx, buffer); // sync cursor with the recursive cursor. TODO work out why +8 made this work, feels like a sq delimitation tag of 4bytes tag and 4bytes length but I thought I had accounted for that already when setting sequenceBytesTraversed inside the recursion so idk :shrug:
         resetSqCtx(ctx);
         return true;

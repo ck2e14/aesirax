@@ -6,7 +6,7 @@ const testDirs = {
     noNestedSQ_multipleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems: "../data/with_1-depthSQ_multiple_items_undefined_SQlen_undefinedItemLen", // 102 elements
     turkey: "../data/turkey", // 51 elements
     noNestedSQ_singleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems: "../data/with_1-depth_sequences_undefinedSQlen_undefinedItemlen", // 130 elements
-    nestedSQ_singleItemsInsideSQ_definedLengthSQ_definedLengthItems: "../data/Pi", //42 elements.
+    nestedSQ_singleItemsInsideSQ_definedLengthSQ_definedLengthItems: "../data/Pi", //42 elements. (misplacing elements atm because of nested sequences, see sitrep note below)
     x: "../data/x", // 115 elements
 };
 /**
@@ -23,7 +23,7 @@ async function main(cfg) {
         write(`Starting up...`, "INFO");
     }
     await init();
-    cfg.targetDir = testDirs.noNestedSQ_multipleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems; // TODO when back from dogwalk - detect the end of defined length SQs that don't use sequence delmiters to end their sequences.
+    cfg.targetDir = testDirs.x; // TODO when back from dogwalk - detect the end of defined length SQs that don't use sequence delmiters to end their sequences.
     const fileCount = readdirSync(cfg.targetDir).length;
     // alright sitrep
     // think we are now supporting undefined and defined length SQs properly.
