@@ -2,7 +2,7 @@
    "(0002,0000)": {
       "vr": "UL",
       "tag": "(0002,0000)",
-      "value": "210",
+      "value": "216",
       "name": "FileMetaInformationGroupLength",
       "length": 4
    },
@@ -17,23 +17,23 @@
    "(0002,0002)": {
       "vr": "UI",
       "tag": "(0002,0002)",
-      "value": "1.2.840.10008.5.1.4.1.1.2",
+      "value": "1.2.840.10008.5.1.4.1.1.4",
       "name": "MediaStorageSOPClassUID",
       "length": 26
    },
    "(0002,0003)": {
       "vr": "UI",
       "tag": "(0002,0003)",
-      "value": "1.3.12.2.1107.5.1.4.95885.30000018120404003037800002487",
+      "value": "1.2.826.0.1.3680043.9.3218.1.1.253044738.1110.1720517398551.27.0",
       "name": "MediaStorageSOPInstanceUID",
-      "length": 56
+      "length": 64
    },
    "(0002,0010)": {
       "vr": "UI",
       "tag": "(0002,0010)",
-      "value": "1.2.840.10008.1.2.4.90",
+      "value": "1.2.840.10008.1.2.1",
       "name": "TransferSyntaxUID",
-      "length": 22
+      "length": 20
    },
    "(0002,0012)": {
       "vr": "UI",
@@ -52,7 +52,7 @@
    "(0002,0016)": {
       "vr": "AE",
       "tag": "(0002,0016)",
-      "value": "AIDENCEAI ",
+      "value": "SMARTAIDP ",
       "name": "SourceApplicationEntityTitle",
       "length": 10
    },
@@ -66,213 +66,266 @@
    "(0008,0008)": {
       "vr": "CS",
       "tag": "(0008,0008)",
-      "value": "DERIVED\\PRIMARY\\AXIAL\\CT_SOM5 MPR ",
+      "value": "ORIGINAL\\PRIMARY\\M\\NORM\\DIS2D ",
       "name": "ImageType",
-      "length": 34
+      "length": 30
+   },
+   "(0008,0012)": {
+      "vr": "DA",
+      "tag": "(0008,0012)",
+      "value": "20110707",
+      "name": "InstanceCreationDate",
+      "length": 8
+   },
+   "(0008,0013)": {
+      "vr": "TM",
+      "tag": "(0008,0013)",
+      "value": "000000",
+      "name": "InstanceCreationTime",
+      "length": 6
    },
    "(0008,0016)": {
       "vr": "UI",
       "tag": "(0008,0016)",
-      "value": "1.2.840.10008.5.1.4.1.1.2",
+      "value": "1.2.840.10008.5.1.4.1.1.4",
       "name": "SOPClassUID",
       "length": 26
    },
    "(0008,0018)": {
       "vr": "UI",
       "tag": "(0008,0018)",
-      "value": "1.3.12.2.1107.5.1.4.95885.30000018120404003037800002487",
+      "value": "1.2.826.0.1.3680043.9.3218.1.1.253044738.1110.1720517398551.27.0",
       "name": "SOPInstanceUID",
-      "length": 56
+      "length": 64
    },
    "(0008,0020)": {
       "vr": "DA",
       "tag": "(0008,0020)",
-      "value": "20181204",
+      "value": "20110707",
       "name": "StudyDate",
+      "length": 8
+   },
+   "(0008,0021)": {
+      "vr": "DA",
+      "tag": "(0008,0021)",
+      "value": "20110707",
+      "name": "SeriesDate",
+      "length": 8
+   },
+   "(0008,0022)": {
+      "vr": "DA",
+      "tag": "(0008,0022)",
+      "value": "20110707",
+      "name": "AcquisitionDate",
       "length": 8
    },
    "(0008,0023)": {
       "vr": "DA",
       "tag": "(0008,0023)",
-      "value": "20181204",
+      "value": "20950714",
       "name": "ContentDate",
       "length": 8
    },
    "(0008,0030)": {
       "vr": "TM",
       "tag": "(0008,0030)",
-      "value": "",
+      "value": "114731.187000 ",
       "name": "StudyTime",
-      "length": 0
+      "length": 14
+   },
+   "(0008,0031)": {
+      "vr": "TM",
+      "tag": "(0008,0031)",
+      "value": "115243.109000 ",
+      "name": "SeriesTime",
+      "length": 14
+   },
+   "(0008,0032)": {
+      "vr": "TM",
+      "tag": "(0008,0032)",
+      "value": "114951.372500 ",
+      "name": "AcquisitionTime",
+      "length": 14
    },
    "(0008,0033)": {
       "vr": "TM",
       "tag": "(0008,0033)",
-      "value": "",
+      "value": "000000",
       "name": "ContentTime",
-      "length": 0
+      "length": 6
    },
    "(0008,0050)": {
       "vr": "SH",
       "tag": "(0008,0050)",
-      "value": "RXR92785366 ",
+      "value": "Data anonymised ",
       "name": "AccessionNumber",
-      "length": 12
-   },
-   "(0008,0051)": {
-      "tag": "(0008,0051)",
-      "name": "IssuerOfAccessionNumberSequence",
-      "vr": "SQ",
-      "length": null,
-      "value": null,
-      "items": [
-         {
-            "(0040,0031)": {
-               "vr": "UT",
-               "tag": "(0040,0031)",
-               "value": "",
-               "name": "LocalNamespaceEntityID",
-               "length": 0
-            },
-            "(0040,0032)": {
-               "vr": "UT",
-               "tag": "(0040,0032)",
-               "value": "1.3.6.1.4.1.9784.10.2.2.42.1",
-               "name": "UniversalEntityID",
-               "length": 28
-            },
-            "(0040,0033)": {
-               "vr": "CS",
-               "tag": "(0040,0033)",
-               "value": "ISO ",
-               "name": "UniversalEntityIDType",
-               "length": 4
-            }
-         }
-      ]
+      "length": 16
    },
    "(0008,0060)": {
       "vr": "CS",
       "tag": "(0008,0060)",
-      "value": "CT",
+      "value": "MR",
       "name": "Modality",
       "length": 2
    },
    "(0008,0070)": {
       "vr": "LO",
       "tag": "(0008,0070)",
-      "value": "",
+      "value": "SIEMENS ",
       "name": "Manufacturer",
+      "length": 8
+   },
+   "(0008,0080)": {
+      "vr": "LO",
+      "tag": "(0008,0080)",
+      "value": "",
+      "name": "InstitutionName",
       "length": 0
    },
    "(0008,0090)": {
       "vr": "PN",
       "tag": "(0008,0090)",
-      "value": "",
+      "value": "Data anonymised ",
       "name": "ReferringPhysicianName",
-      "length": 0
-   },
-   "(0008,1010)": {
-      "vr": "SH",
-      "tag": "(0008,1010)",
-      "value": "CTAWP95885",
-      "name": "StationName",
-      "length": 10
+      "length": 16
    },
    "(0008,1030)": {
       "vr": "LO",
       "tag": "(0008,1030)",
-      "value": "CT Low dose thorax",
+      "value": "MR prostaat kanker detectie WDS_mc MCAPRODETW ",
       "name": "StudyDescription",
-      "length": 18
+      "length": 46
    },
-   "(0008,1032)": {
-      "tag": "(0008,1032)",
-      "name": "ProcedureCodeSequence",
+   "(0008,103e)": {
+      "vr": "LO",
+      "tag": "(0008,103e)",
+      "value": "t2_tse_sag",
+      "name": "SeriesDescription",
+      "length": 10
+   },
+   "(0008,1090)": {
+      "vr": "LO",
+      "tag": "(0008,1090)",
+      "value": "Skyra ",
+      "name": "ManufacturerModelName",
+      "length": 6
+   },
+   "(0008,1110)": {
+      "tag": "(0008,1110)",
+      "name": "ReferencedStudySequence",
       "vr": "SQ",
       "length": null,
       "value": null,
       "items": [
          {
-            "(0008,0100)": {
-               "vr": "SH",
-               "tag": "(0008,0100)",
-               "value": "CLDTH ",
-               "name": "CodeValue",
-               "length": 6
+            "(0008,1150)": {
+               "vr": "UI",
+               "tag": "(0008,1150)",
+               "value": "1.2.840.10008.3.1.2.3.1",
+               "name": "ReferencedSOPClassUID",
+               "length": 24
             },
-            "(0008,0102)": {
-               "vr": "SH",
-               "tag": "(0008,0102)",
-               "value": "SECTRA",
-               "name": "CodingSchemeDesignator",
-               "length": 6
-            },
-            "(0008,0104)": {
-               "vr": "LO",
-               "tag": "(0008,0104)",
-               "value": "CT Low dose thorax",
-               "name": "CodeMeaning",
-               "length": 18
+            "(0008,1155)": {
+               "vr": "UI",
+               "tag": "(0008,1155)",
+               "value": "1.2.826.0.1.3680043.9.3218.1.1.2530447383.1110.1720517398551.7.0",
+               "name": "ReferencedSOPInstanceUID",
+               "length": 64
             }
          }
       ]
    },
-   "(0008,103e)": {
-      "vr": "LO",
-      "tag": "(0008,103e)",
-      "value": "3D LungLowDose  3.0  MPR  sag ",
-      "name": "SeriesDescription",
-      "length": 30
-   },
-   "(0008,3010)": {
-      "vr": "UI",
-      "tag": "(0008,3010)",
-      "value": "9999.252685811841748539056469332411446846882",
-      "name": "IrradiationEventUID",
-      "length": 44
+   "(0008,1140)": {
+      "tag": "(0008,1140)",
+      "name": "ReferencedImageSequence",
+      "vr": "SQ",
+      "length": null,
+      "value": null,
+      "items": [
+         {
+            "(0008,1150)": {
+               "vr": "UI",
+               "tag": "(0008,1150)",
+               "value": "1.2.840.10008.5.1.4.1.1.4",
+               "name": "ReferencedSOPClassUID",
+               "length": 26
+            },
+            "(0008,1155)": {
+               "vr": "UI",
+               "tag": "(0008,1155)",
+               "value": "1.2.826.0.1.3680043.9.3218.1.1.253044738.1110.1720517398551.11.0",
+               "name": "ReferencedSOPInstanceUID",
+               "length": 64
+            }
+         },
+         {
+            "(0008,1150)": {
+               "vr": "UI",
+               "tag": "(0008,1150)",
+               "value": "1.2.840.10008.5.1.4.1.1.4",
+               "name": "ReferencedSOPClassUID",
+               "length": 26
+            },
+            "(0008,1155)": {
+               "vr": "UI",
+               "tag": "(0008,1155)",
+               "value": "1.2.826.0.1.3680043.9.3218.1.1.253044738.1110.1720517398551.12.0",
+               "name": "ReferencedSOPInstanceUID",
+               "length": 64
+            }
+         },
+         {
+            "(0008,1150)": {
+               "vr": "UI",
+               "tag": "(0008,1150)",
+               "value": "1.2.840.10008.5.1.4.1.1.4",
+               "name": "ReferencedSOPClassUID",
+               "length": 26
+            },
+            "(0008,1155)": {
+               "vr": "UI",
+               "tag": "(0008,1155)",
+               "value": "1.2.826.0.1.3680043.9.3218.1.1.253044738.1110.1720517398551.13.0",
+               "name": "ReferencedSOPInstanceUID",
+               "length": 64
+            }
+         }
+      ]
    },
    "(0010,0010)": {
       "vr": "PN",
       "tag": "(0010,0010)",
-      "value": "STANWORTH^LORNA^^MISS ",
+      "value": "JUXL^IUDV^ZZHL^MYKQ^WTWD",
       "name": "PatientName",
-      "length": 22
+      "length": 24
    },
    "(0010,0020)": {
       "vr": "LO",
       "tag": "(0010,0020)",
-      "value": "4786908614",
+      "value": "AIDP_shwd:999:13",
       "name": "PatientID",
-      "length": 10
+      "length": 16
    },
    "(0010,0021)": {
       "vr": "LO",
       "tag": "(0010,0021)",
-      "value": "2.16.840.1.113883.2.1.3.61.4.1",
+      "value": "Data anonymised ",
       "name": "IssuerOfPatientID",
-      "length": 30
+      "length": 16
    },
    "(0010,0030)": {
       "vr": "DA",
       "tag": "(0010,0030)",
-      "value": "19630830",
+      "value": "",
       "name": "PatientBirthDate",
-      "length": 8
+      "length": 0
    },
    "(0010,0040)": {
       "vr": "CS",
       "tag": "(0010,0040)",
-      "value": "F ",
+      "value": "M ",
       "name": "PatientSex",
       "length": 2
-   },
-   "(0010,1000)": {
-      "vr": "LO",
-      "tag": "(0010,1000)",
-      "value": "478 690 8614",
-      "name": "OtherPatientIDs",
-      "length": 12
    },
    "(0010,1002)": {
       "tag": "(0010,1002)",
@@ -280,284 +333,53 @@
       "vr": "SQ",
       "length": null,
       "value": null,
-      "items": [
-         {
-            "(0010,0020)": {
-               "vr": "LO",
-               "tag": "(0010,0020)",
-               "value": "RXR3269848",
-               "name": "PatientID",
-               "length": 10
-            },
-            "(0010,0021)": {
-               "vr": "LO",
-               "tag": "(0010,0021)",
-               "value": "2.16.840.1.113883.2.1.3.61.4.1",
-               "name": "IssuerOfPatientID",
-               "length": 30
-            },
-            "(0010,0022)": {
-               "vr": "CS",
-               "tag": "(0010,0022)",
-               "value": "TEXT",
-               "name": "TypeOfPatientID",
-               "length": 4
-            }
-         },
-         {
-            "(0010,0020)": {
-               "vr": "LO",
-               "tag": "(0010,0020)",
-               "value": "4786908614",
-               "name": "PatientID",
-               "length": 10
-            },
-            "(0010,0021)": {
-               "vr": "LO",
-               "tag": "(0010,0021)",
-               "value": "2.16.840.1.113883.2.1.4.1 ",
-               "name": "IssuerOfPatientID",
-               "length": 26
-            },
-            "(0010,0022)": {
-               "vr": "CS",
-               "tag": "(0010,0022)",
-               "value": "TEXT",
-               "name": "TypeOfPatientID",
-               "length": 4
-            }
-         },
-         {
-            "(0010,0020)": {
-               "vr": "LO",
-               "tag": "(0010,0020)",
-               "value": "PLE125750 ",
-               "name": "PatientID",
-               "length": 10
-            },
-            "(0010,0021)": {
-               "vr": "LO",
-               "tag": "(0010,0021)",
-               "value": "ELHT_NBSS ",
-               "name": "IssuerOfPatientID",
-               "length": 10
-            },
-            "(0010,0022)": {
-               "vr": "CS",
-               "tag": "(0010,0022)",
-               "value": "TEXT",
-               "name": "TypeOfPatientID",
-               "length": 4
-            }
-         }
-      ]
+      "items": []
    },
-   "(0018,0015)": {
+   "(0010,1010)": {
+      "vr": "AS",
+      "tag": "(0010,1010)",
+      "value": "063Y",
+      "name": "PatientAge",
+      "length": 4
+   },
+   "(0010,1020)": {
+      "vr": "DS",
+      "tag": "(0010,1020)",
+      "value": "1.83",
+      "name": "PatientSize",
+      "length": 4
+   },
+   "(0010,1030)": {
+      "vr": "DS",
+      "tag": "(0010,1030)",
+      "value": "77",
+      "name": "PatientWeight",
+      "length": 2
+   },
+   "(0010,1040)": {
+      "vr": "LO",
+      "tag": "(0010,1040)",
+      "value": "Data anonymised ",
+      "name": "PatientAddress",
+      "length": 16
+   },
+   "(0012,0062)": {
       "vr": "CS",
-      "tag": "(0018,0015)",
-      "value": "CHEST ",
-      "name": "BodyPartExamined",
-      "length": 6
-   },
-   "(0018,0050)": {
-      "vr": "DS",
-      "tag": "(0018,0050)",
-      "value": "3 ",
-      "name": "SliceThickness",
-      "length": 2
-   },
-   "(0018,0060)": {
-      "vr": "DS",
-      "tag": "(0018,0060)",
-      "value": "120 ",
-      "name": "KVP",
+      "tag": "(0012,0062)",
+      "value": "YES ",
+      "name": "PatientIdentityRemoved",
       "length": 4
    },
-   "(0018,0090)": {
-      "vr": "DS",
-      "tag": "(0018,0090)",
-      "value": "500 ",
-      "name": "DataCollectionDiameter",
-      "length": 4
+   "(0012,0063)": {
+      "vr": "LO",
+      "tag": "(0012,0063)",
+      "value": "DIAG-ANON 0.3\\Per DICOM PS 3.15 AnnexE. Details in 0012,0064",
+      "name": "DeidentificationMethod",
+      "length": 60
    },
-   "(0018,1100)": {
-      "vr": "DS",
-      "tag": "(0018,1100)",
-      "value": "320 ",
-      "name": "ReconstructionDiameter",
-      "length": 4
-   },
-   "(0018,1110)": {
-      "vr": "DS",
-      "tag": "(0018,1110)",
-      "value": "1085.6",
-      "name": "DistanceSourceToDetector",
-      "length": 6
-   },
-   "(0018,1111)": {
-      "vr": "DS",
-      "tag": "(0018,1111)",
-      "value": "595 ",
-      "name": "DistanceSourceToPatient",
-      "length": 4
-   },
-   "(0018,1120)": {
-      "vr": "DS",
-      "tag": "(0018,1120)",
-      "value": "0 ",
-      "name": "GantryDetectorTilt",
-      "length": 2
-   },
-   "(0018,1130)": {
-      "vr": "DS",
-      "tag": "(0018,1130)",
-      "value": "174 ",
-      "name": "TableHeight",
-      "length": 4
-   },
-   "(0018,1140)": {
-      "vr": "CS",
-      "tag": "(0018,1140)",
-      "value": "CW",
-      "name": "RotationDirection",
-      "length": 2
-   },
-   "(0018,1150)": {
-      "vr": "IS",
-      "tag": "(0018,1150)",
-      "value": "500 ",
-      "name": "ExposureTime",
-      "length": 4
-   },
-   "(0018,1151)": {
-      "vr": "IS",
-      "tag": "(0018,1151)",
-      "value": "140 ",
-      "name": "XRayTubeCurrent",
-      "length": 4
-   },
-   "(0018,1152)": {
-      "vr": "IS",
-      "tag": "(0018,1152)",
-      "value": "58",
-      "name": "Exposure",
-      "length": 2
-   },
-   "(0018,1160)": {
-      "vr": "SH",
-      "tag": "(0018,1160)",
-      "value": "FLAT",
-      "name": "FilterType",
-      "length": 4
-   },
-   "(0018,1170)": {
-      "vr": "IS",
-      "tag": "(0018,1170)",
-      "value": "16",
-      "name": "GeneratorPower",
-      "length": 2
-   },
-   "(0018,1190)": {
-      "vr": "DS",
-      "tag": "(0018,1190)",
-      "value": "1.2 ",
-      "name": "FocalSpots",
-      "length": 4
-   },
-   "(0018,1200)": {
-      "vr": "DA",
-      "tag": "(0018,1200)",
-      "value": "20181204",
-      "name": "DateOfLastCalibration",
-      "length": 8
-   },
-   "(0018,1201)": {
-      "vr": "TM",
-      "tag": "(0018,1201)",
-      "value": "033950.000000 ",
-      "name": "TimeOfLastCalibration",
-      "length": 14
-   },
-   "(0018,1210)": {
-      "vr": "SH",
-      "tag": "(0018,1210)",
-      "value": "I50f\\3",
-      "name": "ConvolutionKernel",
-      "length": 6
-   },
-   "(0018,5100)": {
-      "vr": "CS",
-      "tag": "(0018,5100)",
-      "value": "FFS ",
-      "name": "PatientPosition",
-      "length": 4
-   },
-   "(0018,9306)": {
-      "vr": "FD",
-      "tag": "(0018,9306)",
-      "value": "0.6",
-      "name": "SingleCollimationWidth",
-      "length": 8
-   },
-   "(0018,9307)": {
-      "vr": "FD",
-      "tag": "(0018,9307)",
-      "value": "38.4",
-      "name": "TotalCollimationWidth",
-      "length": 8
-   },
-   "(0018,9309)": {
-      "vr": "FD",
-      "tag": "(0018,9309)",
-      "value": "92",
-      "name": "TableSpeed",
-      "length": 8
-   },
-   "(0018,9310)": {
-      "vr": "FD",
-      "tag": "(0018,9310)",
-      "value": "46",
-      "name": "TableFeedPerRotation",
-      "length": 8
-   },
-   "(0018,9311)": {
-      "vr": "FD",
-      "tag": "(0018,9311)",
-      "value": "1.2",
-      "name": "SpiralPitchFactor",
-      "length": 8
-   },
-   "(0018,9318)": {
-      "vr": "FD",
-      "tag": "(0018,9318)",
-      "value": "21",
-      "name": "ReconstructionTargetCenterPatient",
-      "length": 24
-   },
-   "(0018,9323)": {
-      "vr": "CS",
-      "tag": "(0018,9323)",
-      "value": "XYZ_EC",
-      "name": "ExposureModulationType",
-      "length": 6
-   },
-   "(0018,9324)": {
-      "vr": "FD",
-      "tag": "(0018,9324)",
-      "value": "32.7307",
-      "name": "EstimatedDoseSaving",
-      "length": 8
-   },
-   "(0018,9345)": {
-      "vr": "FD",
-      "tag": "(0018,9345)",
-      "value": "3.9357053217391305",
-      "name": "CTDIvol",
-      "length": 8
-   },
-   "(0018,9346)": {
-      "tag": "(0018,9346)",
-      "name": "CTDIPhantomTypeCodeSequence",
+   "(0012,0064)": {
+      "tag": "(0012,0064)",
+      "name": "DeidentificationMethodCodeSequence",
       "vr": "SQ",
       "length": null,
       "value": null,
@@ -566,7 +388,7 @@
             "(0008,0100)": {
                "vr": "SH",
                "tag": "(0008,0100)",
-               "value": "113691",
+               "value": "113100",
                "name": "CodeValue",
                "length": 6
             },
@@ -580,68 +402,508 @@
             "(0008,0104)": {
                "vr": "LO",
                "tag": "(0008,0104)",
-               "value": "IEC Body Dosimetry Phantom",
+               "value": "Basic Application Confidentiality Profile ",
+               "name": "CodeMeaning",
+               "length": 42
+            }
+         },
+         {
+            "(0008,0100)": {
+               "vr": "SH",
+               "tag": "(0008,0100)",
+               "value": "113101",
+               "name": "CodeValue",
+               "length": 6
+            },
+            "(0008,0102)": {
+               "vr": "SH",
+               "tag": "(0008,0102)",
+               "value": "DCM ",
+               "name": "CodingSchemeDesignator",
+               "length": 4
+            },
+            "(0008,0104)": {
+               "vr": "LO",
+               "tag": "(0008,0104)",
+               "value": "Clean Pixel Data Option ",
+               "name": "CodeMeaning",
+               "length": 24
+            }
+         },
+         {
+            "(0008,0100)": {
+               "vr": "SH",
+               "tag": "(0008,0100)",
+               "value": "113104",
+               "name": "CodeValue",
+               "length": 6
+            },
+            "(0008,0102)": {
+               "vr": "SH",
+               "tag": "(0008,0102)",
+               "value": "DCM ",
+               "name": "CodingSchemeDesignator",
+               "length": 4
+            },
+            "(0008,0104)": {
+               "vr": "LO",
+               "tag": "(0008,0104)",
+               "value": "Clean Structured Content Option ",
+               "name": "CodeMeaning",
+               "length": 32
+            }
+         },
+         {
+            "(0008,0100)": {
+               "vr": "SH",
+               "tag": "(0008,0100)",
+               "value": "113105",
+               "name": "CodeValue",
+               "length": 6
+            },
+            "(0008,0102)": {
+               "vr": "SH",
+               "tag": "(0008,0102)",
+               "value": "DCM ",
+               "name": "CodingSchemeDesignator",
+               "length": 4
+            },
+            "(0008,0104)": {
+               "vr": "LO",
+               "tag": "(0008,0104)",
+               "value": "Clean Descriptors Option",
+               "name": "CodeMeaning",
+               "length": 24
+            }
+         },
+         {
+            "(0008,0100)": {
+               "vr": "SH",
+               "tag": "(0008,0100)",
+               "value": "113107",
+               "name": "CodeValue",
+               "length": 6
+            },
+            "(0008,0102)": {
+               "vr": "SH",
+               "tag": "(0008,0102)",
+               "value": "DCM ",
+               "name": "CodingSchemeDesignator",
+               "length": 4
+            },
+            "(0008,0104)": {
+               "vr": "LO",
+               "tag": "(0008,0104)",
+               "value": "Retain Longitudinal Temporal Information Modified Dates Option",
+               "name": "CodeMeaning",
+               "length": 62
+            }
+         },
+         {
+            "(0008,0100)": {
+               "vr": "SH",
+               "tag": "(0008,0100)",
+               "value": "113108",
+               "name": "CodeValue",
+               "length": 6
+            },
+            "(0008,0102)": {
+               "vr": "SH",
+               "tag": "(0008,0102)",
+               "value": "DCM ",
+               "name": "CodingSchemeDesignator",
+               "length": 4
+            },
+            "(0008,0104)": {
+               "vr": "LO",
+               "tag": "(0008,0104)",
+               "value": "Retain Patient Characteristics Option ",
+               "name": "CodeMeaning",
+               "length": 38
+            }
+         },
+         {
+            "(0008,0100)": {
+               "vr": "SH",
+               "tag": "(0008,0100)",
+               "value": "113109",
+               "name": "CodeValue",
+               "length": 6
+            },
+            "(0008,0102)": {
+               "vr": "SH",
+               "tag": "(0008,0102)",
+               "value": "DCM ",
+               "name": "CodingSchemeDesignator",
+               "length": 4
+            },
+            "(0008,0104)": {
+               "vr": "LO",
+               "tag": "(0008,0104)",
+               "value": "Retain Device Identity Option ",
+               "name": "CodeMeaning",
+               "length": 30
+            }
+         },
+         {
+            "(0008,0100)": {
+               "vr": "SH",
+               "tag": "(0008,0100)",
+               "value": "113111",
+               "name": "CodeValue",
+               "length": 6
+            },
+            "(0008,0102)": {
+               "vr": "SH",
+               "tag": "(0008,0102)",
+               "value": "DCM ",
+               "name": "CodingSchemeDesignator",
+               "length": 4
+            },
+            "(0008,0104)": {
+               "vr": "LO",
+               "tag": "(0008,0104)",
+               "value": "Retain Safe Private Option",
                "name": "CodeMeaning",
                "length": 26
+            }
+         },
+         {
+            "(0008,0100)": {
+               "vr": "SH",
+               "tag": "(0008,0100)",
+               "value": "113100",
+               "name": "CodeValue",
+               "length": 6
+            },
+            "(0008,0102)": {
+               "vr": "SH",
+               "tag": "(0008,0102)",
+               "value": "DCM ",
+               "name": "CodingSchemeDesignator",
+               "length": 4
+            },
+            "(0008,0104)": {
+               "vr": "LO",
+               "tag": "(0008,0104)",
+               "value": "Basic Application Confidentiality Profile ",
+               "name": "CodeMeaning",
+               "length": 42
+            }
+         },
+         {
+            "(0008,0100)": {
+               "vr": "SH",
+               "tag": "(0008,0100)",
+               "value": "210004",
+               "name": "CodeValue",
+               "length": 6
+            },
+            "(0008,0102)": {
+               "vr": "SH",
+               "tag": "(0008,0102)",
+               "value": "99PMP ",
+               "name": "CodingSchemeDesignator",
+               "length": 6
+            },
+            "(0008,0104)": {
+               "vr": "LO",
+               "tag": "(0008,0104)",
+               "value": "Remove all descriptors",
+               "name": "CodeMeaning",
+               "length": 22
+            }
+         },
+         {
+            "(0008,0100)": {
+               "vr": "SH",
+               "tag": "(0008,0100)",
+               "value": "210001",
+               "name": "CodeValue",
+               "length": 6
+            },
+            "(0008,0102)": {
+               "vr": "SH",
+               "tag": "(0008,0102)",
+               "value": "99PMP ",
+               "name": "CodingSchemeDesignator",
+               "length": 6
+            },
+            "(0008,0104)": {
+               "vr": "LO",
+               "tag": "(0008,0104)",
+               "value": "Remap UIDs",
+               "name": "CodeMeaning",
+               "length": 10
             }
          }
       ]
    },
-   "(0018,9352)": {
-      "vr": "FL",
-      "tag": "(0018,9352)",
-      "value": "0.7900000214576721",
-      "name": "CalciumScoringMassFactorDevice",
+   "(0018,0015)": {
+      "vr": "CS",
+      "tag": "(0018,0015)",
+      "value": "PROSTATE",
+      "name": "BodyPartExamined",
+      "length": 8
+   },
+   "(0018,0020)": {
+      "vr": "CS",
+      "tag": "(0018,0020)",
+      "value": "SE",
+      "name": "ScanningSequence",
+      "length": 2
+   },
+   "(0018,0021)": {
+      "vr": "CS",
+      "tag": "(0018,0021)",
+      "value": "SK\\SP\\OSP ",
+      "name": "SequenceVariant",
+      "length": 10
+   },
+   "(0018,0022)": {
+      "vr": "CS",
+      "tag": "(0018,0022)",
+      "value": "SAT1",
+      "name": "ScanOptions",
+      "length": 4
+   },
+   "(0018,0023)": {
+      "vr": "CS",
+      "tag": "(0018,0023)",
+      "value": "2D",
+      "name": "MRAcquisitionType",
+      "length": 2
+   },
+   "(0018,0024)": {
+      "vr": "SH",
+      "tag": "(0018,0024)",
+      "value": "*tse2d1_25",
+      "name": "SequenceName",
+      "length": 10
+   },
+   "(0018,0025)": {
+      "vr": "CS",
+      "tag": "(0018,0025)",
+      "value": "N ",
+      "name": "AngioFlag",
+      "length": 2
+   },
+   "(0018,0050)": {
+      "vr": "DS",
+      "tag": "(0018,0050)",
+      "value": "3 ",
+      "name": "SliceThickness",
+      "length": 2
+   },
+   "(0018,0080)": {
+      "vr": "DS",
+      "tag": "(0018,0080)",
+      "value": "5590",
+      "name": "RepetitionTime",
+      "length": 4
+   },
+   "(0018,0081)": {
+      "vr": "DS",
+      "tag": "(0018,0081)",
+      "value": "101 ",
+      "name": "EchoTime",
+      "length": 4
+   },
+   "(0018,0083)": {
+      "vr": "DS",
+      "tag": "(0018,0083)",
+      "value": "3 ",
+      "name": "NumberOfAverages",
+      "length": 2
+   },
+   "(0018,0084)": {
+      "vr": "DS",
+      "tag": "(0018,0084)",
+      "value": "123.242441",
+      "name": "ImagingFrequency",
+      "length": 10
+   },
+   "(0018,0085)": {
+      "vr": "SH",
+      "tag": "(0018,0085)",
+      "value": "1H",
+      "name": "ImagedNucleus",
+      "length": 2
+   },
+   "(0018,0086)": {
+      "vr": "IS",
+      "tag": "(0018,0086)",
+      "value": "1 ",
+      "name": "EchoNumbers",
+      "length": 2
+   },
+   "(0018,0087)": {
+      "vr": "DS",
+      "tag": "(0018,0087)",
+      "value": "3 ",
+      "name": "MagneticFieldStrength",
+      "length": 2
+   },
+   "(0018,0088)": {
+      "vr": "DS",
+      "tag": "(0018,0088)",
+      "value": "3.6 ",
+      "name": "SpacingBetweenSlices",
+      "length": 4
+   },
+   "(0018,0089)": {
+      "vr": "IS",
+      "tag": "(0018,0089)",
+      "value": "500 ",
+      "name": "NumberOfPhaseEncodingSteps",
+      "length": 4
+   },
+   "(0018,0091)": {
+      "vr": "IS",
+      "tag": "(0018,0091)",
+      "value": "25",
+      "name": "EchoTrainLength",
+      "length": 2
+   },
+   "(0018,0093)": {
+      "vr": "DS",
+      "tag": "(0018,0093)",
+      "value": "100 ",
+      "name": "PercentSampling",
+      "length": 4
+   },
+   "(0018,0094)": {
+      "vr": "DS",
+      "tag": "(0018,0094)",
+      "value": "100 ",
+      "name": "PercentPhaseFieldOfView",
+      "length": 4
+   },
+   "(0018,0095)": {
+      "vr": "DS",
+      "tag": "(0018,0095)",
+      "value": "200 ",
+      "name": "PixelBandwidth",
+      "length": 4
+   },
+   "(0018,1020)": {
+      "vr": "LO",
+      "tag": "(0018,1020)",
+      "value": "syngo MR D11",
+      "name": "SoftwareVersions",
       "length": 12
+   },
+   "(0018,1030)": {
+      "vr": "LO",
+      "tag": "(0018,1030)",
+      "value": "t2_tse_sag",
+      "name": "ProtocolName",
+      "length": 10
+   },
+   "(0018,1251)": {
+      "vr": "SH",
+      "tag": "(0018,1251)",
+      "value": "Body",
+      "name": "TransmitCoilName",
+      "length": 4
+   },
+   "(0018,1310)": {
+      "vr": "US",
+      "tag": "(0018,1310)",
+      "value": "0",
+      "name": "AcquisitionMatrix",
+      "length": 8
+   },
+   "(0018,1312)": {
+      "vr": "CS",
+      "tag": "(0018,1312)",
+      "value": "ROW ",
+      "name": "InPlanePhaseEncodingDirection",
+      "length": 4
+   },
+   "(0018,1314)": {
+      "vr": "DS",
+      "tag": "(0018,1314)",
+      "value": "160 ",
+      "name": "FlipAngle",
+      "length": 4
+   },
+   "(0018,1315)": {
+      "vr": "CS",
+      "tag": "(0018,1315)",
+      "value": "N ",
+      "name": "VariableFlipAngleFlag",
+      "length": 2
+   },
+   "(0018,1316)": {
+      "vr": "DS",
+      "tag": "(0018,1316)",
+      "value": "1.6654975543857 ",
+      "name": "SAR",
+      "length": 16
+   },
+   "(0018,1318)": {
+      "vr": "DS",
+      "tag": "(0018,1318)",
+      "value": "0 ",
+      "name": "dBdt",
+      "length": 2
+   },
+   "(0018,5100)": {
+      "vr": "CS",
+      "tag": "(0018,5100)",
+      "value": "FFS ",
+      "name": "PatientPosition",
+      "length": 4
    },
    "(0020,000d)": {
       "vr": "UI",
       "tag": "(0020,000d)",
-      "value": "1.3.12.2.1107.5.8.9.100101347151331141.20181122100736383",
+      "value": "1.2.826.0.1.3680043.9.3218.1.1.2530447383.1110.1720517398551.7.0",
       "name": "StudyInstanceUID",
-      "length": 56
+      "length": 64
    },
    "(0020,000e)": {
       "vr": "UI",
       "tag": "(0020,000e)",
-      "value": "1.3.12.2.1107.5.1.4.95885.30000018120404003037800002428",
+      "value": "1.2.826.0.1.3680043.9.3218.1.1.2530447383.1110.1720517398551.8.0",
       "name": "SeriesInstanceUID",
-      "length": 56
+      "length": 64
    },
    "(0020,0010)": {
       "vr": "SH",
       "tag": "(0020,0010)",
-      "value": "CLDTH ",
+      "value": "Data anonymised ",
       "name": "StudyID",
-      "length": 6
+      "length": 16
    },
    "(0020,0011)": {
       "vr": "IS",
       "tag": "(0020,0011)",
-      "value": "11",
+      "value": "3 ",
       "name": "SeriesNumber",
       "length": 2
    },
    "(0020,0012)": {
       "vr": "IS",
       "tag": "(0020,0012)",
-      "value": "3 ",
+      "value": "1 ",
       "name": "AcquisitionNumber",
       "length": 2
    },
    "(0020,0013)": {
       "vr": "IS",
       "tag": "(0020,0013)",
-      "value": "59",
+      "value": "1 ",
       "name": "InstanceNumber",
       "length": 2
    },
    "(0020,0032)": {
       "vr": "DS",
       "tag": "(0020,0032)",
-      "value": "21\\-333.6875\\-169.0405",
+      "value": "6.5628509521484\\-66.736778259277\\56.274690240622",
       "name": "ImagePositionPatient",
-      "length": 22
+      "length": 48
    },
    "(0020,0037)": {
       "vr": "DS",
@@ -653,9 +915,9 @@
    "(0020,0052)": {
       "vr": "UI",
       "tag": "(0020,0052)",
-      "value": "9999.300226082127942881554618483808352526242",
+      "value": "1.2.826.0.1.3680043.9.3218.1.1.253044738.1110.1720517398551.10.0",
       "name": "FrameOfReferenceUID",
-      "length": 44
+      "length": 64
    },
    "(0020,1040)": {
       "vr": "LO",
@@ -663,6 +925,13 @@
       "value": "",
       "name": "PositionReferenceIndicator",
       "length": 0
+   },
+   "(0020,1041)": {
+      "vr": "DS",
+      "tag": "(0020,1041)",
+      "value": "6.5628509521484 ",
+      "name": "SliceLocation",
+      "length": 16
    },
    "(0028,0002)": {
       "vr": "US",
@@ -681,23 +950,23 @@
    "(0028,0010)": {
       "vr": "US",
       "tag": "(0028,0010)",
-      "value": "512",
+      "value": "320",
       "name": "Rows",
       "length": 2
    },
    "(0028,0011)": {
       "vr": "US",
       "tag": "(0028,0011)",
-      "value": "512",
+      "value": "320",
       "name": "Columns",
       "length": 2
    },
    "(0028,0030)": {
       "vr": "DS",
       "tag": "(0028,0030)",
-      "value": "0.625\\0.625 ",
+      "value": "0.5625\\0.5625 ",
       "name": "PixelSpacing",
-      "length": 12
+      "length": 14
    },
    "(0028,0100)": {
       "vr": "US",
@@ -737,153 +1006,207 @@
    "(0028,0107)": {
       "vr": "US",
       "tag": "(0028,0107)",
-      "value": "2088",
+      "value": "1035",
       "name": "LargestImagePixelValue",
       "length": 2
+   },
+   "(0028,0303)": {
+      "vr": "CS",
+      "tag": "(0028,0303)",
+      "value": "MODIFIED",
+      "name": "LongitudinalTemporalInformationModified",
+      "length": 8
    },
    "(0028,1050)": {
       "vr": "DS",
       "tag": "(0028,1050)",
-      "value": "-600\\50 ",
+      "value": "602 ",
       "name": "WindowCenter",
-      "length": 8
+      "length": 4
    },
    "(0028,1051)": {
       "vr": "DS",
       "tag": "(0028,1051)",
-      "value": "1500\\350",
+      "value": "1209",
       "name": "WindowWidth",
-      "length": 8
-   },
-   "(0028,1052)": {
-      "vr": "DS",
-      "tag": "(0028,1052)",
-      "value": "-1024 ",
-      "name": "RescaleIntercept",
-      "length": 6
-   },
-   "(0028,1053)": {
-      "vr": "DS",
-      "tag": "(0028,1053)",
-      "value": "1 ",
-      "name": "RescaleSlope",
-      "length": 2
-   },
-   "(0028,1054)": {
-      "vr": "LO",
-      "tag": "(0028,1054)",
-      "value": "HU",
-      "name": "RescaleType",
-      "length": 2
+      "length": 4
    },
    "(0028,1055)": {
       "vr": "LO",
       "tag": "(0028,1055)",
-      "value": "WINDOW1\\WINDOW2 ",
+      "value": "Algo1 ",
       "name": "WindowCenterWidthExplanation",
+      "length": 6
+   },
+   "(0032,000a)": {
+      "vr": "CS",
+      "tag": "(0032,000a)",
+      "value": "READ",
+      "name": "RETIRED_StudyStatusID",
+      "length": 4
+   },
+   "(0032,000c)": {
+      "vr": "CS",
+      "tag": "(0032,000c)",
+      "value": "MED ",
+      "name": "RETIRED_StudyPriorityID",
+      "length": 4
+   },
+   "(0032,1030)": {
+      "vr": "LO",
+      "tag": "(0032,1030)",
+      "value": "MR prostaat kanker detectie WDS_mc MCAPRODETW ",
+      "name": "RETIRED_ReasonForStudy",
+      "length": 46
+   },
+   "(0032,1033)": {
+      "vr": "LO",
+      "tag": "(0032,1033)",
+      "value": "Data anonymised ",
+      "name": "RequestingService",
       "length": 16
    },
-   "(0032,1064)": {
-      "tag": "(0032,1064)",
-      "name": "RequestedProcedureCodeSequence",
+   "(0032,1060)": {
+      "vr": "LO",
+      "tag": "(0032,1060)",
+      "value": "Data anonymised ",
+      "name": "RequestedProcedureDescription",
+      "length": 16
+   },
+   "(0040,0244)": {
+      "vr": "DA",
+      "tag": "(0040,0244)",
+      "value": "20950714",
+      "name": "PerformedProcedureStepStartDate",
+      "length": 8
+   },
+   "(0040,0245)": {
+      "vr": "TM",
+      "tag": "(0040,0245)",
+      "value": "000000",
+      "name": "PerformedProcedureStepStartTime",
+      "length": 6
+   },
+   "(0040,0254)": {
+      "vr": "LO",
+      "tag": "(0040,0254)",
+      "value": "Data anonymised ",
+      "name": "PerformedProcedureStepDescription",
+      "length": 16
+   },
+   "(0040,0275)": {
+      "tag": "(0040,0275)",
+      "name": "RequestAttributesSequence",
       "vr": "SQ",
       "length": null,
       "value": null,
       "items": [
          {
-            "(0008,0100)": {
+            "(0040,1001)": {
                "vr": "SH",
-               "tag": "(0008,0100)",
-               "value": "CLDTH ",
-               "name": "CodeValue",
-               "length": 6
-            },
-            "(0008,0102)": {
-               "vr": "SH",
-               "tag": "(0008,0102)",
-               "value": "CLDTH ",
-               "name": "CodingSchemeDesignator",
-               "length": 6
-            },
-            "(0008,0104)": {
-               "vr": "LO",
-               "tag": "(0008,0104)",
-               "value": "CT Low dose thorax",
-               "name": "CodeMeaning",
-               "length": 18
+               "tag": "(0040,1001)",
+               "value": "Data anonymised ",
+               "name": "RequestedProcedureID",
+               "length": 16
             }
          }
       ]
    },
-   "(6000,0010)": {
-      "vr": "US",
-      "tag": "(6000,0010)",
-      "value": "512",
-      "name": "Private or Unrecognised Tag",
-      "length": 2
+   "(0040,0280)": {
+      "vr": "ST",
+      "tag": "(0040,0280)",
+      "value": "Data anonymised ",
+      "name": "CommentsOnThePerformedProcedureStep",
+      "length": 16
    },
-   "(6000,0011)": {
-      "vr": "US",
-      "tag": "(6000,0011)",
-      "value": "512",
-      "name": "Private or Unrecognised Tag",
-      "length": 2
-   },
-   "(6000,0015)": {
-      "vr": "IS",
-      "tag": "(6000,0015)",
-      "value": "1 ",
-      "name": "Private or Unrecognised Tag",
-      "length": 2
-   },
-   "(6000,0022)": {
+   "(0040,2017)": {
       "vr": "LO",
-      "tag": "(6000,0022)",
-      "value": "Siemens MedCom Object Graphics",
-      "name": "Private or Unrecognised Tag",
-      "length": 30
+      "tag": "(0040,2017)",
+      "value": "Data anonymised ",
+      "name": "FillerOrderNumberImagingServiceRequest",
+      "length": 16
    },
-   "(6000,0040)": {
-      "vr": "CS",
-      "tag": "(6000,0040)",
-      "value": "G ",
-      "name": "Private or Unrecognised Tag",
-      "length": 2
+   "(0088,0200)": {
+      "tag": "(0088,0200)",
+      "name": "IconImageSequence",
+      "vr": "SQ",
+      "length": null,
+      "value": null,
+      "items": [
+         {
+            "(0028,0002)": {
+               "vr": "US",
+               "tag": "(0028,0002)",
+               "value": "0",
+               "name": "SamplesPerPixel",
+               "length": 2
+            },
+            "(0028,0004)": {
+               "vr": "CS",
+               "tag": "(0028,0004)",
+               "value": "",
+               "name": "PhotometricInterpretation",
+               "length": 0
+            },
+            "(0028,0010)": {
+               "vr": "US",
+               "tag": "(0028,0010)",
+               "value": "0",
+               "name": "Rows",
+               "length": 2
+            },
+            "(0028,0011)": {
+               "vr": "US",
+               "tag": "(0028,0011)",
+               "value": "0",
+               "name": "Columns",
+               "length": 2
+            },
+            "(0028,0100)": {
+               "vr": "US",
+               "tag": "(0028,0100)",
+               "value": "0",
+               "name": "BitsAllocated",
+               "length": 2
+            },
+            "(0028,0101)": {
+               "vr": "US",
+               "tag": "(0028,0101)",
+               "value": "0",
+               "name": "BitsStored",
+               "length": 2
+            },
+            "(0028,0102)": {
+               "vr": "US",
+               "tag": "(0028,0102)",
+               "value": "0",
+               "name": "HighBit",
+               "length": 2
+            },
+            "(0028,0103)": {
+               "vr": "US",
+               "tag": "(0028,0103)",
+               "value": "0",
+               "name": "PixelRepresentation",
+               "length": 2
+            },
+            "(7fe0,0010)": {
+               "vr": "OW",
+               "tag": "(7fe0,0010)",
+               "value": "Binary data (OW): 2 bytes",
+               "name": "PixelData",
+               "length": 2,
+               "devNote": "Byte parsing support for VR: OW is unimplemeted in this version"
+            }
+         }
+      ]
    },
-   "(6000,0050)": {
-      "vr": "SS",
-      "tag": "(6000,0050)",
-      "value": "1",
-      "name": "Private or Unrecognised Tag",
-      "length": 4
-   },
-   "(6000,0051)": {
-      "vr": "US",
-      "tag": "(6000,0051)",
-      "value": "1",
-      "name": "Private or Unrecognised Tag",
-      "length": 2
-   },
-   "(6000,0100)": {
-      "vr": "US",
-      "tag": "(6000,0100)",
-      "value": "1",
-      "name": "Private or Unrecognised Tag",
-      "length": 2
-   },
-   "(6000,0102)": {
-      "vr": "US",
-      "tag": "(6000,0102)",
-      "value": "0",
-      "name": "Private or Unrecognised Tag",
-      "length": 2
-   },
-   "(6000,3000)": {
+   "(7fe0,0010)": {
       "vr": "OW",
-      "tag": "(6000,3000)",
-      "value": "Binary data (OW): 32768 bytes",
-      "name": "Private or Unrecognised Tag",
-      "length": 32768,
+      "tag": "(7fe0,0010)",
+      "value": "Binary data (OW): 204800 bytes",
+      "name": "PixelData",
+      "length": 204800,
       "devNote": "Byte parsing support for VR: OW is unimplemeted in this version"
    }
 }
