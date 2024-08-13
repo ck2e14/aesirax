@@ -3,12 +3,10 @@ import net from "net";
 // 1 Application Context DONE
 // 1-n Presentation Context Items:
 // 1 Uesr Information Item:
+// Writing my first A-ASSOCIATE-RQ from scratch
+// Implementing the specicifation according to https://dicom.nema.org/medical/dicom/current/output/chtml/part08/sect_9.3.2.html
 main();
 function main() {
-    // first define the first part of the message.
-    // we split into two parts where the end of the first part will reference the length of the second.
-    // the DICOM spec says that in A-ASSOCIATE-RQ messages bytes 3,4,5,6 represent the length of the
-    // rest of the message.
     const msgPart1 = {
         pduType: Buffer.alloc(1, 0x01),
         reserved1: Buffer.alloc(1, 0x00),
@@ -94,7 +92,7 @@ function sendTcpRequest(host, port, message, callback) {
     client.on("data", data => {
         console.log("Received: " + data.toString());
         callback(data.toString());
-        client.destroy(); // kill client after server's response
+        client.destroy();
     });
     client.on("error", err => {
         console.error("Error: " + err.message);
