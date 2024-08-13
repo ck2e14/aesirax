@@ -194,7 +194,6 @@
       "name": "ProcedureCodeSequence",
       "vr": "SQ",
       "length": null,
-      "value": null,
       "items": [
          {
             "(0008,0100)": {
@@ -254,7 +253,6 @@
       "name": "ReferencedStudySequence",
       "vr": "SQ",
       "length": null,
-      "value": null,
       "items": [
          {
             "(0008,1150)": {
@@ -769,7 +767,6 @@
       "name": "RequestAttributesSequence",
       "vr": "SQ",
       "length": null,
-      "value": null,
       "items": [
          {
             "(0032,1060)": {

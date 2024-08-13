@@ -8,7 +8,7 @@ import { findDICOM } from "./utilts.js";
  * @param cfg
  * @returns promised worker threads' completion (void)
  */
-export async function multiThreaded(cfg: Global.Config) {
+export async function multiThreaded(cfg: Global.Cfg) {
    const start = performance.now();
    const dicomFiles = findDICOM(cfg.targetDir);
    const nWorkers = cpus().length > dicomFiles.length ? dicomFiles.length : cpus().length; // this could be refined because one massive file also benefits from multiple workers but currently doing 1 file per worker. Future improvement.
@@ -37,7 +37,7 @@ export async function multiThreaded(cfg: Global.Config) {
  * @param dicomFiles
  * @returns promised worker thread's completion (void)
  */
-function createWork(dataSets: any[], dicomFiles: string[], cfg: Global.Config) {
+function createWork(dataSets: any[], dicomFiles: string[], cfg: Global.Cfg) {
    const worker = new Worker("./dist/worker.js");
 
    return new Promise<void>((resolve, reject) => {
@@ -64,7 +64,7 @@ function addEvents(
    dicomFiles: string[],
    resolve,
    reject,
-   cfg: Global.Config
+   cfg: Global.Cfg
 ) {
    worker.on("message", (msg: any) => {
       dataSets.push(msg.data);

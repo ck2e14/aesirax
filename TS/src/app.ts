@@ -27,14 +27,14 @@ const testDirs = {
  * @param cfg
  * @returns void
  */
-async function main(cfg: Global.Config) {
+async function main(cfg: Global.Cfg) {
    if (cfg.verbose) {
       write(`Starting up...`, "INFO");
    }
 
    await init();
 
-   cfg.targetDir = testDirs.x; // TODO when back from dogwalk - detect the end of defined length SQs that don't use sequence delmiters to end their sequences.
+   cfg.targetDir = testDirs.x;
 
    const fileCount = readdirSync(cfg.targetDir).length;
 

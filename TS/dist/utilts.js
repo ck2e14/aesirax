@@ -33,4 +33,5 @@ export function findDICOM(folder = "./", fileList = []) {
     });
     return fileList;
 }
+export const json = (thing) => JSON.stringify(thing, null, 3);
 //# sourceMappingURL=utilts.js.map

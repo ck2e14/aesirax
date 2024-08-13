@@ -23,7 +23,7 @@ async function main(cfg) {
         write(`Starting up...`, "INFO");
     }
     await init();
-    cfg.targetDir = testDirs.x; // TODO when back from dogwalk - detect the end of defined length SQs that don't use sequence delmiters to end their sequences.
+    cfg.targetDir = testDirs.x;
     const fileCount = readdirSync(cfg.targetDir).length;
     // alright sitrep
     // think we are now supporting undefined and defined length SQs properly.
