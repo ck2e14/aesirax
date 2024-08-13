@@ -17,12 +17,48 @@ describe("Single Threaded Parser Output Testing", () => {
          "/Users/chriskennedy/Desktop/SWE/aesirax/data/with_1-depth_sequences_undefinedSQlen_undefinedItemlen";
 
       const [x] = await singleTheaded(cfg);
-
       const expectedOutput = JSON.parse(
          readFileSync("./src/parse/tests/jsonComparisons/1.json", "utf-8")
       );
 
       expect(x).toStrictEqual(expectedOutput);
-      // expect(true).toBe(true);
+      expect(Object.keys(x)).toHaveLength(130);
+   });
+
+   it("Correctly outputs for a DICOM that has a single depth of SQ (no nested SQ), and has undefined length SQ, and multiple items.", async () => {
+      cfg.targetDir =
+         "/Users/chriskennedy/Desktop/SWE/aesirax/data/with_1-depthSQ_multiple_items_undefined_SQlen_undefinedItemLen";
+
+      const [x] = await singleTheaded(cfg);
+      const expectedOutput = JSON.parse(
+         readFileSync("./src/parse/tests/jsonComparisons/3.json", "utf-8")
+      );
+
+      expect(x).toStrictEqual(expectedOutput);
+      expect(Object.keys(x)).toHaveLength(102);
+   });
+
+   it("Correctly outputs the Turkey's DICOM. Gobble Gobble.", async () => {
+      cfg.targetDir = "/Users/chriskennedy/Desktop/SWE/aesirax/data/turkey";
+
+      const [x] = await singleTheaded(cfg);
+      const expectedOutput = JSON.parse(
+         readFileSync("./src/parse/tests/jsonComparisons/2.json", "utf-8")
+      );
+
+      expect(x).toStrictEqual(expectedOutput);
+      expect(Object.keys(x)).toHaveLength(51);
+   });
+
+   it("Correctly outputs for a DICOM that has a single depth of SQ (no nested SQ), and has defined length SQ and items.", async () => {
+      cfg.targetDir = "/Users/chriskennedy/Desktop/SWE/aesirax/data/X";
+
+      const [x] = await singleTheaded(cfg);
+      const expectedOutput = JSON.parse(
+         readFileSync("./src/parse/tests/jsonComparisons/4.json", "utf-8")
+      );
+
+      expect(x).toStrictEqual(expectedOutput);
+      expect(Object.keys(x)).toHaveLength(115);
    });
 });

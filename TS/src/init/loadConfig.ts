@@ -1,10 +1,10 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
-export function config(runtimeEndOverride?: { [key: string]: string | boolean }): Global.Config {
+export function config(runtimeEndOverride?: { [key: string]: string | boolean }): Global.Cfg {
    const env = process.env;
 
-   const config: Global.Config = {
+   const config: Global.Cfg = {
       verbose: env.VERBOSE === "1",
       printToStdOut: env.PRINT_TO_STDOUT === "1",
       debug: env.DEBUG === "1",

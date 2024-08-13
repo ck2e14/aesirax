@@ -3,6 +3,7 @@ import { decodeTagNum } from "./tagNums.js";
 import { decodeValue, decodeVr } from "./valueDecoders.js";
 import { BufferBoundary, DicomError, MalformedDicom, UndefinedLength } from "../error/errors.js";
 import { ByteLen, DicomErrorType, TagDictByHex, TagDictByName, TransferSyntaxUid, VR, } from "../globalEnums.js";
+import { json } from "../utilts.js";
 export const DICOM_HEADER = "DICM";
 export const PREAMBLE_LENGTH = 128;
 export const DICOM_HEADER_START = PREAMBLE_LENGTH;
@@ -10,6 +11,8 @@ export const HEADER_END = PREAMBLE_LENGTH + 4;
 export const ITEM_START_TAG = TagDictByName.ItemStart.tag; // (fffe,e000)
 export const ITEM_END_TAG = TagDictByName.ItemEnd.tag; // (fffe,e00d)
 export const SEQ_END_TAG = TagDictByName.SequenceEnd.tag; // (fffe,e0dd)
+export const MAX_LEN_UINT_16 = 65535;
+export const MAX_LEN_UINT_32 = 4294967295;
 /**
  * Parse the elements in a buffer containing a subset of a DICOM file's bytes,
  * Return a buffer containing the truncated tag if the buffer is incomplete.
@@ -26,23 +29,17 @@ export const SEQ_END_TAG = TagDictByName.SequenceEnd.tag; // (fffe,e0dd)
 export function parse(buffer, ctx) {
     var _a, _b;
     const cursor = newCursor(0);
+    let lastTagStart = cursor.pos;
     let itemDataSet = null;
-    if (ctx.first) {
-        ctx.usingLE = useLE(ctx.transferSyntaxUid);
-        write(`Decoding as ${ctx.usingLE ? "LE" : "BE"} byte order`, "DEBUG");
-    }
     if (ctx.inSequence) {
         (_a = ctx.dataSet)[_b = ctx.currSqTag] ?? (_a[_b] = newSeqElement(ctx)); // stackedDataSets.at(-1) will be req'd here when handling nested SQs
         itemDataSet = {};
     }
-    let lastTagStart = cursor.pos;
     while (cursor.pos < buffer.length) {
-        lastTagStart = cursor.pos; // For stitch handling
-        const el = newElement(); // An element is a tag, VR, length, and value. We decode these in four stages below.
+        lastTagStart = cursor.pos;
+        const el = newElement(); // elements have a tag, VR, length, and value. Decoded in S1, 2, 3 and 4 below.
         try {
-            // [DECODING] STAGE 1:TAG (grp num & el num)
-            decodeTagAndMoveCursor(buffer, cursor, el, ctx);
-            // [CTRL FLOW] STAGE 2: handle end of item dataSet & possibly end of SQ
+            decodeTagAndMoveCursor(buffer, cursor, el, ctx); // S1
             if (isEndOfItem(ctx, el)) {
                 write(`End of item in SQ: ${ctx.currSqTag}`, "DEBUG");
                 const next = handleEndOfItem(ctx, cursor, buffer, itemDataSet);
@@ -57,32 +54,23 @@ export function parse(buffer, ctx) {
                 }
                 throw new MalformedDicom(`Got ${next} but expected ${ITEM_END_TAG} or ${SEQ_END_TAG}`);
             }
-            // [DECODING] STAGE 2: VR
-            decodeVRAndMoveCursor(buffer, cursor, el, ctx);
-            // [DECODING] STAGE 3: LENGTH
-            const wasUndefinedLengthSqRecursion = decodeLenMoveAndCursor(el, cursor, buffer, ctx); // may or may not trigger recursion
-            // [CTRL FLOW] STAGE 3.5: Move parser focus to the next tag after SQ
-            if (wasUndefinedLengthSqRecursion) {
-                continue; // otherwise will try to decode a VR below in a byte position where a VR isn't.
+            decodeVRAndMoveCursor(buffer, cursor, el, ctx); // S2
+            const wasUndefSqRecursion = decodeLenMoveAndCursor(el, cursor, buffer, ctx); // S3 (may trigger recursion)
+            if (wasUndefSqRecursion) {
+                continue; // new el: next iteration
             }
-            // [DECODING] STAGE 4: VALUE
-            decodeValueAndMoveCursor(buffer, cursor, el, ctx);
-            // [DEBUGGING] STAGE 5: Logging
-            debugPrint(el);
-            // [DECODING] STAGE 6: Persist element to dataSet
+            decodeValueAndMoveCursor(buffer, cursor, el, ctx); // S4
             if (ctx.inSequence) {
-                console.log(`Adding ${el.tag} to itemDataSet: ${JSON.stringify(itemDataSet, null, 3)}`);
+                write(`Adding ${el.tag} to item: ${json(itemDataSet)}`, "DEBUG");
                 itemDataSet[el.tag] = el;
             }
             else {
                 ctx.dataSet[el.tag] = el; // top level dataset
             }
-            // [CTRL FLOW] STAGE 7: Handle if we've reached the end of a defined length SQ
-            if (ctx.inSequence &&
-                ctx.currSqLen !== 4294967295 &&
-                ctx.sequenceBytesTraversed === ctx.currSqLen) {
+            debugPrint(el);
+            if (isEndOfDefinedLengthSequence(ctx)) {
                 handleDefLenSqEnd(ctx, el, itemDataSet);
-                return; // recursive base case
+                return;
             }
         }
         catch (error) {
@@ -95,6 +83,11 @@ export function parse(buffer, ctx) {
             };
         }
     }
+}
+function isEndOfDefinedLengthSequence(ctx) {
+    return (ctx.inSequence &&
+        ctx.currSqLen !== MAX_LEN_UINT_32 &&
+        ctx.sequenceBytesTraversed === ctx.currSqLen);
 }
 /**
  * Determine if the current tag is the delimiter for the end of a defined length sequence
@@ -114,8 +107,9 @@ function handleDefLenSqEnd(ctx, el, itemDataSet) {
     }
     write(`End of defined length SQ: ${ctx.currSqTag}, ${ctx.currSqLen}. Final element decoded was ${el.tag} - ${el.name} - "${el.value}"`, "DEBUG");
     ctx.dataSet[ctx.currSqTag].items.push({
-        // copy, don't pass by ref - otherwise previous items will be overwritten unless a new object
-        // was created in between, e.g. if the the buffer was truncated and we had to stitch it and
+        // copy, don't pass by ref - otherwise previous items will be
+        // overwritten unless a new object was created in between, e.g.
+        // if the the buffer was truncated and we had to stitch it and
         // re-parse the tag with the requisite bytes.
         ...itemDataSet,
     });
@@ -176,13 +170,11 @@ function handleEndOfItem(ctx, cursor, buffer, itemDataSet) {
  * @returns Element
  */
 function newSeqElement(ctx) {
-    const name = TagDictByHex[ctx.currSqTag?.toUpperCase()]?.["name"] ?? "Private or Unrecognised Tag";
     return {
         tag: ctx.currSqTag,
-        name,
+        name: TagDictByHex[ctx.currSqTag?.toUpperCase()]?.["name"] ?? "Private or Unrecognised Tag",
+        length: null, // TODO use traversedSQbytes to infer length for undefined length SQs
         vr: VR.SQ,
-        length: null, // TODO tally while parsing for undefined length SQs
-        value: null,
         items: [],
     };
 }
@@ -200,7 +192,7 @@ function newCursor(pos = 0) {
         },
         retreat: function (n) {
             if (this.pos - n < 0) {
-                throw new BufferBoundary(`Cursor retreat would go below buffer length`);
+                throw new BufferBoundary(`Cursor retreat (${n}) would go below 0.`);
             }
             this.pos -= n;
         },
@@ -310,9 +302,7 @@ function handleEmptyUndefinedLengthSQ(ctx, seqBuffer, seqCursor) {
 /**
  * This handles recursive parsing of nested items and their datasets according
  * to the DICOM specification for the byte structures of sequenced VRs.
- *
  * WARN LIFO stack (for nesting SQs) unimplemented atm.
- *
  * dicom.nema.org/medical/dicom/current/output/chtml/part05/sect_7.5.html
  * @param seqBuffer
  * @param ctx
@@ -333,12 +323,11 @@ function handleSQ(buffer, ctx, el, parentCursor) {
         write(`0 items in this undefined-length SQ, adding empty SQ and resetting ctx`, "DEBUG");
         return handleEmptyUndefinedLengthSQ(ctx, seqBuffer, seqCursor);
     }
-    // All SQs should start with an item tag, check for conformity:
+    // All SQs should start with an item element
     if (!isItemStart(ctx, tag)) {
         throw new MalformedDicom(`Expected ${ITEM_START_TAG} but got ${tag}, in sequence: ${el.tag})`);
     }
-    // Length bytes of the item are irrelevant as we're going to handle using
-    // delimiter tags for defined and undefined length items. So just walk past.
+    // len is not needed as we're using item delimiters TODO detect and throw 'unhandled' if item len is undefined
     seqCursor.walk(ByteLen.UINT_32, ctx, seqBuffer);
     // Recurse into parse(), with context flags set to indicate we're in a SQ. Start with the
     // first item's dataset and let parse() continue until one of two bases cases are hit:
@@ -437,7 +426,7 @@ function decodeTagAndMoveCursor(buffer, cursor, el, ctx) {
     const end = cursor.pos + ByteLen.TAG_NUM;
     const tagBuffer = buffer.subarray(start, end);
     el.tag = decodeTagNum(tagBuffer);
-    el.name = TagDictByHex[el.tag.toUpperCase()]?.["name"] ?? "Private or Unrecognised Tag";
+    el.name = getTagName(el.tag);
     cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
 }
 /**
@@ -575,7 +564,7 @@ export function UNIMPLEMENTED_VR_PARSING(vr) {
  * @param tsn
  * @returns boolean
  */
-function useLE(tsn) {
+export function useLE(tsn) {
     return [
         TransferSyntaxUid.ExplicitVRLittleEndian,
         TransferSyntaxUid.ImplicitVRLittleEndian,

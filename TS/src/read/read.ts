@@ -48,7 +48,7 @@ const SMALL_BUF_ADVISORY = `PER_BUF_MAX is less than ${SMALL_BUF_THRESHOLD} byte
  */
 export function streamParse(
    path: string,
-   cfg: Global.Config = null,
+   cfg: Global.Cfg = null,
    skipPixelData = true
 ): Promise<DataSet> {
    const ctx = ctxFactory(path, cfg, true, skipPixelData);

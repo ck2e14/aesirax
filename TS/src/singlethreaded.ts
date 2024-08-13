@@ -8,7 +8,8 @@ import { findDICOM, prettyPrintMap } from "./utilts.js";
  * @param cfg
  * @returns void
  */
-export async function singleTheaded(cfg: Global.Config) {
+
+export async function singleTheaded(cfg: Global.Cfg) {
    const start = performance.now();
    const paths = findDICOM(cfg.targetDir);
    const dataSets = [];

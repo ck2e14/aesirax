@@ -1,5 +1,5 @@
 declare namespace Global {
-   type Config = {
+   type Cfg = {
       verbose: boolean;
       printToStdOut: boolean;
       debug: boolean;
