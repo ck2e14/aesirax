@@ -2,8 +2,8 @@ import { write } from "../logging/logQ.js";
 import { DicomErrorType, TransferSyntaxUid } from "../globalEnums.js";
 import { createReadStream } from "fs";
 import { DicomError, UnsupportedTSN } from "../error/errors.js";
-import { validateHeader, validatePreamble, parse } from "../parse/parse.js";
 import { dataSetLength } from "../utilts.js";
+import { validateHeader, validatePreamble, parse, } from "../parse/parse.js";
 const SMALL_BUF_THRESHOLD = 1024;
 const SMALL_BUF_ADVISORY = `PER_BUF_MAX is less than ${SMALL_BUF_THRESHOLD} bytes. This will work but isn't ideal for I/O efficiency`;
 const HEADER_END = 132;
@@ -146,9 +146,13 @@ export function ctxFactory(path, cfg = null, assumeDefaults = true, skipPixels =
         skipPixelData: skipPixels,
         transferSyntaxUid: TransferSyntaxUid.ExplicitVRLittleEndian,
         usingLE: true,
-        inSequence: false,
-        currSqTag: null,
-        sequenceBytesTraversed: null,
+        // inSequence: false,
+        // currSqTag: null,
+        // sequenceBytesTraversed: null,
+        // LIFO SUPPORT BELOW
+        inSequences: [],
+        sqLens: [],
+        sqBytesTraversed: []
     };
 }
 //# sourceMappingURL=read.js.map
