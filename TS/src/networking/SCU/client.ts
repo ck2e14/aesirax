@@ -1,51 +1,65 @@
 import net from "net";
 
-// TODO - make the 'variable items' property, which needs:
-// 1 Application Context DONE
-// 1-n Presentation Context Items:
-// 1 Uesr Information Item:
-
 // Writing my first A-ASSOCIATE-RQ from scratch
-// Implementing the specicifation according to https://dicom.nema.org/medical/dicom/current/output/chtml/part08/sect_9.3.2.html
+// Implementing the specicifation according to:
+// dicom.nema.org/medical/dicom/current/output/chtml/part08/sect_9.3.2.html
 
+const MAX_AET_LEN = 16;
+
+/**
+ * Main function to run the playground client.
+ */
 main();
 function main() {
-   const msgPart1 = {
+   // TODO - make the 'variable items' property, which needs:
+   // - 1 Application Context DONE
+   // - 1-n Presentation Context Items:
+   // - 1 Uesr Information Item:
+   const A_ASSOCIATE_RQ = _A_ASSOCIATE_RQ();
+
+   sendTcpRequest("127.0.0.1", 8888, A_ASSOCIATE_RQ, (response: any, error: any) => {
+      if (error) {
+         console.error("Error during communication:", error);
+      } else {
+         console.log("Server responded:", response);
+      }
+   });
+}
+
+/**
+ * Creates a buffer representing an  A-ASSOCIATE-RQ message.
+ * @returns Buffer
+ */
+function _A_ASSOCIATE_RQ(): Buffer {
+   const P1 = {
       pduType: Buffer.alloc(1, 0x01),
       reserved1: Buffer.alloc(1, 0x00),
-      pduLength: Buffer.alloc(0),
+      pduLength: Buffer.alloc(4),
    };
 
-   const msgPart2 = {
+   const P2 = {
       pVersion: makeProtocolVersionBuffer(),
       reserved2: Buffer.alloc(2, 0x00),
-      calledAET: padAetRight("MY_SCP", 16),
-      callingAET: padAetRight("MY_SCU", 16),
+      calledAET: padAetRight("MY_SCP", MAX_AET_LEN),
+      callingAET: padAetRight("MY_SCU", MAX_AET_LEN),
       reserved3: Buffer.alloc(32, 0x00),
       variableItems: makeAppCtx(),
    };
 
-   // first build the buffer from part 2 so we know its length
-   const bufPart2 = Buffer.concat(Object.values(msgPart2));
+   const bufPart2 = Buffer.concat(Object.values(P2)); // P2 first to get len
 
-   // now add the length into part1
-   const pduLength = Buffer.alloc(4);
-   pduLength.writeUInt32BE(bufPart2.length, 0);
-   msgPart1.pduLength = pduLength;
+   P1.pduLength.writeUInt32BE(bufPart2.length, 0); // now add the length into part1
 
-   // now create create a buffer from part 1 and concat with our part 2
-   const bufPart1 = Buffer.concat(Object.values(msgPart1));
-   const totalMsg = Buffer.concat([bufPart1, bufPart2]);
-   console.log(totalMsg);
+   const bufPart1 = Buffer.concat(Object.values(P1));
+   const totalMsg = Buffer.concat([bufPart1, bufPart2]); // now concat P1 & P2
 
-   sendTcpRequest("127.0.0.1", 8888, totalMsg, (response: any, error: any) => {
-      if (error) {
-         console.error("Error during communication:", error);
-      }
-      console.log("Server responded:", response);
-   });
+   return totalMsg;
 }
 
+/**
+ * Creates a buffer with the Application Context Item.
+ * @returns Buffer
+ */
 function makeAppCtx(): Buffer {
    const appCtx = {
       itemType: Buffer.alloc(1, 0x10),
@@ -67,12 +81,21 @@ function makeUserInfoItem(): Buffer {
    return;
 }
 
+/**
+ * Creates a buffer with the protocol version.
+ * @returns Buffer
+ */
 function makeProtocolVersionBuffer(): Buffer {
    const protocolVersion = Buffer.alloc(2);
    protocolVersion.writeUInt16BE(0x0001, 0);
    return protocolVersion;
 }
 
+/**
+ * Encodes a UID string into a DICOM UID format.
+ * @param uid
+ * @returns Buffer
+ */
 function encodeDicomUid(uid: string): Buffer {
    const components = uid.split(".");
    const delimiter = () => Buffer.from(".");
@@ -89,6 +112,13 @@ function encodeDicomUid(uid: string): Buffer {
    return buf; // dicom.nema.org/medical/dicom/current/output/chtml/part08/chapter_F.html
 }
 
+/**
+ * Create a buffer from string and padd with
+ * spacer bytes to the desired length (0x20)
+ * @param string
+ * @param len
+ * @returns Buffer
+ */
 function padAetRight(string: string, len: number): Buffer {
    let buf = Buffer.from(string);
 
