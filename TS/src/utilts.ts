@@ -1,5 +1,6 @@
 import { readdirSync, statSync } from "fs";
 import * as path from "path";
+import { DataSet } from "./parse/parse.js";
 
 export function mapToObj(map: Map<string, any>): any {
    const obj = {};
@@ -45,3 +46,7 @@ export function findDICOM(folder = "./", fileList = []) {
 }
 
 export const json = (thing: any) => JSON.stringify(thing, null, 3);
+
+export function dataSetLength(dataSet: DataSet): number {
+   return Object.keys(dataSet).length;
+}

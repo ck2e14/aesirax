@@ -2,11 +2,11 @@ import { write } from "../logging/logQ.js";
 import { decodeTagNum } from "./tagNums.js";
 import { decodeValue, decodeVr } from "./valueDecoders.js";
 import { BufferBoundary, DicomError, MalformedDicom, UndefinedLength } from "../error/errors.js";
+import { dataSetLength, json } from "../utilts.js";
 import { ByteLen, DicomErrorType, TagDictByHex, TagDictByName, TransferSyntaxUid, VR, } from "../globalEnums.js";
-import { json } from "../utilts.js";
-export const DICOM_HEADER = "DICM";
+export const HEADER = "DICM";
 export const PREAMBLE_LENGTH = 128;
-export const DICOM_HEADER_START = PREAMBLE_LENGTH;
+export const HEADER_START = PREAMBLE_LENGTH;
 export const HEADER_END = PREAMBLE_LENGTH + 4;
 export const ITEM_START_TAG = TagDictByName.ItemStart.tag; // (fffe,e000)
 export const ITEM_END_TAG = TagDictByName.ItemEnd.tag; // (fffe,e00d)
@@ -18,10 +18,8 @@ export const MAX_LEN_UINT_32 = 4294967295;
  * Return a buffer containing the truncated tag if the buffer is incomplete.
  * This is used to allow on-the-fly parsing of DICOM files as they are read
  * and stitching together truncated tags that span multiple byteArrays.
- *
  * Implicit VR is unsupported.
  * TODO implement LIFO stack for nested sequencing
- *
  * @param buffer - Bytes[] from a DICOM file
  * @param ctx - Ctx
  * @returns TruncatedBuffer
@@ -44,10 +42,10 @@ export function parse(buffer, ctx) {
                 write(`End of item in SQ: ${ctx.currSqTag}`, "DEBUG");
                 const next = handleEndOfItem(ctx, cursor, buffer, itemDataSet);
                 if (next === ITEM_START_TAG) {
-                    write(`Starting a new item in SQ: ${ctx.currSqTag}`, "DEBUG");
-                    continue; // Move parser's focus to the next item dataSet and its first element
+                    write(`End of item in SQ: ${ctx.currSqTag}`, "DEBUG"); // Move parser's focus to the next item dataSet and its first element
+                    continue;
                 }
-                if (next === SEQ_END_TAG) {
+                else if (next === SEQ_END_TAG) {
                     write(`End of sequence: ${ctx.currSqTag}`, "DEBUG");
                     ctx.sequenceBytesTraversed = cursor.pos; // to sync recursive cursor with parent cursor
                     return; // recursive base case
@@ -72,15 +70,15 @@ export function parse(buffer, ctx) {
                 handleDefLenSqEnd(ctx, el, itemDataSet);
                 return;
             }
+            if (valueIsTruncated(buffer, cursor.pos, el.length)) {
+                return {
+                    buf: buffer.subarray(lastTagStart, buffer.length),
+                    truncated: true,
+                };
+            }
         }
         catch (error) {
             return errorPathway(error, buffer, lastTagStart, el.tag);
-        }
-        if (valueIsTruncated(buffer, cursor.pos, el.length)) {
-            return {
-                returnReason: "truncation",
-                truncatedBuffer: buffer.subarray(lastTagStart, buffer.length),
-            };
         }
     }
 }
@@ -117,11 +115,6 @@ function handleDefLenSqEnd(ctx, el, itemDataSet) {
 }
 /**
  * Determine if the current tag is the delimiter for the end of an item data set.
- * WARN OK here detection needs to work for defined length SQs as well
- * which means we need to:
- *    1 - have saved the SQ length to ctx when that was detected before the recursion
- *    2 - in this function, check for whether we've reached it which I think would be
- *        ctx.seqBytesTraversed === sq length?? maybe sq length -8?
  * @param ctx
  * @param el
  * @returns boolean
@@ -148,7 +141,7 @@ function isItemStart(ctx, tag) {
     return ctx.inSequence && tag === ITEM_START_TAG;
 }
 function handleEndOfItem(ctx, cursor, buffer, itemDataSet) {
-    const nTags = Object.keys(itemDataSet).length;
+    const nTags = dataSetLength(itemDataSet);
     write(`Handling end of a dataSet item in SQ: ${ctx.currSqTag}. Storing ${nTags} items`, "DEBUG");
     ctx.dataSet[ctx.currSqTag].items.push({
         // important to copy by value not reference here else the next item, unless stitching coincidentally
@@ -182,18 +175,15 @@ function newCursor(pos = 0) {
     return {
         pos: pos,
         walk: function (n, ctx, buffer) {
-            if (buffer && this.pos + n > buffer.length) {
+            if (buffer && this.pos + n > buffer.length)
                 throw new BufferBoundary(`Cursor walk would exceed buffer length`);
-            }
-            if (ctx.inSequence) {
+            if (ctx.inSequence)
                 ctx.sequenceBytesTraversed += n;
-            }
             this.pos += n;
         },
         retreat: function (n) {
-            if (this.pos - n < 0) {
+            if (this.pos - n < 0)
                 throw new BufferBoundary(`Cursor retreat (${n}) would go below 0.`);
-            }
             this.pos -= n;
         },
     };
@@ -205,7 +195,6 @@ function newCursor(pos = 0) {
  * streamed buffers' boundaries, parsing error is for when the parser is unable
  * to handle for some other reason.
  * Used in parse().
- *
  * @param error
  * @param buffer
  * @param lastTagStart
@@ -225,8 +214,8 @@ function errorPathway(error, buffer, lastTagStart, tag) {
     if (error instanceof BufferBoundary || error instanceof RangeError) {
         write(`Tag is split across buffer boundary ${tag ?? ""}`, "DEBUG");
         return {
-            returnReason: "truncation",
-            truncatedBuffer: buffer.subarray(lastTagStart, buffer.length),
+            truncated: true,
+            buf: buffer.subarray(lastTagStart, buffer.length),
         };
     }
 }
@@ -334,7 +323,7 @@ function handleSQ(buffer, ctx, el, parentCursor) {
     //  (1) the seqBuffer is truncated
     //  (2) the sequence has been fully parsed
     const firstItemDataSet = seqBuffer.subarray(seqCursor.pos, seqBuffer.length);
-    if (parse(firstItemDataSet, ctx)?.returnReason === "truncation") {
+    if (parse(firstItemDataSet, ctx)?.truncated) {
         write(`SQ ${ctx.currSqTag} is split across buffer boundary`, "DEBUG");
         ctx.dataSet[ctx.currSqTag].items.pop(); // pop to avoid duplication when re-entering parse() after stitching
         throw new BufferBoundary(`SQ is split across buffer boundary`); // trigger stitching
@@ -504,9 +493,9 @@ export function validatePreamble(buffer) {
  */
 export function validateHeader(buffer) {
     const strAtHeaderPosition = buffer //
-        .subarray(DICOM_HEADER_START, HEADER_END)
+        .subarray(HEADER_START, HEADER_END)
         .toString();
-    if (strAtHeaderPosition !== DICOM_HEADER) {
+    if (strAtHeaderPosition !== HEADER) {
         throw new DicomError({
             errorType: DicomErrorType.VALIDATE,
             message: `DICOM file does not contain 'DICM' at bytes 128-132. Found: ${strAtHeaderPosition}`,
