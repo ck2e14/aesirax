@@ -5,6 +5,8 @@
  * return a Buffer.alloc(0) which will fit into the existing strcuture I think.
 
 
+VR conformity validation
+
 
 MAKE INTO A CLI TO SPECIFY OPTIONS/OVERRIDES
 

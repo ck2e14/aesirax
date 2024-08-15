@@ -3,8 +3,15 @@ import { DicomErrorType, TransferSyntaxUid } from "../globalEnums.js";
 import { createReadStream } from "fs";
 import { TagStr } from "../parse/tagNums.js";
 import { DicomError, UnsupportedTSN } from "../error/errors.js";
-import { DataSet, validateHeader, validatePreamble, parse, ParseResult } from "../parse/parse.js";
 import { dataSetLength } from "../utilts.js";
+import {
+   Element,
+   DataSet,
+   validateHeader,
+   validatePreamble,
+   parse,
+   ParseResult,
+} from "../parse/parse.js";
 
 export type Ctx = {
    first: boolean;
@@ -19,10 +26,14 @@ export type Ctx = {
    skipPixelData: boolean;
    transferSyntaxUid: TransferSyntaxUid;
    usingLE: boolean;
-   inSequence?: boolean;
+   inSequence?: boolean; // remove this
+   sequenceBytesTraversed?: number; // remove this
+   // LIFO SUPPORT NOW BELOW
+   inSequences?: Element[];
+   sqLens?: number[];
    currSqTag?: string;
    currSqLen?: number;
-   sequenceBytesTraversed?: number;
+   sqBytesTraversed: number[];
 };
 
 const SMALL_BUF_THRESHOLD = 1024;
@@ -193,8 +204,12 @@ export function ctxFactory(
       skipPixelData: skipPixels,
       transferSyntaxUid: TransferSyntaxUid.ExplicitVRLittleEndian,
       usingLE: true,
-      inSequence: false,
-      currSqTag: null,
-      sequenceBytesTraversed: null,
+      // inSequence: false,
+      // currSqTag: null,
+      // sequenceBytesTraversed: null,
+      // LIFO SUPPORT BELOW
+      inSequences: [],
+      sqLens: [],
+      sqBytesTraversed:[]
    };
 }

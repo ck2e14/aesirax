@@ -11,6 +11,7 @@ export enum TransferSyntaxUid {
    ExplicitVRLittleEndian = "1.2.840.10008.1.2.1",
    DeflatedExplicitVRLittleEndian = "1.2.840.10008.1.2.1.99",
    JPEG2000Lossless = "1.2.840.10008.1.2.4.90",
+   JPEG2000ImageCompression = "1.2.840.10008.1.2.4.91",
 }
 
 export const TagDictByName = {
