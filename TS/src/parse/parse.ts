@@ -113,7 +113,7 @@ export function parse(buffer: Buffer, ctx: Ctx): TruncEl {
             return buffer.subarray(lastTagStart, buffer.length);
          }
       } catch (error) {
-         return errorPathway(error, ctx, buffer, lastTagStart, el.tag);
+         return errorPathway(error, buffer, lastTagStart, el.tag);
       }
    }
 }
