@@ -11,6 +11,7 @@ import {
    validatePreamble,
    parse,
    ParseResult,
+   TruncatedBuffer,
 } from "../parse/parse.js";
 
 export type Ctx = {
@@ -29,7 +30,7 @@ export type Ctx = {
    inSequence?: boolean; // remove this
    sequenceBytesTraversed?: number; // remove this
    // LIFO SUPPORT NOW BELOW
-   inSequences?: Element[];
+   sqStack?: Element[];
    sqLens?: number[];
    currSqTag?: string;
    currSqLen?: number;
@@ -73,10 +74,10 @@ export function streamParse(
       const stream = createReadStream(path, { highWaterMark: ctx.bufWatermark });
 
       stream.on("data", (currBytes: Buffer) => {
-         write(`Received ${currBytes.length} bytes from ${path}`, "DEBUG");
+         write(`Streamed ${currBytes.length} bytes to memory from ${path}`, "DEBUG");
          ctx.nByteArray = ctx.nByteArray + 1;
          ctx.totalBytes = ctx.totalBytes + currBytes.length;
-         ctx.truncatedBuffer = handleDicomBytes(ctx, currBytes)?.buf ?? Buffer.alloc(0);
+         ctx.truncatedBuffer = handleDicomBytes(ctx, currBytes);
       });
 
       stream.on("end", () => {
@@ -110,7 +111,7 @@ function isSupportedTSN(uid: string): uid is TransferSyntaxUid {
  * @param currBytes
  * @returns TruncatedBuffer (byte[])
  */
-export function handleDicomBytes(ctx: Ctx, currBytes: Buffer): ParseResult {
+export function handleDicomBytes(ctx: Ctx, currBytes: Buffer): TruncatedBuffer {
    write(`Reading buffer (#${ctx.nByteArray} - ${currBytes.length} bytes) (${ctx.path})`, "DEBUG");
    return ctx.first //
       ? handleFirstBuffer(ctx, currBytes)
@@ -127,7 +128,7 @@ export function handleDicomBytes(ctx: Ctx, currBytes: Buffer): ParseResult {
  * @throws DicomError
  * @returns TruncatedBuffer (byte[])
  */
-function handleFirstBuffer(ctx: Ctx, buffer: Buffer): ParseResult {
+function handleFirstBuffer(ctx: Ctx, buffer: Buffer): TruncatedBuffer {
    validatePreamble(buffer); // throws if not void
    validateHeader(buffer); // throws if not void
 
@@ -208,8 +209,8 @@ export function ctxFactory(
       // currSqTag: null,
       // sequenceBytesTraversed: null,
       // LIFO SUPPORT BELOW
-      inSequences: [],
+      sqStack: [],
       sqLens: [],
-      sqBytesTraversed:[]
+      sqBytesTraversed: [],
    };
 }

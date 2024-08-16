@@ -32,10 +32,10 @@ export function streamParse(path, cfg = null, skipPixelData = true) {
     return new Promise((resolve, reject) => {
         const stream = createReadStream(path, { highWaterMark: ctx.bufWatermark });
         stream.on("data", (currBytes) => {
-            write(`Received ${currBytes.length} bytes from ${path}`, "DEBUG");
+            write(`Streamed ${currBytes.length} bytes to memory from ${path}`, "DEBUG");
             ctx.nByteArray = ctx.nByteArray + 1;
             ctx.totalBytes = ctx.totalBytes + currBytes.length;
-            ctx.truncatedBuffer = handleDicomBytes(ctx, currBytes)?.buf ?? Buffer.alloc(0);
+            ctx.truncatedBuffer = handleDicomBytes(ctx, currBytes);
         });
         stream.on("end", () => {
             write(`Stream end: read a total of ${ctx.totalBytes} bytes from ${path}`, "DEBUG");
@@ -150,9 +150,9 @@ export function ctxFactory(path, cfg = null, assumeDefaults = true, skipPixels =
         // currSqTag: null,
         // sequenceBytesTraversed: null,
         // LIFO SUPPORT BELOW
-        inSequences: [],
+        sqStack: [],
         sqLens: [],
-        sqBytesTraversed: []
+        sqBytesTraversed: [],
     };
 }
 //# sourceMappingURL=read.js.map
