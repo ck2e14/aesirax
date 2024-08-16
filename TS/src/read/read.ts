@@ -26,13 +26,8 @@ export type Ctx = {
    skipPixelData: boolean;
    transferSyntaxUid: TransferSyntaxUid;
    usingLE: boolean;
-   inSequence?: boolean; // remove this
-   sequenceBytesTraversed?: number; // remove this
-   // LIFO SUPPORT NOW BELOW
-   sqStack?: Element[];
-   sqLens?: number[];
-   currSqTag?: string;
-   currSqLen?: number;
+   sqStack: Element[];
+   sqLens: number[];
    sqBytesTraversed: number[];
 };
 
@@ -204,10 +199,6 @@ export function ctxFactory(
       skipPixelData: skipPixels,
       transferSyntaxUid: TransferSyntaxUid.ExplicitVRLittleEndian,
       usingLE: true,
-      // inSequence: false,
-      // currSqTag: null,
-      // sequenceBytesTraversed: null,
-      // LIFO SUPPORT BELOW
       sqStack: [],
       sqLens: [],
       sqBytesTraversed: [],

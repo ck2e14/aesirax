@@ -39,6 +39,7 @@ export const headerEnd = premableLen + 4;
 export const itemStartTag = TagDictByName.ItemStart.tag; // (fffe,e000)
 export const itemEndTag = TagDictByName.ItemEnd.tag; // (fffe,e00d)
 export const sqEndTag = TagDictByName.SequenceEnd.tag; // (fffe,e0dd)
+export const fragStartTag = "(fffe,e000)";
 
 /**
  * Decode and serialise elements contained in a buffered subset
@@ -108,7 +109,7 @@ export function parse(buffer: Buffer, ctx: Ctx): TruncEl {
             return; // defined length SQ recursion base case
          }
 
-         if (valueIsTruncated(buffer, cursor.pos, el.length)) {
+         if (valueIsTruncated(buffer, cursor, el.length)) {
             return buffer.subarray(lastTagStart, buffer.length);
          }
       } catch (error) {
@@ -141,7 +142,7 @@ function isDefLenSqEnd(ctx: Ctx) {
  */
 function handleDefLenSqEnd(ctx: Ctx, el: Element) {
    const { sq, bytes } = stacks(ctx);
-   if (ctx.sequenceBytesTraversed > sq.length) {
+   if (bytes > sq.length) {
       throw new MalformedDicom(
          `Traversed more bytes than the defined length of the SQ. ` +
             `This is a bug or malformed DICOM. ` +
@@ -307,7 +308,6 @@ function errorPathway(
    }
 
    if (error instanceof BufferBoundary || error instanceof RangeError) {
-      console.log("here", printSqCtx(ctx));
       write(`Tag is split across buffer boundary ${tag ?? ""}`, "DEBUG");
       return buffer.subarray(lastTagStart, buffer.length);
    }
@@ -344,7 +344,7 @@ function debugPrint(el: Element, cursor: Cursor, buffer: Buffer) {
  * @param Ctx
  */
 function decodeValueAndMoveCursor(buffer: Buffer, cursor: Cursor, el: Element, ctx: Ctx) {
-   if (valueIsTruncated(buffer, cursor.pos, el.length)) {
+   if (valueIsTruncated(buffer, cursor, el.length)) {
       throw new BufferBoundary(`Tag ${el.tag} is split across buffer boundary`);
    }
 
@@ -361,11 +361,9 @@ function decodeValueAndMoveCursor(buffer: Buffer, cursor: Cursor, el: Element, c
  * @param ctx
  */
 function removeSqFromStack(ctx: Ctx) {
-   console.log(`MEH?`, printSqCtx(ctx));
    ctx.sqLens.pop();
    ctx.sqStack.pop();
    ctx.sqBytesTraversed.pop();
-   console.log("uhm?", printSqCtx(ctx));
 }
 
 /**
@@ -376,15 +374,15 @@ function removeSqFromStack(ctx: Ctx) {
  * @param seqBuffer
  * @param seqCursor
  */
-function handleEmptyUndefinedLengthSQ(ctx: Ctx, el, seqBuffer: Buffer, seqCursor: Cursor) {
+function handleEmptyUndefinedLengthSQ(ctx: Ctx, el: Element, seqBuffer: Buffer, seqCursor: Cursor) {
    removeSqFromStack(ctx); // TODO this has broken since implementing LIFO stacking
 
    const lengthBuffer = seqBuffer.subarray(seqCursor.pos, seqCursor.pos + ByteLen.LENGTH);
    const lengthInt = lengthBuffer.readUInt32LE(0);
 
-   if (lengthInt !== 0) {
-      throw new MalformedDicom(`Expected 0x00000000 but got ${lengthInt} in SQ: ${ctx.currSqTag})`);
-   }
+   // if (lengthInt !== 0) {
+   //    throw new MalformedDicom(`Expected 0x00000000 but got ${lengthInt} in SQ: ${ctx.currSqTag})`);
+   // }
 }
 
 /**
@@ -496,54 +494,99 @@ function getTagName(tag: string) {
  * @param buffer
  * @returns DidRecurse
  */
-type DidRecurse = boolean | void;
-function decodeLenMoveAndCursor(el: Element, cursor: Cursor, buffer: Buffer, ctx: Ctx): DidRecurse {
+type Continue = boolean | void;
+function decodeLenMoveAndCursor(el: Element, cursor: Cursor, buffer: Buffer, ctx: Ctx): Continue {
    // Check if a standard VR, wich is the simple case: save len, walk cursor, return control to parse()
    if (!isExtVr(el.vr)) {
       el.length = ctx.usingLE //
          ? buffer.readUInt16LE(cursor.pos)
-         : buffer.readUInt16BE(cursor.pos); // Std VR lens < 2 bytes (65,535)
+         : buffer.readUInt16BE(cursor.pos); // len < 2 bytes, (65,535)
       cursor.walk(ByteLen.UINT_16, ctx, buffer);
       return false;
    }
 
    // ----- Else handle the extended VR tags ------
 
-   cursor.walk(ByteLen.EXT_VR_RESERVED, ctx, buffer); // 2 reserved bytes - can ignore
-   decodeValueLength(el, buffer, cursor, ctx); // Ext VR tags' lens < 4 bytes (4,294,967,295)
+   cursor.walk(ByteLen.EXT_VR_RESERVED, ctx, buffer); // 2 unused bytes on all ext VRs - can ignore
+   decodeValueLength(el, buffer, cursor, ctx); // lens < 4 bytes, (4,294,967,295)
    cursor.walk(ByteLen.UINT_32, ctx, buffer);
 
-   if ((el.vr === VR.OB || el.vr === VR.OW) && el.length === maxUint32) {
-      writeFileSync("./interrupted.json", JSON.stringify(ctx.dataSet, null, 3));
-      throw new DicomError({
-         errorType: DicomErrorType.PARSING,
-         message:
-            `Not currently supporting undef length pixel data elements...` +
-            `${JSON.stringify(el)}. Saving progress so far but exiting parse early. `,
-      });
-   }
-
+   // ----- Handle OW ('Other Word') Pixel Data ------
    if (el.vr == VR.OW) {
-      console.log(`handling pixel data. cursor pos: ${cursor.pos}, buf len: ${buffer.length}`);
+      const tagBytes = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM);
+      const tag = decodeTagNum(tagBytes);
 
-      // TODO undefined pixel data len handling here. Basically want to walk the cursor up
-      // to the end, -4 bytes, of the current buffer, seeking a delimiter tag. Throw BufferBoundary
-      // if its not there or only partially there. Rinse and repeat until that's found.
-
-      let x = 0;
-
-      for (let i = cursor.pos; i < buffer.length - 4; i++) {
-         const bytes = buffer.subarray(i, 4);
-         const _bytes = decodeTagNum(bytes);
-         console.log(_bytes);
+      if (tag === fragStartTag) {
+         cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
+      } else {
+         throw new MalformedDicom(`Expected ${fragStartTag} but got ${tag}, in OW: ${el.tag})`);
       }
-   }
 
-   if (el.vr !== VR.SQ) {
-      return false;
+      const offSetTableLen = buffer
+         .subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM)
+         .readUint32LE(0);
+
+      if (offSetTableLen > 0) {
+         cursor.walk(offSetTableLen, ctx, buffer);
+         const offset = buffer.readUInt32LE(cursor.pos);
+         cursor.walk(ByteLen.UINT_32 + offset, ctx, buffer);
+      }
+
+      const nextTag = decodeTagNum(buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM));
+
+      if (nextTag !== itemStartTag) {
+         throw new MalformedDicom(`Expected ${itemStartTag} but got ${nextTag}, in OW: ${el.tag})`);
+      } else {
+         cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
+      }
+
+      const fragLen = buffer //
+         .subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM)
+         .readUint32LE(0);
+
+      if (valueIsTruncated(buffer, cursor, fragLen)) {
+         throw new BufferBoundary(`Fragmented OW tag is split across buffer boundary`);
+      }
+
+      if (ctx.skipPixelData) {
+         el.value = "SKIPPED PIXEL DATA PER CONFIGURATION OPTION";
+      } else {
+         el.value = buffer.subarray(cursor.pos, fragLen).toString("hex");
+      }
+
+      if (inSequence(ctx)) {
+         const { lastSqItem } = stacks(ctx);
+         lastSqItem[el.tag] = el;
+      } else {
+         ctx.dataSet[el.tag] = el;
+      }
+
+      cursor.walk(fragLen, ctx, buffer);
+
+      //  check for JPEG EOI
+      const eoiBytes = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM);
+      const eoi = decodeTagNum(eoiBytes);
+
+      if (eoi !== ("(5e9f,d9ff)" as TagStr)) {
+         throw new MalformedDicom(`Expected JPEG EOI but got ${eoi}`);
+      } else {
+         cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
+      }
+
+      const sqDelim = decodeTagNum(buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM));
+      if (sqDelim !== sqEndTag) {
+         throw new MalformedDicom(`Expected sq delim but got ${sqDelim}`);
+      } else {
+         cursor.walk(ByteLen.TAG_NUM + ByteLen.LENGTH, ctx, buffer); // len always 0x00, can ignore
+      }
+
+      return true;
    }
 
    // ----- SEQUENCE ELEMENT HANDLING BELOW -----
+   if (el.vr !== VR.SQ) {
+      return false;
+   }
 
    if (el.length === 0) {
       // (for defined len SQ's)
@@ -557,8 +600,7 @@ function decodeLenMoveAndCursor(el: Element, cursor: Cursor, buffer: Buffer, ctx
 
    if (el.vr === VR.SQ) {
       handleSQ(buffer, ctx, el, cursor); // recurse with context flags
-      removeSqFromStack(ctx); // fuck i broke something with the refactoring, it's not popping stuff or?
-      console.log(ctx.sqLens);
+      removeSqFromStack(ctx);
       return true;
    }
 }
@@ -653,8 +695,8 @@ function bytesLeft(buffer: Buffer, cursor: number): number {
  * @param elementLen
  * @returns boolean
  */
-function valueIsTruncated(buffer: Buffer, cursor: number, elementLen: number): boolean {
-   return elementLen > bytesLeft(buffer, cursor);
+function valueIsTruncated(buffer: Buffer, cursor: Cursor, elementLen: number): boolean {
+   return elementLen > bytesLeft(buffer, cursor.pos);
 }
 
 /**
