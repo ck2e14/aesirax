@@ -512,6 +512,7 @@ function decodeLenMoveAndCursor(el: Element, cursor: Cursor, buffer: Buffer, ctx
    cursor.walk(ByteLen.UINT_32, ctx, buffer);
 
    // ----- Handle OW ('Other Word') Pixel Data ------
+   // WARN currently assumes 1 fragment only.
    if (el.vr == VR.OW) {
       const tagBytes = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM);
       const tag = decodeTagNum(tagBytes);
