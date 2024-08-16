@@ -2,6 +2,7 @@ import { Worker } from "worker_threads";
 import { cpus } from "os";
 import { write } from "./logging/logQ.js";
 import { findDICOM } from "./utilts.js";
+import { appendFileSync, writeFileSync } from "fs";
 /**
  * Parse DICOM files using multiple threads
  * @param cfg
@@ -22,6 +23,10 @@ export async function multiThreaded(cfg) {
     const end = performance.now();
     write(`Parsed ${dataSets.length} datasets`, "INFO");
     write(`Time elapsed (minus end printing): ${end - start} ms`, "INFO");
+    writeFileSync(`${cfg.writeDir}/dataSets.json`, "");
+    for (let i = 0; i < dataSets.length; i++) {
+        appendFileSync(`${cfg.writeDir}/dataSets.json`, dataSets[i]);
+    }
     return workerPromises;
 }
 /**

@@ -12,6 +12,7 @@ export var TransferSyntaxUid;
     TransferSyntaxUid["DeflatedExplicitVRLittleEndian"] = "1.2.840.10008.1.2.1.99";
     TransferSyntaxUid["JPEG2000Lossless"] = "1.2.840.10008.1.2.4.90";
     TransferSyntaxUid["JPEG2000ImageCompression"] = "1.2.840.10008.1.2.4.91";
+    TransferSyntaxUid["JPEG2000NonhierarchicalFirstOrderPrediction"] = "1.2.840.10008.1.2.4.70";
 })(TransferSyntaxUid || (TransferSyntaxUid = {}));
 export const TagDictByName = {
     ItemStart: {

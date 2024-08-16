@@ -305,16 +305,18 @@ function convertElToSq(el) {
  */
 function handleSQ(buffer, ctx, el, parentCursor) {
     write(`Encountered a new SQ element ${el.tag}, ${el.name} at cursor pos ${parentCursor.pos}`, "DEBUG");
-    initNewSq(el, ctx);
+    initNewSqEl(el, ctx);
     const seqCursor = newCursor(0); // window the buffer from the known start of the SQ & create a new cursor to walk it
     const seqBuffer = buffer.subarray(parentCursor.pos, buffer.length);
     const tagBuffer = seqBuffer.subarray(seqCursor.pos, seqCursor.pos + ByteLen.TAG_NUM);
     const tag = decodeTagNum(tagBuffer);
     seqCursor.walk(ByteLen.TAG_NUM, ctx, seqBuffer); // walk past the tag bytes
+    // 0 len, undefined length SQ
     if (isSeqEnd(ctx, tag)) {
-        // TODO fix this since LIFO stacking
-        write(`No items in this undefined-length SQ, adding empty SQ and resetting ctx`, "DEBUG");
-        return handleEmptyUndefinedLengthSQ(ctx, el, seqBuffer, seqCursor);
+        seqCursor.walk(ByteLen.VR + ByteLen.EXT_VR_RESERVED, ctx, seqBuffer); // no interest in these bytes
+        stacks(ctx).sq.items.pop(); // remove empty item dataset from when init'd the SQ
+        parentCursor.sync(ctx, buffer);
+        return;
     }
     else if (!isItemStart(ctx, tag)) {
         throw new MalformedDicom(`Expected ${itemStartTag} but got ${tag}, in SQ: ${el.tag})`);
@@ -335,7 +337,7 @@ function handleSQ(buffer, ctx, el, parentCursor) {
  * @param el
  * @param ctx
  */
-function initNewSq(el, ctx) {
+function initNewSqEl(el, ctx) {
     const newSq = convertElToSq(el);
     if (inSequence(ctx)) {
         stacks(ctx).lastSqItem[newSq.tag] = newSq; // else add new SQ to last item of current SQ nesting
@@ -365,6 +367,74 @@ function getTagName(tag) {
     return (TagDictByHex[tag?.toUpperCase()]?.["name"] ?? //
         "Private or Unrecognised Tag");
 }
+/**
+ * Handle the OW ('Other Word') Pixel Data VR.
+ * WARN currently assumes 1 fragment only.
+ * @param ctx
+ * @param el
+ * @param cursor
+ * @param buffer
+ */
+function handlePixelData(ctx, el, cursor, buffer) {
+    const tagBytes = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM);
+    const tag = decodeTagNum(tagBytes);
+    if (tag === fragStartTag) {
+        cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
+    }
+    else {
+        throw new MalformedDicom(`Expected ${fragStartTag} but got ${tag}, in OW: ${el.tag})`);
+    }
+    const offSetTableLen = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM).readUint32LE(0);
+    if (offSetTableLen > 0) {
+        cursor.walk(offSetTableLen, ctx, buffer);
+        const offset = buffer.readUInt32LE(cursor.pos);
+        cursor.walk(ByteLen.UINT_32 + offset, ctx, buffer);
+    }
+    const nextTag = decodeTagNum(buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM));
+    if (nextTag !== itemStartTag) {
+        throw new MalformedDicom(`Expected ${itemStartTag} but got ${nextTag}, in OW: ${el.tag})`);
+    }
+    else {
+        cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
+    }
+    const fragLen = buffer //
+        .subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM)
+        .readUint32LE(0);
+    if (valueIsTruncated(buffer, cursor, fragLen)) {
+        throw new BufferBoundary(`Fragmented OW tag is split across buffer boundary`);
+    }
+    if (ctx.skipPixelData) {
+        el.value = "SKIPPED PIXEL DATA PER CONFIGURATION OPTION";
+    }
+    else {
+        el.value = buffer.subarray(cursor.pos, fragLen).toString("hex");
+    }
+    if (inSequence(ctx)) {
+        const { lastSqItem } = stacks(ctx);
+        lastSqItem[el.tag] = el;
+    }
+    else {
+        ctx.dataSet[el.tag] = el;
+    }
+    cursor.walk(fragLen, ctx, buffer);
+    //  check for JPEG EOI
+    const eoiBytes = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM);
+    const eoi = decodeTagNum(eoiBytes);
+    if (eoi !== "(5e9f,d9ff)") {
+        throw new MalformedDicom(`Expected JPEG EOI but got ${eoi}`);
+    }
+    else {
+        cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
+    }
+    const sqDelim = decodeTagNum(buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM));
+    if (sqDelim !== sqEndTag) {
+        throw new MalformedDicom(`Expected sq delim but got ${sqDelim}`);
+    }
+    else {
+        cursor.walk(ByteLen.TAG_NUM + ByteLen.LENGTH, ctx, buffer); // len always 0x00, can ignore
+    }
+    return true;
+}
 function decodeLenMoveAndCursor(el, cursor, buffer, ctx) {
     // Check if a standard VR, wich is the simple case: save len, walk cursor, return control to parse()
     if (!isExtVr(el.vr)) {
@@ -378,83 +448,32 @@ function decodeLenMoveAndCursor(el, cursor, buffer, ctx) {
     cursor.walk(ByteLen.EXT_VR_RESERVED, ctx, buffer); // 2 unused bytes on all ext VRs - can ignore
     decodeValueLength(el, buffer, cursor, ctx); // lens < 4 bytes, (4,294,967,295)
     cursor.walk(ByteLen.UINT_32, ctx, buffer);
+    // if (el.vr === VR.OB) {
+    //    throw new DicomError({
+    //       errorType: DicomErrorType.PARSING,
+    //       message: `OB VR is not supported in this version of the parser.`,
+    //    });
+    // }
     // ----- Handle OW ('Other Word') Pixel Data ------
-    // WARN currently assumes 1 fragment only.
+    // WARN currently assumes 1 fragment only. WARN not supporting non fragmented OB (e.g. in file meta info)
     if (el.vr == VR.OW) {
-        const tagBytes = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM);
-        const tag = decodeTagNum(tagBytes);
-        if (tag === fragStartTag) {
-            cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
-        }
-        else {
-            throw new MalformedDicom(`Expected ${fragStartTag} but got ${tag}, in OW: ${el.tag})`);
-        }
-        const offSetTableLen = buffer
-            .subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM)
-            .readUint32LE(0);
-        if (offSetTableLen > 0) {
-            cursor.walk(offSetTableLen, ctx, buffer);
-            const offset = buffer.readUInt32LE(cursor.pos);
-            cursor.walk(ByteLen.UINT_32 + offset, ctx, buffer);
-        }
-        const nextTag = decodeTagNum(buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM));
-        if (nextTag !== itemStartTag) {
-            throw new MalformedDicom(`Expected ${itemStartTag} but got ${nextTag}, in OW: ${el.tag})`);
-        }
-        else {
-            cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
-        }
-        const fragLen = buffer //
-            .subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM)
-            .readUint32LE(0);
-        if (valueIsTruncated(buffer, cursor, fragLen)) {
-            throw new BufferBoundary(`Fragmented OW tag is split across buffer boundary`);
-        }
-        if (ctx.skipPixelData) {
-            el.value = "SKIPPED PIXEL DATA PER CONFIGURATION OPTION";
-        }
-        else {
-            el.value = buffer.subarray(cursor.pos, fragLen).toString("hex");
-        }
-        if (inSequence(ctx)) {
-            const { lastSqItem } = stacks(ctx);
-            lastSqItem[el.tag] = el;
-        }
-        else {
-            ctx.dataSet[el.tag] = el;
-        }
-        cursor.walk(fragLen, ctx, buffer);
-        //  check for JPEG EOI
-        const eoiBytes = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM);
-        const eoi = decodeTagNum(eoiBytes);
-        if (eoi !== "(5e9f,d9ff)") {
-            throw new MalformedDicom(`Expected JPEG EOI but got ${eoi}`);
-        }
-        else {
-            cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
-        }
-        const sqDelim = decodeTagNum(buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM));
-        if (sqDelim !== sqEndTag) {
-            throw new MalformedDicom(`Expected sq delim but got ${sqDelim}`);
-        }
-        else {
-            cursor.walk(ByteLen.TAG_NUM + ByteLen.LENGTH, ctx, buffer); // len always 0x00, can ignore
-        }
+        handlePixelData(ctx, el, cursor, buffer);
         return true;
     }
     // ----- SEQUENCE ELEMENT HANDLING BELOW -----
     if (el.vr !== VR.SQ) {
         return false;
     }
+    //  *defined* len SQ's
     if (el.length === 0) {
-        // (for defined len SQ's)
         if (inSequence(ctx)) {
             ctx.dataSet[el.tag] = convertElToSq(el);
         }
         else {
             stacks(ctx).lastSqItem[el.tag] = convertElToSq(el);
         }
-        return false;
+        removeSqFromStack(ctx);
+        return true;
     }
     if (el.vr === VR.SQ) {
         handleSQ(buffer, ctx, el, cursor); // recurse with context flags
