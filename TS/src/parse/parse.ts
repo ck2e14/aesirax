@@ -291,13 +291,7 @@ function newCursor(pos = 0): Cursor {
  * @throws Error
  * @returns TruncEl
  */
-function errorPathway(
-   error: any,
-   ctx: Ctx,
-   buffer: Buffer,
-   lastTagStart: number,
-   tag?: TagStr
-): TruncEl {
+function errorPathway(error: any, buffer: Buffer, lastTagStart: number, tag?: TagStr): TruncEl {
    const partialled = [BufferBoundary, RangeError];
    const isUndefinedLength = error instanceof UndefinedLength;
    const parsingError = partialled.every(ex => !(error instanceof ex)); // not a truncation error but some unanticipated parsing error
@@ -375,6 +369,7 @@ function removeSqFromStack(ctx: Ctx) {
  * @param seqCursor
  */
 function handleEmptyUndefinedLengthSQ(ctx: Ctx, el: Element, seqBuffer: Buffer, seqCursor: Cursor) {
+   throw new Error("Function not implemented.");
    removeSqFromStack(ctx); // TODO this has broken since implementing LIFO stacking
 
    const lengthBuffer = seqBuffer.subarray(seqCursor.pos, seqCursor.pos + ByteLen.LENGTH);
@@ -497,7 +492,7 @@ function getTagName(tag: string) {
  * @param cursor
  * @param buffer
  */
-function handlePixelData(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer) {
+function handleOW(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer) {
    const tagBytes = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM);
    const tag = decodeTagNum(tagBytes);
 
@@ -601,7 +596,7 @@ function decodeLenMoveAndCursor(el: Element, cursor: Cursor, buffer: Buffer, ctx
    // ----- Handle OW ('Other Word') Pixel Data ------
    // WARN currently assumes 1 fragment only. WARN not supporting non fragmented OB (e.g. in file meta info)
    if (el.vr == VR.OW) {
-      handlePixelData(ctx, el, cursor, buffer);
+      handleOW(ctx, el, cursor, buffer);
       return true;
    }
 
