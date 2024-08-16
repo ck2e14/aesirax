@@ -3,8 +3,15 @@ import { DicomErrorType, TransferSyntaxUid } from "../globalEnums.js";
 import { createReadStream } from "fs";
 import { TagStr } from "../parse/tagNums.js";
 import { DicomError, UnsupportedTSN } from "../error/errors.js";
-import { DataSet, validateHeader, validatePreamble, parse, ParseResult } from "../parse/parse.js";
 import { dataSetLength } from "../utilts.js";
+import {
+   Element,
+   DataSet,
+   validateHeader,
+   validatePreamble,
+   parse,
+   TruncEl,
+} from "../parse/parse.js";
 
 export type Ctx = {
    first: boolean;
@@ -19,10 +26,9 @@ export type Ctx = {
    skipPixelData: boolean;
    transferSyntaxUid: TransferSyntaxUid;
    usingLE: boolean;
-   inSequence?: boolean;
-   currSqTag?: string;
-   currSqLen?: number;
-   sequenceBytesTraversed?: number;
+   sqStack: Element[];
+   sqLens: number[];
+   sqBytesTraversed: number[];
 };
 
 const SMALL_BUF_THRESHOLD = 1024;
@@ -62,10 +68,10 @@ export function streamParse(
       const stream = createReadStream(path, { highWaterMark: ctx.bufWatermark });
 
       stream.on("data", (currBytes: Buffer) => {
-         write(`Received ${currBytes.length} bytes from ${path}`, "DEBUG");
+         write(`Streamed ${currBytes.length} bytes to memory from ${path}`, "DEBUG");
          ctx.nByteArray = ctx.nByteArray + 1;
          ctx.totalBytes = ctx.totalBytes + currBytes.length;
-         ctx.truncatedBuffer = handleDicomBytes(ctx, currBytes)?.buf ?? Buffer.alloc(0);
+         ctx.truncatedBuffer = handleDicomBytes(ctx, currBytes);
       });
 
       stream.on("end", () => {
@@ -99,7 +105,7 @@ function isSupportedTSN(uid: string): uid is TransferSyntaxUid {
  * @param currBytes
  * @returns TruncatedBuffer (byte[])
  */
-export function handleDicomBytes(ctx: Ctx, currBytes: Buffer): ParseResult {
+export function handleDicomBytes(ctx: Ctx, currBytes: Buffer): TruncEl {
    write(`Reading buffer (#${ctx.nByteArray} - ${currBytes.length} bytes) (${ctx.path})`, "DEBUG");
    return ctx.first //
       ? handleFirstBuffer(ctx, currBytes)
@@ -116,7 +122,7 @@ export function handleDicomBytes(ctx: Ctx, currBytes: Buffer): ParseResult {
  * @throws DicomError
  * @returns TruncatedBuffer (byte[])
  */
-function handleFirstBuffer(ctx: Ctx, buffer: Buffer): ParseResult {
+function handleFirstBuffer(ctx: Ctx, buffer: Buffer): TruncEl {
    validatePreamble(buffer); // throws if not void
    validateHeader(buffer); // throws if not void
 
@@ -193,8 +199,8 @@ export function ctxFactory(
       skipPixelData: skipPixels,
       transferSyntaxUid: TransferSyntaxUid.ExplicitVRLittleEndian,
       usingLE: true,
-      inSequence: false,
-      currSqTag: null,
-      sequenceBytesTraversed: null,
+      sqStack: [],
+      sqLens: [],
+      sqBytesTraversed: [],
    };
 }
