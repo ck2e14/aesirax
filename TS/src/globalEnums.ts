@@ -99422,6 +99422,7 @@ export enum DicomErrorType {
 }
 
 export enum ByteLen {
+   LENGTH = 4,
    PREAMBLE = 128,
    HEADER = 4,
    TAG_NUM = 4,
