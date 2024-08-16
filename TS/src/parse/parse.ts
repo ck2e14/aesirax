@@ -89,9 +89,12 @@ export function parse(buffer: Buffer, ctx: Ctx): TruncEl {
 
          decodeVRAndMoveCursor(buffer, cursor, el, ctx);
 
-         const recursedSq = decodeLenMoveAndCursor(el, cursor, buffer, ctx); // may or may not cause SQ recursion. May want to refactor this.
-         if (recursedSq) {
-            continue; // move to next el following recursive exit from undefined length SQ
+         const cont = decodeLenMoveAndCursor(el, cursor, buffer, ctx); // may or may not cause SQ recursion. May want to refactor this.
+         if (cont) {
+            continue; // there are a few cases where we need to move onto the
+            //  next element because decodeLenMoveAndCursor() has managed
+            // things like recursive SQs or OW pixel data, and now control
+            // is returned to this frame and we need to parse a new element.
          }
 
          decodeValueAndMoveCursor(buffer, cursor, el, ctx);
