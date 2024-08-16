@@ -701,7 +701,7 @@
    "(0028,0002)": {
       "vr": "US",
       "tag": "(0028,0002)",
-      "value": "1",
+      "value": "256",
       "name": "SamplesPerPixel",
       "length": 2
    },
@@ -715,14 +715,14 @@
    "(0028,0010)": {
       "vr": "US",
       "tag": "(0028,0010)",
-      "value": "512",
+      "value": "2",
       "name": "Rows",
       "length": 2
    },
    "(0028,0011)": {
       "vr": "US",
       "tag": "(0028,0011)",
-      "value": "384",
+      "value": "32769",
       "name": "Columns",
       "length": 2
    },
@@ -736,21 +736,21 @@
    "(0028,0100)": {
       "vr": "US",
       "tag": "(0028,0100)",
-      "value": "16",
+      "value": "4096",
       "name": "BitsAllocated",
       "length": 2
    },
    "(0028,0101)": {
       "vr": "US",
       "tag": "(0028,0101)",
-      "value": "12",
+      "value": "3072",
       "name": "BitsStored",
       "length": 2
    },
    "(0028,0102)": {
       "vr": "US",
       "tag": "(0028,0102)",
-      "value": "11",
+      "value": "2816",
       "name": "HighBit",
       "length": 2
    },
@@ -764,14 +764,14 @@
    "(0028,0106)": {
       "vr": "US",
       "tag": "(0028,0106)",
-      "value": "6",
+      "value": "1536",
       "name": "SmallestImagePixelValue",
       "length": 2
    },
    "(0028,0107)": {
       "vr": "US",
       "tag": "(0028,0107)",
-      "value": "517",
+      "value": "1282",
       "name": "LargestImagePixelValue",
       "length": 2
    },

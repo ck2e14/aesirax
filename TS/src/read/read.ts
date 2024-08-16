@@ -10,8 +10,7 @@ import {
    validateHeader,
    validatePreamble,
    parse,
-   ParseResult,
-   TruncatedBuffer,
+   TruncEl,
 } from "../parse/parse.js";
 
 export type Ctx = {
@@ -111,7 +110,7 @@ function isSupportedTSN(uid: string): uid is TransferSyntaxUid {
  * @param currBytes
  * @returns TruncatedBuffer (byte[])
  */
-export function handleDicomBytes(ctx: Ctx, currBytes: Buffer): TruncatedBuffer {
+export function handleDicomBytes(ctx: Ctx, currBytes: Buffer): TruncEl {
    write(`Reading buffer (#${ctx.nByteArray} - ${currBytes.length} bytes) (${ctx.path})`, "DEBUG");
    return ctx.first //
       ? handleFirstBuffer(ctx, currBytes)
@@ -128,7 +127,7 @@ export function handleDicomBytes(ctx: Ctx, currBytes: Buffer): TruncatedBuffer {
  * @throws DicomError
  * @returns TruncatedBuffer (byte[])
  */
-function handleFirstBuffer(ctx: Ctx, buffer: Buffer): TruncatedBuffer {
+function handleFirstBuffer(ctx: Ctx, buffer: Buffer): TruncEl {
    validatePreamble(buffer); // throws if not void
    validateHeader(buffer); // throws if not void
 

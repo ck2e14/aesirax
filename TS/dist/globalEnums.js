@@ -99418,6 +99418,7 @@ export var DicomErrorType;
 })(DicomErrorType || (DicomErrorType = {}));
 export var ByteLen;
 (function (ByteLen) {
+    ByteLen[ByteLen["LENGTH"] = 4] = "LENGTH";
     ByteLen[ByteLen["PREAMBLE"] = 128] = "PREAMBLE";
     ByteLen[ByteLen["HEADER"] = 4] = "HEADER";
     ByteLen[ByteLen["TAG_NUM"] = 4] = "TAG_NUM";
