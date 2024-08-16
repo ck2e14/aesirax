@@ -146,10 +146,6 @@ export function ctxFactory(path, cfg = null, assumeDefaults = true, skipPixels =
         skipPixelData: skipPixels,
         transferSyntaxUid: TransferSyntaxUid.ExplicitVRLittleEndian,
         usingLE: true,
-        // inSequence: false,
-        // currSqTag: null,
-        // sequenceBytesTraversed: null,
-        // LIFO SUPPORT BELOW
         sqStack: [],
         sqLens: [],
         sqBytesTraversed: [],
