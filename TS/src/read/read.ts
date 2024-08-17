@@ -1,9 +1,10 @@
-import { write } from "../logging/logQ.js";
 import { DicomErrorType, TransferSyntaxUid } from "../globalEnums.js";
-import { createReadStream } from "fs";
-import { TagStr } from "../parse/tagNums.js";
 import { DicomError, UnsupportedTSN } from "../error/errors.js";
-import { dataSetLength } from "../utilts.js";
+import { createReadStream } from "fs";
+import { dataSetLength } from "../utils.js";
+import { TagStr } from "../parse/decoders.js";
+import { Cursor } from "../parse/cursor.js";
+import { write } from "../logging/logQ.js";
 import {
    Element,
    DataSet,
@@ -11,6 +12,8 @@ import {
    validatePreamble,
    parse,
    TruncEl,
+   premableLen,
+   header,
 } from "../parse/parse.js";
 
 export type Ctx = {
@@ -29,6 +32,8 @@ export type Ctx = {
    sqStack: Element[];
    sqLens: number[];
    sqBytesTraversed: number[];
+   outerCursor: Cursor;
+   totalTraversedBytes: 0;
 };
 
 const SMALL_BUF_THRESHOLD = 1024;
@@ -75,7 +80,7 @@ export function streamParse(
       });
 
       stream.on("end", () => {
-         write(`Stream end: read a total of ${ctx.totalBytes} bytes from ${path}`, "DEBUG");
+         detectMisalignment(ctx, false);
          write(`Stream end: Parsed ${dataSetLength(ctx.dataSet)} elements from ${path}`, "DEBUG");
          resolve(ctx.dataSet);
          stream.close();
@@ -86,6 +91,34 @@ export function streamParse(
          stream.close();
       });
    });
+}
+
+/**
+ * detectMisalignment() is a helper function for streamParse()
+ * to detect if the total bytes traversed by the outer cursor
+ * is equal to the expected total bytes traversed. Should always
+ * be bang-on else something is wrong.
+ * @param ctx
+ */
+function detectMisalignment(ctx: Ctx, throwMode = false) {
+   const outerCursorTraversal = ctx.outerCursor.tracker.getTotalBytesAccessed();
+   const expectedTraversal = ctx.totalBytes - (premableLen + header.length);
+
+   write(`Outer cursor traversal: ${outerCursorTraversal}, expected ${expectedTraversal}`, "DEBUG");
+
+   if (outerCursorTraversal !== expectedTraversal) {
+      write(
+         `!! => Outer cursor traversal (${outerCursorTraversal}) !== total bytes traversed ${expectedTraversal}`,
+         "ERROR"
+      );
+   }
+
+   if (outerCursorTraversal !== expectedTraversal && throwMode) {
+      throw new DicomError({
+         message: `Outer cursor traversal (${outerCursorTraversal}) !== total bytes traversed ${expectedTraversal}`,
+         errorType: DicomErrorType.PARSING,
+      });
+   }
 }
 
 /**
@@ -126,6 +159,7 @@ function handleFirstBuffer(ctx: Ctx, buffer: Buffer): TruncEl {
    validatePreamble(buffer); // throws if not void
    validateHeader(buffer); // throws if not void
 
+   ctx.totalTraversedBytes += premableLen + header.length;
    const parseResponse = parse(buffer.subarray(HEADER_END, buffer.length), ctx); // window the buffer beyond 'DICM' header to start at File Meta Info section
    const tsn = getElementValue<string>("(0002,0010)", ctx.dataSet);
 
@@ -202,5 +236,7 @@ export function ctxFactory(
       sqStack: [],
       sqLens: [],
       sqBytesTraversed: [],
+      outerCursor: null,
+      totalTraversedBytes: 0,
    };
 }

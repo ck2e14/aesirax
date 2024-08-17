@@ -38,26 +38,23 @@ async function main(cfg: Global.Cfg) {
    }
 
    await init();
-   // cfg.targetDir = `/Users/chriskennedy/Desktop/SWE/aesirax/data/JonathanSnowMR/isolate`
-   cfg.targetDir = testDirs.nestedSQ_undefinedLens_multipleItems
 
+   cfg.targetDir = testDirs.nestedSQ_undefinedLens_multipleItems;
+   // cfg.targetDir = '/Users/chriskennedy/Desktop/SWE/aesirax/data/JonathanSnowMR/isolate2NoSQ'
    const fileCount = readdirSync(cfg.targetDir).length;
 
-   // await multiThreaded(cfg);
-   await singleTheaded(cfg);
+   if (fileCount === 0) {
+      write(`No files found in target directory. Exiting...`, "ERROR");
+      process.exit();
+   }
 
-   // if (fileCount === 0) {
-   //    write(`No files found in target directory. Exiting...`, "ERROR");
-   //    process.exit();
-   // }
+   if (fileCount > 1) {
+      await multiThreaded(cfg);
+   }
 
-   // if (fileCount > 1) {
-   //    await multiThreaded(cfg);
-   // }
-
-   // if (fileCount === 1) {
-   //    await singleTheaded(cfg);
-   // }
+   if (fileCount === 1) {
+      await singleTheaded(cfg);
+   }
 
    setTimeout(() => {
       if (cfg.verbose) {

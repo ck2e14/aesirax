@@ -1,7 +1,7 @@
 import { Worker } from "worker_threads";
 import { cpus } from "os";
 import { write } from "./logging/logQ.js";
-import { findDICOM } from "./utilts.js";
+import { findDICOM } from "./utils.js";
 import { appendFile, appendFileSync, writeFileSync } from "fs";
 
 /**

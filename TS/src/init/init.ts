@@ -20,8 +20,8 @@ export async function init() {
          setTimeout(() => process.exit(1), 1000); // let the logQ finish writing
       });
 
-      await createLogFile();
-      processQ();
+      // await createLogFile();
+      // processQ();
 
       write(`Configuration loaded: ${JSON.stringify(cfg)}`, "DEBUG");
       write(`App initialized.`, "INFO");

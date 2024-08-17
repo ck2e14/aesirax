@@ -1,10 +1,11 @@
 import { readdirSync, statSync } from "fs";
 import * as path from "path";
 import { DataSet } from "./parse/parse.js";
-import { TransferSyntaxUid, VR } from "./globalEnums.js";
+import { TagDictByHex, TransferSyntaxUid, VR } from "./globalEnums.js";
 import { Element } from "./parse/parse.js";
 import { write } from "./logging/logQ.js";
 import { Cursor } from "./parse/cursor.js";
+import { Ctx } from "./read/read.js";
 
 export function mapToObj(map: Map<string, any>): any {
    const obj = {};
@@ -146,4 +147,45 @@ export function debugPrint(el: Element, cursor: Cursor, buffer: Buffer) {
    } else {
       printElement(el, cursor, buffer);
    }
+}
+
+export function printSqCtx(ctx: Ctx) {
+   const printObj = {
+      sqLens: ctx.sqLens,
+      sqStack: ctx.sqStack.map(sq => sq.name).join(" > "),
+      sqBytesTraversed: ctx.sqBytesTraversed,
+   };
+   return `SQ Context: ${json(printObj)}`;
+}
+
+/**
+ * Get the plain text tag name from the Tag Dictionary
+ * @param tag
+ * @returns string
+ */
+export function getTagName(tag: string) {
+   return (
+      TagDictByHex[tag?.toUpperCase()]?.["name"] ?? //
+      "Private or Unrecognised Tag"
+   );
+}
+
+/**
+ * Type guard for VRs
+ * @param vr
+ */
+export const isVr = (vr: string): vr is Global.VR => {
+   return vr in VR;
+};
+
+/**
+ * Determine if a VR is in the extended format.
+ * Has implications for how the cursor is walked.
+ * See comments in walkEntireDicomFileAsBuffer for more info.
+ * @param vr
+ * @returns boolean
+ */
+export function isExtVr(vr: Global.VR): boolean {
+   const extVrPattern = /^OB|OW|OF|SQ|UT|UN$/;
+   return extVrPattern.test(vr);
 }
