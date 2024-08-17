@@ -39,7 +39,7 @@ async function main(cfg: Global.Cfg) {
 
    await init();
    // cfg.targetDir = `/Users/chriskennedy/Desktop/SWE/aesirax/data/JonathanSnowMR/isolate`
-   cfg.targetDir = testDirs.nestedSQ_undefinedLens_multipleItems2;
+   cfg.targetDir = testDirs.nestedSQ_undefinedLens_multipleItems
 
    const fileCount = readdirSync(cfg.targetDir).length;
 
