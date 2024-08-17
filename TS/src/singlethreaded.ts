@@ -1,7 +1,7 @@
 import { writeFileSync } from "fs";
 import { write } from "./logging/logQ.js";
 import { streamParse } from "./read/read.js";
-import { findDICOM, prettyPrintMap } from "./utilts.js";
+import { findDICOM, prettyPrintMap } from "./utils.js";
 
 /**
  * Parse DICOM files using a single thread
@@ -21,11 +21,16 @@ export async function singleTheaded(cfg: Global.Cfg) {
 
    const end = performance.now();
 
-   // console.log(dataSets);
-   // const [x] = dataSets.map((data, i) => `Dataset ${i + 1}: ${JSON.stringify(data, null, 3)}`);
    writeFileSync("./___output.json", JSON.stringify(dataSets[0], null, 3));
    write(`Parsed ${dataSets.length} datasets`, "INFO");
-   write(`Time elapsed: ${end - start} ms`, "INFO");
+   write(
+      `Time elapsed including finding images in dir, streaming, and parsing: ${end - start} ms`,
+      "INFO"
+   );
+
+   console.log(
+      `Time elapsed including finding images in dir, streaming, and parsing: ${end - start} ms`
+   );
 
    return dataSets;
 }
