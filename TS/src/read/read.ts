@@ -74,7 +74,6 @@ export function streamParse(
 
       stream.on("data", (currBytes: Buffer) => {
          write(`Streamed ${currBytes.length} bytes to memory from ${path}`, "DEBUG");
-
          ctx.nByteArray = ctx.nByteArray + 1;
          ctx.totalBytes = ctx.totalBytes + currBytes.length;
          ctx.truncatedBuffer = handleDicomBytes(ctx, currBytes);
@@ -102,18 +101,27 @@ export function streamParse(
  * @param ctx
  */
 function detectMisalignment(ctx: Ctx, throwMode = false) {
+   if (ctx.nByteArray > 1) {
+      write(
+         `Misalignment detection is not currently correctly supported for multi-buffer (stittched) parsing`,
+         "WARN"
+      );
+      return;
+   }
+
    const outerCursorTraversal = ctx.outerCursor.tracker.getTotalBytesAccessed();
    const expectedTraversal = ctx.totalBytes - (premableLen + header.length);
-
-   write(
-      `Traversed: ${outerCursorTraversal}, expected ${expectedTraversal} (${ctx.totalBytes} - 132)`,
-      "DEBUG"
-   );
+   const dif = Math.abs(outerCursorTraversal - expectedTraversal);
 
    if (outerCursorTraversal !== expectedTraversal) {
       write(
-         `!! => Traversed (${outerCursorTraversal}) !== total bytes traversed ${expectedTraversal}`,
+         `!! => BYTE MISALIGNMENT DETECTED: Dif: ${dif}, traversed: ${outerCursorTraversal.toLocaleString()} bytes, expected ${expectedTraversal.toLocaleString()} (${ctx.totalBytes.toLocaleString()} - 132)`,
          "ERROR"
+      );
+   } else {
+      write(
+         `Cursor correctly alignment at finish. Dif: ${dif}, traversed: ${outerCursorTraversal.toLocaleString()} bytes, expected ${expectedTraversal.toLocaleString()} (${ctx.totalBytes.toLocaleString()} - 132)`,
+         "DEBUG"
       );
    }
 
@@ -188,6 +196,7 @@ function handleFirstBuffer(ctx: Ctx, buffer: Buffer): TruncEl {
 function stitchBytes(ctx: Ctx, currBytes: Buffer): Buffer {
    const { truncatedBuffer, path } = ctx;
    write(`Stitching ${truncatedBuffer.length} + ${currBytes.length} bytes (${path})`, "DEBUG");
+   ctx.outerCursor.tracker.increaseAccessCount(currBytes.length); // this bit seems to work ok so leaving here
    return Buffer.concat([truncatedBuffer, currBytes]);
 }
 

@@ -56,7 +56,7 @@ export function parse(buffer: Buffer, ctx: Ctx): TruncEl {
 
    if (ctx.outerCursor == null) {
       // WARn alright here we have an issue where when we re-enter parse
-      cursor = newCursor(0, buffer, new ByteAccessTracker(buffer.length)); // byte tracker is for alignment validation at the end
+      cursor = newCursor(0, buffer, new ByteAccessTracker(buffer.length)); // byte tracker is for alignment validation at the end  WARN not working with stitching yet
       ctx.outerCursor = cursor;
    } else {
       cursor = newCursor(0);
@@ -78,7 +78,10 @@ export function parse(buffer: Buffer, ctx: Ctx): TruncEl {
                sq.items.push({});
                continue;
             }
-            if (next === sqEndTag) return; // basecase for undef len SQs
+            if (next === sqEndTag) {
+               write(`End of SQ ${sq.tag} ${sq.name}`, "DEBUG");
+               return;
+            } // basecase for undef len SQs
             throw new MalformedDicom(`Got ${next} but expected ${itemEndTag} or ${sqEndTag}`);
          }
 
