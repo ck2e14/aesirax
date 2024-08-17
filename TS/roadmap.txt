@@ -1,0 +1,100 @@
+ * WARN currently with massive pixel data values we're still loading it all into
+ * memory based on our 'is trunated? return and concat' approach. Okay for now.
+ * Can do a discard approach where it's still streamed into memory, which is
+ * pretty much unavoidable, but then instead of returning the buffer we just
+ * return a Buffer.alloc(0) which will fit into the existing strcuture I think.
+
+
+VR conformity validation
+
+
+MAKE INTO A CLI TO SPECIFY OPTIONS/OVERRIDES
+
+
+SUPPORT DICOMDIR TO GET TRANSFER SYNTAXES ETC
+
+
+CRYPTOGRAPHIC TRANSPORT WRAPPING
+- use HTTP(S) for secure TLS out of the box
+- firewall-friendly
+- rich crypto & web ecosystem for HTTP
+- Good excuse to continue using Go & Typescript
+- Lends itself to REST API design 
+- Seamless DICOMWeb integration opportunity 
+- Secured websocket opportunity for realtime transfer at very high speed
+- Integrate OAuth & JWT etc for a very modern feel
+- 
+
+GROUPING BY STUDY 
+should be able to pass a directory that has 1-n study UID's SOP instances present in it, and if there is more than 
+one then it should appropriately segregate the imaging and associate. 
+Would be also cool to have it structure it in a way that directly reflects the DICOM hierarchy.
+This should be as efficient as possible, i.e. at point of parsing, rather than re-iterating through
+parsed datasets to segregate which may be more straightforward but more expensive and slow
+
+DATA REPLACEMENT/ANONYMISATION/PSEUDONYMISATION
+you could look at doing in-place byte replacement. This would require carefully managing 
+value lengths, including possible null byte padding to respect existing lengths, splicing
+bytes in to extend lengths if the existing value length is not sufficient, or 0-lengthing 
+and removing bytes to reflect that new 0 length. Would not bother with pixel data, that sounds
+hella complex tbh. Maybe dabble just to see what's up with pixel data which is just RGB (or similar)
+at the end of the day so perhaps it's not *too* bad(?)
+
+DE/RE-IDENTIFICATION
+Like RSH - only not using libraries, from scratch :)
+
+
+TEST SUITE
+bit concerned this controls the development direction too much and is perhaps better served once 
+the library is a bit more mature. It's only a few days old right now after all. 
+
+
+TRANSFORM STREAM PLUGIN(s)
+// TODO in a future implementation I might consider writing a tranform stream
+// to emit elements as they are parsed from the buffer, which we can then handle
+// as they are emitted, rather than a dataset at the end. But not particularly key
+// and definitely not part of the MVP. This would be for SPEED EFFICIENCY while my
+// current implementation is for MEMORY EFFICIENCY (i.e. not loading 100% into memory)
+// E.g. for a custom DICOMweb server it would be better to stream the elements outwards
+// as they are parsed by the readStream parser, but for use cases where we need the entire
+// dataset represented in memory, the current approach is more applicable. So it would not
+// be a replacement, it would be an option to plug into the readStream parser (hence being
+// a transform stream).
+// Dicomweb transform stream would be pretty incredible project actually. And if you made a bunch of 
+// other plugin transform streams this would be easily plugged in to this pipeline, as many as are 
+// needed. The completion of a project like this would represent the transition into truly expert level
+// fullstack healthcare development 
+i am motivated to make a transform stream option that we can use for instances where it makes sense. 
+
+I would say the following:
+
+1) Where we need a traversable and complete dataset, we have two options:
+(A) For very large files, streaming is still appropriate because we can parallelise the parsing and i/o, 
+rather than sequentially awaiting the i/o. Also we could hit memory constraints depending on how the GC 
+kicks in because we could end up with a lot of the binary and JS object dataset in memory at the same time. 
+(B) for smaller files, streaming is basically pointless and would likely add to both memory overhead and 
+latency. In this case I would just maybe CLI flags or write in-app logic to detect the file size and just 
+read the whole buffer upfront and pass it to parse(). Parse doesn't care what size buffer it gets.
+
+2) Where we want some sort of end goal to be achieved other than a final, traversable dataset, a transform 
+stream is perfect and would be appropriate to plug into the existing readstream code. That's because it 
+would paralleise the read i/o, the parsing/manipulating, perhaps anonymisation for example, and then onwards 
+emitting/piping of the data, e.g. perhaps to a TCP stream for DIMSE or a HTTP stream for DICOMWeb.
+
+// NESTED SEQUENCE DECODING
+ * TODO in order to simplify handling of nested sequences, when a
+ * sequence element is encountered, we should probably just return
+ * the buffer straight away back to streamParse, and continue to do
+ * so with subsequent buffers, until the end of the sequence is reached.
+ * And then parse out the whole sequence together.
+
+
+// VALUE DECODING
+// TODO when we eventually handle pixel decoders, probably wanna
+// to do this also via streaming the values into something rather than
+// straight up decoding as a string in the heap (currently we are just
+// using default decoding - i.e. hex). Because pixel data is phat as
+// phuck for a single threaded runtime to chew through. Actually tbh
+// worker threads are probably better for this because the actual computation
+// we'll be doing will not be done in the systemcall-land, which is where I/O
+// parallesation gains are made, it's done inside JS land.
