@@ -138,7 +138,7 @@ export function printMinusValue(el: Element, cursor: Cursor, buffer: Buffer) {
  * Print an element to the console.
  * @param Element
  */
-export function debugPrint(el: Element, cursor: Cursor, buffer: Buffer) {
+export function logElement(el: Element, cursor: Cursor, buffer: Buffer) {
    const unfuckingSupported = [VR.OB, VR.UN, VR.OW];
 
    if (unfuckingSupported.includes(el.vr)) {

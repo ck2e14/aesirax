@@ -1,17 +1,10 @@
-import { BufferBoundary, DicomError } from "../error/errors.js";
 import { ByteLen, DicomErrorType, TagDictByHex, TransferSyntaxUid, VR } from "../globalEnums.js";
-import { write } from "../logging/logQ.js";
-import { Ctx } from "../read/read.js";
+import { Element, maxUint32, valueIsTruncated } from "./parse.js";
+import { BufferBoundary, DicomError } from "../error/errors.js";
 import { isExtVr, isVr } from "../utils.js";
 import { Cursor } from "./cursor.js";
-import {
-   Element,
-   maxUint32,
-   parseOW,
-   parseSQ,
-   removeSqFromStack,
-   valueIsTruncated,
-} from "./parse.js";
+import { write } from "../logging/logQ.js";
+import { Ctx } from "../read/read.js";
 
 export type Decoder = (value: Buffer) => string;
 export type DecoderMap = Record<Global.VR | "default", Decoder>;
@@ -83,11 +76,11 @@ const decodersBE: Partial<DecoderMap> = {
  * @param value
  * @returns string
  */
-export function decodeValue(
+export function decodeValueBytes(
    vr: string,
    value: Buffer,
    Ctx: Ctx,
-   checkNullPadding = false // debug only
+   checkNullPadding = false // debugging
 ): string {
    if (checkNullPadding) {
       countNullBytes(value);
@@ -100,9 +93,11 @@ export function decodeValue(
       if (decoders.hasOwnProperty(vr)) {
          return decoders[vr](value);
       }
+
       if (vr === VR.OB || vr === VR.OW || vr === VR.OF) {
          return `Binary data (${vr}): ${value.length} bytes`;
       }
+
       if (value.length > 1024) {
          return "Assumed to be binary data, not supported for decoding/display";
       }
@@ -119,9 +114,9 @@ export function decodeValue(
  * @returns Global.VR
  * @throws DicomError
  */
-export function decodeVr(buf: Buffer): Global.VR {
+export function decodeVrBytes(buf: Buffer): Global.VR {
    if (buf.length !== ByteLen.VR) {
-      throw new BufferBoundary(`decodeVr() expected 2 bytes, got ${buf.length}`);
+      throw new BufferBoundary(`decodeVrBytes() expected 2 bytes, got ${buf.length}`);
    }
 
    const decodedVr = buf.toString("ascii", 0, ByteLen.VR);
@@ -189,7 +184,7 @@ export function countNullBytes(value: Buffer): void {
  * @param el
  * @param Ctx
  */
-export function decodeValueAndMoveCursor(buffer: Buffer, cursor: Cursor, el: Element, ctx: Ctx) {
+export function parseValue(buffer: Buffer, cursor: Cursor, el: Element, ctx: Ctx) {
    if (valueIsTruncated(buffer, cursor, el.length)) {
       throw new BufferBoundary(`Tag ${el.tag} is split across buffer boundary`);
    }
@@ -198,7 +193,7 @@ export function decodeValueAndMoveCursor(buffer: Buffer, cursor: Cursor, el: Ele
    const end = cursor.pos + el.length;
    const valueBuffer = buffer.subarray(start, end);
 
-   el.value = decodeValue(el.vr, valueBuffer, ctx);
+   el.value = decodeValueBytes(el.vr, valueBuffer, ctx);
    cursor.walk(el.length, ctx, buffer); // to get to the start of the next tag
 }
 
@@ -209,12 +204,12 @@ export function decodeValueAndMoveCursor(buffer: Buffer, cursor: Cursor, el: Ele
  * @param el
  * @throws DicomError
  */
-export function decodeVRAndMoveCursor(buffer: Buffer, cursor: Cursor, el: Element, ctx: Ctx) {
+export function parseVR(buffer: Buffer, cursor: Cursor, el: Element, ctx: Ctx) {
    const start = cursor.pos;
    const end = cursor.pos + ByteLen.VR;
    const vrBuffer = buffer.subarray(start, end);
 
-   el.vr = decodeVr(vrBuffer);
+   el.vr = decodeVrBytes(vrBuffer);
    cursor.walk(ByteLen.VR, ctx, buffer);
 
    if (!isVr(el.vr)) {
@@ -236,14 +231,14 @@ export function decodeVRAndMoveCursor(buffer: Buffer, cursor: Cursor, el: Elemen
 export function decodeLenMoveAndCursor(el: Element, cursor: Cursor, buffer: Buffer, ctx: Ctx) {
    // ----  Standard VR ----
    if (!isExtVr(el.vr)) {
-      decodeValueLength(el, buffer, cursor, ctx);
+      decodeValueBytesLength(el, buffer, cursor, ctx);
       cursor.walk(ByteLen.UINT_16, ctx, buffer);
       return false;
    }
 
    // ----- Extended VR ------
    cursor.walk(ByteLen.EXT_VR_RESERVED, ctx, buffer); // 2 unused bytes on all ext VRs - can ignore
-   decodeValueLength(el, buffer, cursor, ctx); // lens < 4 bytes, (4,294,967,295)
+   decodeValueBytesLength(el, buffer, cursor, ctx); // lens < 4 bytes, (4,294,967,295)
    cursor.walk(ByteLen.UINT_32, ctx, buffer);
 
    const unsupported =
@@ -266,7 +261,7 @@ export function decodeLenMoveAndCursor(el: Element, cursor: Cursor, buffer: Buff
  * @param cursor
  * @param ctx
  */
-function decodeValueLength(el: Element, buffer: Buffer, cursor: Cursor, ctx: Ctx) {
+function decodeValueBytesLength(el: Element, buffer: Buffer, cursor: Cursor, ctx: Ctx) {
    if (isExtVr(el.vr)) {
       el.length = ctx.usingLE //
          ? buffer.readUInt32LE(cursor.pos)

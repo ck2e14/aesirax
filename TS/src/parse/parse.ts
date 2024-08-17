@@ -1,16 +1,10 @@
 import { write } from "../logging/logQ.js";
 import { Ctx } from "../read/read.js";
 import { BufferBoundary, DicomError, MalformedDicom, UndefinedLength } from "../error/errors.js";
-import { debugPrint, getTagName } from "../utils.js";
+import { getTagName, logElement } from "../utils.js";
 import { ByteLen, DicomErrorType, TagDictByName, VR } from "../globalEnums.js";
 import { newCursor, Cursor } from "./cursor.js";
-import {
-   decodeLenMoveAndCursor,
-   decodeTagNum,
-   decodeValueAndMoveCursor,
-   decodeVRAndMoveCursor,
-   TagStr,
-} from "./decoders.js";
+import { decodeLenMoveAndCursor, decodeTagNum, parseValue, parseVR, TagStr } from "./parsers.js";
 import { ByteAccessTracker } from "../byteTrace/byteTrace.js";
 
 export type TruncEl = Buffer | null; // because streaming will guarantee cutting tags up
@@ -56,14 +50,13 @@ export const fragStartTag = "(fffe,e000)";
  * @param ctx
  * @returns TruncEl
  */
-let start: DOMHighResTimeStamp;
 export function parse(buffer: Buffer, ctx: Ctx): TruncEl {
-   const tracker = new ByteAccessTracker(buffer.length);
    let cursor: Cursor;
-   start ??= performance.now();
+   let lastTagStart: number;
 
    if (ctx.outerCursor == null) {
-      cursor = newCursor(0, buffer, tracker);
+      // WARn alright here we have an issue where when we re-enter parse
+      cursor = newCursor(0, buffer, new ByteAccessTracker(buffer.length)); // byte tracker is for alignment validation at the end
       ctx.outerCursor = cursor;
    } else {
       cursor = newCursor(0);
@@ -72,50 +65,47 @@ export function parse(buffer: Buffer, ctx: Ctx): TruncEl {
    while (cursor.pos < buffer.length) {
       const el = newElement();
       const { sq, lastSqItem } = stacks(ctx);
-      let lastTagStart = cursor.pos;
+      lastTagStart = cursor.pos;
 
       try {
-         decodeTagAndMoveCursor(buffer, cursor, el, ctx);
+         // ----- Parse tag to (gggg,eeee) -----
+         parseTag(buffer, cursor, el, ctx);
 
+         // ----- Handle in-SQ control flow -----
          if (inSQ(ctx) && isEndOfItem(ctx, el)) {
             const next = peekNextTag(ctx, cursor, buffer);
-
             if (next === itemStartTag) {
                sq.items.push({});
                continue;
             }
-
-            if (next === sqEndTag) {
-               return; // basecase for undef len SQs
-            }
-
+            if (next === sqEndTag) return; // basecase for undef len SQs
             throw new MalformedDicom(`Got ${next} but expected ${itemEndTag} or ${sqEndTag}`);
          }
 
-         decodeVRAndMoveCursor(buffer, cursor, el, ctx);
+         parseVR(buffer, cursor, el, ctx);
          decodeLenMoveAndCursor(el, cursor, buffer, ctx); // may or may not recurse
 
-         // ----- Handle OW ------
+         // ----- Parse OW Elements Separately ------
          if (el.vr == VR.OW) {
             parseOW(ctx, el, cursor, buffer);
             continue;
          }
 
-         //  ----- Handle SQ ------
+         //  ----- Parse SQ Elements Separately ------
          if (el.vr === VR.SQ) {
             parseSQ(buffer, ctx, el, cursor); // recurse with context flags
             removeSqFromStack(ctx); // must sync parent + child cursors before this point
             continue;
          }
 
-         decodeValueAndMoveCursor(buffer, cursor, el, ctx);
-         debugPrint(el, cursor, buffer);
+         // ---- Parse other VR Elements ----
+         parseValue(buffer, cursor, el, ctx);
+
+         // ---- Persist to dataset ----
          saveElement(ctx, el);
+         logElement(el, cursor, buffer);
 
-         if (detectDefLenSqEnd(ctx, el)) {
-            return; // recursive basecase
-         }
-
+         if (detectDefLenSqEnd(ctx, el)) return; // basecase for defined length SQs
          if (valueIsTruncated(buffer, cursor, el.length)) {
             return buffer.subarray(lastTagStart, buffer.length);
          }
@@ -262,6 +252,7 @@ function handleParserErrors(
 
    if (error instanceof BufferBoundary || error instanceof RangeError) {
       write(`Tag is split across buffer boundary ${tag ?? ""}`, "DEBUG");
+      write(`Last tag was at cursor position: ${lastTagStart}`, "DEBUG");
       return buffer.subarray(lastTagStart, buffer.length);
    }
 }
@@ -325,12 +316,11 @@ export function parseSQ(buffer: Buffer, ctx: Ctx, el: Element, parentCursor: Cur
    }
 
    // ---- Defined length SQ's ----
-   // Convert el to SQ, save, pop from stack,
-   // continue parsing the parent dataset
+   // Convert el to SQ (add items array etc), save, pop from stack, continue parsing parent dataset
    if (el.length === 0) {
       saveElement(ctx, convertElToSq(el));
       removeSqFromStack(ctx);
-      return true;
+      return;
    }
 
    initNewSqEl(el, ctx);
@@ -384,9 +374,9 @@ function initNewSqEl(el: Element, ctx: Ctx): Element {
    const newSq = convertElToSq(el);
 
    if (inSQ(ctx)) {
-      stacks(ctx).lastSqItem[newSq.tag] = newSq; // else add new SQ to last item of current SQ nesting
+      stacks(ctx).lastSqItem[newSq.tag] = newSq; // nested
    } else {
-      ctx.dataSet[newSq.tag] = newSq; // add SQ to top level
+      ctx.dataSet[newSq.tag] = newSq; // top level
    }
 
    // ---- Push the new SQ onto the three stacks ----
@@ -486,7 +476,7 @@ function stacks(ctx: Ctx) {
  * @param cursor
  * @param el
  */
-function decodeTagAndMoveCursor(buffer: Buffer, cursor: Cursor, el: Element, ctx: Ctx) {
+function parseTag(buffer: Buffer, cursor: Cursor, el: Element, ctx: Ctx) {
    const start = cursor.pos;
    const end = cursor.pos + ByteLen.TAG_NUM;
    const tagBuffer = buffer.subarray(start, end);

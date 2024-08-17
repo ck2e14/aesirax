@@ -20,6 +20,7 @@ export class ByteAccessTracker {
    }
 
    trackAccess(position: number, length: number) {
+      console.log('track access called');
       for (let i = position; i < position + length; i++) {
          this.accessCount[i]++;
       }

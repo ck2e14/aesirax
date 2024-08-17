@@ -14,12 +14,12 @@ export async function multiThreaded(cfg: Global.Cfg) {
    const dicomFiles = findDICOM(cfg.targetDir);
    const nWorkers = cpus().length > dicomFiles.length ? dicomFiles.length : cpus().length; // this could be refined because one massive file also benefits from multiple workers but currently doing 1 file per worker. Future improvement.
    const workerPromises = [];
-   const dataSets = [];
+   const parsedFiles = [];
 
    write(`Spawning ${nWorkers} workers to read ${dicomFiles.length} DICOM files`, "INFO");
 
    for (let i = 0; i < nWorkers; i++) {
-      const worker = createWork(dataSets, dicomFiles, cfg);
+      const worker = createWork(parsedFiles, dicomFiles, cfg);
       workerPromises.push(worker);
    }
 
@@ -27,12 +27,12 @@ export async function multiThreaded(cfg: Global.Cfg) {
 
    const end = performance.now();
 
-   write(`Parsed ${dataSets.length} datasets`, "INFO");
+   write(`Parsed ${parsedFiles.length} parsedFiles`, "INFO");
    write(`Time elapsed (minus end printing): ${end - start} ms`, "INFO");
-   writeFileSync(`${cfg.writeDir}/dataSets.json`, "");
+   writeFileSync(`${cfg.writeDir}/parsedFiles.json`, "");
 
-   for (let i = 0; i < dataSets.length; i++) {
-      appendFileSync(`${cfg.writeDir}/dataSets.json`, dataSets[i]);
+   for (let i = 0; i < parsedFiles.length; i++) {
+      appendFileSync(`${cfg.writeDir}/parsedFiles.json`, parsedFiles[i]);
    }
 
    return workerPromises;
@@ -40,15 +40,15 @@ export async function multiThreaded(cfg: Global.Cfg) {
 
 /**
  * Create a worker thread to parse DICOM files
- * @param dataSets
+ * @param parsedFiles
  * @param dicomFiles
  * @returns promised worker thread's completion (void)
  */
-function createWork(dataSets: any[], dicomFiles: string[], cfg: Global.Cfg) {
+function createWork(parsedFiles: any[], dicomFiles: string[], cfg: Global.Cfg) {
    const worker = new Worker("./dist/worker.js");
 
    return new Promise<void>((resolve, reject) => {
-      addEvents(worker, dataSets, dicomFiles, resolve, reject, cfg);
+      addEvents(worker, parsedFiles, dicomFiles, resolve, reject, cfg);
       worker.postMessage({
          filepath: dicomFiles.pop(),
          writeDir: cfg.writeDir,
@@ -59,7 +59,7 @@ function createWork(dataSets: any[], dicomFiles: string[], cfg: Global.Cfg) {
 /**
  * Add event listeners to the worker thread
  * @param worker
- * @param dataSets
+ * @param parsedFiles
  * @param dicomFiles
  * @param resolve
  * @param reject
@@ -67,14 +67,14 @@ function createWork(dataSets: any[], dicomFiles: string[], cfg: Global.Cfg) {
  */
 function addEvents(
    worker: Worker,
-   dataSets: any[],
+   parsedFiles: any[],
    dicomFiles: string[],
    resolve,
    reject,
    cfg: Global.Cfg
 ) {
    worker.on("message", (msg: any) => {
-      dataSets.push(msg.data);
+      parsedFiles.push(msg.data);
 
       if (dicomFiles.length > 0) {
          return worker.postMessage({

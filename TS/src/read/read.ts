@@ -2,7 +2,7 @@ import { DicomErrorType, TransferSyntaxUid } from "../globalEnums.js";
 import { DicomError, UnsupportedTSN } from "../error/errors.js";
 import { createReadStream } from "fs";
 import { dataSetLength } from "../utils.js";
-import { TagStr } from "../parse/decoders.js";
+import { TagStr } from "../parse/parsers.js";
 import { Cursor } from "../parse/cursor.js";
 import { write } from "../logging/logQ.js";
 import {
@@ -15,6 +15,7 @@ import {
    premableLen,
    header,
 } from "../parse/parse.js";
+import { ByteAccessTracker } from "../byteTrace/byteTrace.js";
 
 export type Ctx = {
    first: boolean;
@@ -22,7 +23,6 @@ export type Ctx = {
    dataSetStack: DataSet[];
    truncatedBuffer: Buffer;
    bufWatermark: number;
-   lastTagStart: number;
    totalBytes: number;
    path: string;
    nByteArray: number;
@@ -74,6 +74,7 @@ export function streamParse(
 
       stream.on("data", (currBytes: Buffer) => {
          write(`Streamed ${currBytes.length} bytes to memory from ${path}`, "DEBUG");
+
          ctx.nByteArray = ctx.nByteArray + 1;
          ctx.totalBytes = ctx.totalBytes + currBytes.length;
          ctx.truncatedBuffer = handleDicomBytes(ctx, currBytes);
@@ -104,11 +105,14 @@ function detectMisalignment(ctx: Ctx, throwMode = false) {
    const outerCursorTraversal = ctx.outerCursor.tracker.getTotalBytesAccessed();
    const expectedTraversal = ctx.totalBytes - (premableLen + header.length);
 
-   write(`Cursor traversal: ${outerCursorTraversal}, expected ${expectedTraversal}`, "DEBUG");
+   write(
+      `Traversed: ${outerCursorTraversal}, expected ${expectedTraversal} (${ctx.totalBytes} - 132)`,
+      "DEBUG"
+   );
 
    if (outerCursorTraversal !== expectedTraversal) {
       write(
-         `!! => Cursor traversal (${outerCursorTraversal}) !== total bytes traversed ${expectedTraversal}`,
+         `!! => Traversed (${outerCursorTraversal}) !== total bytes traversed ${expectedTraversal}`,
          "ERROR"
       );
    }
@@ -227,7 +231,6 @@ export function ctxFactory(
       truncatedBuffer: Buffer.alloc(0),
       bufWatermark: cfg?.bufWatermark ?? 1024 * 1024,
       totalBytes: 0,
-      lastTagStart: 0,
       path,
       nByteArray: 0,
       skipPixelData: skipPixels,

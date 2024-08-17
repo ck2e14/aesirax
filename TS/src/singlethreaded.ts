@@ -8,21 +8,20 @@ import { findDICOM, prettyPrintMap } from "./utils.js";
  * @param cfg
  * @returns void
  */
-
 export async function singleTheaded(cfg: Global.Cfg) {
    const start = performance.now();
    const paths = findDICOM(cfg.targetDir);
-   const dataSets = [];
+   const parsedFiles = [];
 
    for (let i = 0; i < paths.length; i++) {
       const elements = await streamParse(paths[i], cfg);
-      dataSets.push(elements);
+      parsedFiles.push(elements);
    }
 
    const end = performance.now();
 
-   writeFileSync("./___output.json", JSON.stringify(dataSets[0], null, 3));
-   write(`Parsed ${dataSets.length} datasets`, "INFO");
+   writeFileSync("./output.json", JSON.stringify(parsedFiles[0], null, 3));
+   write(`Parsed ${parsedFiles.length} file(s)`, "INFO");
    write(
       `Time elapsed including finding images in dir, streaming, and parsing: ${end - start} ms`,
       "INFO"
@@ -32,5 +31,5 @@ export async function singleTheaded(cfg: Global.Cfg) {
       `Time elapsed including finding images in dir, streaming, and parsing: ${end - start} ms`
    );
 
-   return dataSets;
+   return parsedFiles;
 }
