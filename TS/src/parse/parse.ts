@@ -93,19 +93,24 @@ export function parse(buffer: Buffer, ctx: Ctx): TruncEl {
          }
 
          decodeVRAndMoveCursor(buffer, cursor, el, ctx);
+         decodeLenMoveAndCursor(el, cursor, buffer, ctx); // may or may not recurse
 
-         const cont = decodeLenMoveAndCursor(el, cursor, buffer, ctx); // may or may not recurse
-         if (cont) {
-            // there are cases where we need to move onto the
-            // next element because decodeLenMoveAndCursor() has managed
-            // things like recursive SQs or OW pixel data, and now control
-            // is returned to this parent frame and we need to continue
+         // ----- Handle OW ------
+         if (el.vr == VR.OW) {
+            parseOW(ctx, el, cursor, buffer);
+            continue;
+         }
+
+         //  ----- Handle SQ ------
+         if (el.vr === VR.SQ) {
+            parseSQ(buffer, ctx, el, cursor); // recurse with context flags
+            removeSqFromStack(ctx); // must sync parent + child cursors before this point
             continue;
          }
 
          decodeValueAndMoveCursor(buffer, cursor, el, ctx);
          debugPrint(el, cursor, buffer);
-         saveElement(ctx, lastSqItem, el);
+         saveElement(ctx, el);
 
          if (detectDefLenSqEnd(ctx, el)) {
             return; // recursive basecase
@@ -118,10 +123,6 @@ export function parse(buffer: Buffer, ctx: Ctx): TruncEl {
          return handleParserErrors(error, buffer, lastTagStart, el.tag);
       }
    }
-
-   console.log(`PARSE TOOK: ${performance.now() - start}`); // this is correctly the first parse() only because
-   // recursive calls to parse hit base cases above this. Try it and see, it logs only once despite parse() being
-   // called 1-n times.
 }
 
 /**
@@ -130,8 +131,9 @@ export function parse(buffer: Buffer, ctx: Ctx): TruncEl {
  * @param lastSqItem
  * @param el
  */
-function saveElement(ctx: Ctx, lastSqItem: DataSet, el: Element) {
+function saveElement(ctx: Ctx, el: Element) {
    if (inSQ(ctx)) {
+      const { lastSqItem } = stacks(ctx);
       lastSqItem[el.tag] = el;
    } else {
       ctx.dataSet[el.tag] = el;
@@ -316,48 +318,55 @@ function convertElToSq(el: Element): Element {
  * @param seqTag
  */
 export function parseSQ(buffer: Buffer, ctx: Ctx, el: Element, parentCursor: Cursor) {
-   write(`Parsing new SQ element ${el.tag}, ${el.name}`, "DEBUG");
+   if (inSQ(ctx)) {
+      write(`Parsing nested SQ ${el.tag}, ${el.name}`, "DEBUG");
+   } else {
+      write(`Parsing SQ ${el.tag}, ${el.name}`, "DEBUG");
+   }
 
-   // *defined* len SQ's. Simpler case handling:
-   // just save empty SQ, pop back off the stack,
-   // and continue parsing the parent dataset
+   // ---- Defined length SQ's ----
+   // Convert el to SQ, save, pop from stack,
+   // continue parsing the parent dataset
    if (el.length === 0) {
-      if (inSQ(ctx)) {
-         ctx.dataSet[el.tag] = convertElToSq(el);
-      } else {
-         stacks(ctx).lastSqItem[el.tag] = convertElToSq(el);
-      }
+      saveElement(ctx, convertElToSq(el));
       removeSqFromStack(ctx);
       return true;
    }
 
    initNewSqEl(el, ctx);
 
-   const seqCursor = newCursor(0); // window the buffer from the known start of the SQ & create a new cursor to walk it
+   // ---- Window buffer from start of SQ & create a new cursor to walk it ----
+   const seqCursor = newCursor(0);
    const seqBuffer = buffer.subarray(parentCursor.pos, buffer.length);
 
+   // ---- Decode the first tag (always item start tag if !empty)
    const tagBuffer = seqBuffer.subarray(seqCursor.pos, seqCursor.pos + ByteLen.TAG_NUM);
    const tag = decodeTagNum(tagBuffer);
+   seqCursor.walk(ByteLen.TAG_NUM, ctx, seqBuffer);
 
-   seqCursor.walk(ByteLen.TAG_NUM, ctx, seqBuffer); // walk past the tag bytes
-
-   // 0 len, undefined length SQ TODO can move this higher and remove need to sync parent cursor?
+   // ---- 0 length, defined length SQ ----
    if (isSeqEnd(ctx, tag)) {
       seqCursor.walk(ByteLen.VR + ByteLen.EXT_VR_RESERVED, ctx, seqBuffer); // no interest in these bytes
       stacks(ctx).sq.items.pop(); // remove empty item dataset from when init'd the SQ
       parentCursor.sync(ctx, buffer);
       return;
-   } else if (!isItemStart(ctx, tag)) {
+   }
+
+   // --- if !empty, must be item start tag ---
+   if (!isItemStart(ctx, tag)) {
       throw new MalformedDicom(`Expected ${itemStartTag} but got ${tag}, in SQ: ${el.tag})`);
    }
 
-   seqCursor.walk(ByteLen.VR + ByteLen.EXT_VR_RESERVED, ctx, seqBuffer); // no interest in these bytes
+   seqCursor.walk(ByteLen.VR + ByteLen.EXT_VR_RESERVED, ctx, seqBuffer); // no interest in these bytes, item tags have no VR (special case)
 
+   // ---- Begin recursive parsing of SQ items ----
    const firstItemDataSet = seqBuffer.subarray(seqCursor.pos, seqBuffer.length);
    const bufferTrunc = parse(firstItemDataSet, ctx);
 
-   parentCursor.sync(ctx, buffer); // must be called before LIFO pop(), which happens below if truncated buffer or in decoders.decodeLenMoveAndCursor()
+   // ---- Walk parent cursor to the found end of SQ ----
+   parentCursor.sync(ctx, buffer);
 
+   // ---- Trigger buffer stitching ----
    if (bufferTrunc?.length > 0) {
       const { sq } = stacks(ctx);
       removeSqFromStack(ctx); // pop stack here because its the SQ's start bytes that gets restarted from
@@ -380,6 +389,7 @@ function initNewSqEl(el: Element, ctx: Ctx): Element {
       ctx.dataSet[newSq.tag] = newSq; // add SQ to top level
    }
 
+   // ---- Push the new SQ onto the three stacks ----
    ctx.sqLens.push(el.length);
    ctx.sqStack.push(newSq);
    ctx.sqBytesTraversed.push(0);
@@ -390,6 +400,7 @@ function initNewSqEl(el: Element, ctx: Ctx): Element {
 /**
  * Handle the OW ('Other Word') Pixel Data VR.
  * WARN currently assumes 1 fragment only.
+ * WARN not supporting non fragmented OB (e.g. in file meta info)
  * @param ctx
  * @param el
  * @param cursor
@@ -398,15 +409,12 @@ function initNewSqEl(el: Element, ctx: Ctx): Element {
 export function parseOW(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer) {
    const tagBytes = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM);
    const tag = decodeTagNum(tagBytes);
-
-   if (tag === fragStartTag) {
-      cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
-   } else {
+   if (tag !== fragStartTag) {
       throw new MalformedDicom(`Expected ${fragStartTag} but got ${tag}, in OW: ${el.tag})`);
    }
+   cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
 
    const offSetTableLen = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM).readUint32LE(0);
-
    if (offSetTableLen > 0) {
       cursor.walk(offSetTableLen, ctx, buffer);
       const offset = buffer.readUInt32LE(cursor.pos);
@@ -414,12 +422,11 @@ export function parseOW(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer) {
    }
 
    const nextTag = decodeTagNum(buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM));
-
    if (nextTag !== itemStartTag) {
       throw new MalformedDicom(`Expected ${itemStartTag} but got ${nextTag}, in OW: ${el.tag})`);
-   } else {
-      cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
    }
+
+   cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
 
    const fragLen = buffer //
       .subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM)
@@ -429,39 +436,26 @@ export function parseOW(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer) {
       throw new BufferBoundary(`Fragmented OW tag is split across buffer boundary`);
    }
 
-   if (ctx.skipPixelData) {
-      el.value = "SKIPPED PIXEL DATA PER CONFIGURATION OPTION";
-   } else {
-      el.value = buffer.subarray(cursor.pos, fragLen).toString("hex");
-   }
+   el.value = ctx.skipPixelData
+      ? "SKIPPED PIXEL DATA"
+      : buffer.subarray(cursor.pos, fragLen).toString("hex");
 
-   if (inSQ(ctx)) {
-      const { lastSqItem } = stacks(ctx);
-      lastSqItem[el.tag] = el;
-   } else {
-      ctx.dataSet[el.tag] = el;
-   }
-
+   saveElement(ctx, el);
    cursor.walk(fragLen, ctx, buffer);
 
-   //  check for JPEG EOI
+   // seek JPEG EOI
    const eoiBytes = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM);
    const eoi = decodeTagNum(eoiBytes);
-
    if (eoi !== ("(5e9f,d9ff)" as TagStr)) {
       throw new MalformedDicom(`Expected JPEG EOI but got ${eoi}`);
-   } else {
-      cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
    }
+   cursor.walk(ByteLen.TAG_NUM, ctx, buffer); // past EOI tag
 
    const sqDelim = decodeTagNum(buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM));
    if (sqDelim !== sqEndTag) {
       throw new MalformedDicom(`Expected sq delim but got ${sqDelim}`);
-   } else {
-      cursor.walk(ByteLen.TAG_NUM + ByteLen.LENGTH, ctx, buffer); // len always 0x00, can ignore
    }
-
-   return true;
+   cursor.walk(ByteLen.TAG_NUM + ByteLen.LENGTH, ctx, buffer); // len always 0x00, can ignore
 }
 
 export function inSQ(ctx: Ctx): boolean {

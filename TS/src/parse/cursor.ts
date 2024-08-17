@@ -60,8 +60,13 @@ export function newCursor(pos = 0, buf?: Buffer, tracker?: ByteAccessTracker): C
        * to ensure the cursor is in the correct position when returning
        * from a nested SQ recursion, i.e. before popping the last SQ off
        * the stack, otherwise the parent<>recurseive cursor sync breaks.
-       * i.e. last one to second to last one. This then propagates whenever called and
-       * ensures the traversal is correct when we return to the parent parse() call.
+       * i.e. last one to second to last one. This then propagates whenever
+       * called and ensures the traversal is correct when we return to the
+       * parent parse() call.
+       *
+       * WARN: must be called before LIFO pop() otherwise the sync can't happen
+       * because it depends on the last item in the stack.
+       *
        * @param ctx
        */
       sync(ctx: Ctx, buffer: Buffer) {

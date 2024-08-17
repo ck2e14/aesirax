@@ -100,15 +100,12 @@ export function decodeValue(
       if (decoders.hasOwnProperty(vr)) {
          return decoders[vr](value);
       }
-
       if (vr === VR.OB || vr === VR.OW || vr === VR.OF) {
          return `Binary data (${vr}): ${value.length} bytes`;
       }
-
       if (value.length > 1024) {
          return "Assumed to be binary data, not supported for decoding/display";
       }
-
       return value.toString();
    } catch (error) {
       return decoders.default(value);
@@ -236,55 +233,30 @@ export function decodeVRAndMoveCursor(buffer: Buffer, cursor: Cursor, el: Elemen
  * @param buffer
  * @returns Continue
  */
-type Continue = boolean | void;
-export function decodeLenMoveAndCursor(
-   el: Element,
-   cursor: Cursor,
-   buffer: Buffer,
-   ctx: Ctx
-): Continue {
-   // Check if a standard VR, wich is the simple case:
-   // save length, walk cursor, return control to parse()
+export function decodeLenMoveAndCursor(el: Element, cursor: Cursor, buffer: Buffer, ctx: Ctx) {
+   // ----  Standard VR ----
    if (!isExtVr(el.vr)) {
-      el.length = ctx.usingLE //
-         ? buffer.readUInt16LE(cursor.pos)
-         : buffer.readUInt16BE(cursor.pos); // len < 2 bytes, (65,535)
+      decodeValueLength(el, buffer, cursor, ctx);
       cursor.walk(ByteLen.UINT_16, ctx, buffer);
       return false;
    }
 
-   // ----- Else handle the extended VR tags ------
-
+   // ----- Extended VR ------
    cursor.walk(ByteLen.EXT_VR_RESERVED, ctx, buffer); // 2 unused bytes on all ext VRs - can ignore
    decodeValueLength(el, buffer, cursor, ctx); // lens < 4 bytes, (4,294,967,295)
    cursor.walk(ByteLen.UINT_32, ctx, buffer);
 
    const unsupported =
-      el.vr === VR.OB && el.name !== "FileMetaInformationVersion" && el.length === maxUint32;
+      el.vr === VR.OB && //
+      el.name !== "FileMetaInformationVersion" &&
+      el.length === maxUint32;
 
    if (unsupported) {
       throw new DicomError({
          errorType: DicomErrorType.PARSING,
-         message: `OB VR is not supported in this version of the parser.`,
+         message: `OB VR of undefined length is not supported in this version of the parser`,
       });
    }
-
-   // ----- Handle OW ------
-   // WARN currently assumes 1 fragment only.
-   // WARN not supporting non fragmented OB (e.g. in file meta info)
-   if (el.vr == VR.OW) {
-      parseOW(ctx, el, cursor, buffer);
-      return true;
-   }
-
-   //  ----- Handle SQ ------
-   if (el.vr === VR.SQ) {
-      parseSQ(buffer, ctx, el, cursor); // recurse with context flags
-      removeSqFromStack(ctx); // must sync parent + child cursors before this point
-      return true;
-   }
-
-   return false;
 }
 
 /**
@@ -295,9 +267,15 @@ export function decodeLenMoveAndCursor(
  * @param ctx
  */
 function decodeValueLength(el: Element, buffer: Buffer, cursor: Cursor, ctx: Ctx) {
-   el.length = ctx.usingLE //
-      ? buffer.readUInt32LE(cursor.pos)
-      : buffer.readUInt32BE(cursor.pos);
+   if (isExtVr(el.vr)) {
+      el.length = ctx.usingLE //
+         ? buffer.readUInt32LE(cursor.pos)
+         : buffer.readUInt32BE(cursor.pos); // len < 4 bytes, (4,294,967,295)
+   } else {
+      el.length = ctx.usingLE //
+         ? buffer.readUInt16LE(cursor.pos)
+         : buffer.readUInt16BE(cursor.pos); // len < 2 bytes, (65,535)
+   }
 }
 
 /**

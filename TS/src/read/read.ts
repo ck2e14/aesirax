@@ -104,18 +104,18 @@ function detectMisalignment(ctx: Ctx, throwMode = false) {
    const outerCursorTraversal = ctx.outerCursor.tracker.getTotalBytesAccessed();
    const expectedTraversal = ctx.totalBytes - (premableLen + header.length);
 
-   write(`Outer cursor traversal: ${outerCursorTraversal}, expected ${expectedTraversal}`, "DEBUG");
+   write(`Cursor traversal: ${outerCursorTraversal}, expected ${expectedTraversal}`, "DEBUG");
 
    if (outerCursorTraversal !== expectedTraversal) {
       write(
-         `!! => Outer cursor traversal (${outerCursorTraversal}) !== total bytes traversed ${expectedTraversal}`,
+         `!! => Cursor traversal (${outerCursorTraversal}) !== total bytes traversed ${expectedTraversal}`,
          "ERROR"
       );
    }
 
    if (outerCursorTraversal !== expectedTraversal && throwMode) {
       throw new DicomError({
-         message: `Outer cursor traversal (${outerCursorTraversal}) !== total bytes traversed ${expectedTraversal}`,
+         message: `Cursor traversal (${outerCursorTraversal}) !== total bytes traversed ${expectedTraversal}`,
          errorType: DicomErrorType.PARSING,
       });
    }
