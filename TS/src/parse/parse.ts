@@ -1,7 +1,7 @@
 import { write } from "../logging/logQ.js";
 import { Ctx } from "../read/read.js";
 import { BufferBoundary, DicomError, MalformedDicom, UndefinedLength } from "../error/errors.js";
-import { getTagName, logElement } from "../utils.js";
+import { getTagName, logElement, printSqCtx } from "../utils.js";
 import { ByteLen, DicomErrorType, TagDictByName, VR } from "../globalEnums.js";
 import { newCursor, Cursor } from "./cursor.js";
 import { parseLength, decodeTag, parseValue, parseVR, TagStr } from "./parsers.js";
@@ -279,6 +279,7 @@ export function removeSqFromStack(ctx: Ctx) {
    ctx.sqLens.pop();
    ctx.sqStack.pop();
    ctx.sqBytesTraversed.pop();
+   console.log(printSqCtx(ctx));
 }
 
 /**
@@ -365,8 +366,7 @@ export function parseSQ(buffer: Buffer, ctx: Ctx, el: Element, parentCursor: Cur
 
    // ---- Trigger buffer stitching ----
    if (bufferTrunc?.length > 0) {
-      const { sq } = stacks(ctx);
-      throw new BufferBoundary(`SQ ${sq.name} is split across buffer boundary`); // trigger stitching
+      throw new BufferBoundary(`SQ ${stacks(ctx).sq.name} is split across buffer boundary`);
    }
 }
 
