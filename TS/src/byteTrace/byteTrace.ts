@@ -1,3 +1,5 @@
+import { Ctx } from "../read/read.js";
+
 /**
  * This class is used to track the number of times each byte in a buffer is accessed.
  * I made it because I wanted to make sure that the algo was strictly linear under
@@ -10,6 +12,15 @@
  * from the start of the last element) is triggered. This would help identify those cases and
  * in time, this could be used to dynamically select a different algorithm that relies
  * on a different mode/configuration of streaming, and/or paralellised processing.
+ *
+ * have a feeling you need to do the same lifo and then syncing process for this as you do for cursors
+ * .. aside from the fact stitching seems fucked, which i think is a separate issue, in cases
+ * where your highwatermark is greater than the filesize (i.e. no stitching), your total bytes traversed
+ * function (reducer which sums the counts per index) sums just fine, but this.accessCount's positions
+ * incorrectly reflect which bytes - in the overall file - were accessed. Because in each SQ recursion
+ * where we use a seqBuffer, and a new cursor, the position goes to 0, and this class is unaware of
+ * that context so it blindly takes that index.
+ *
  */
 export class ByteAccessTracker {
    private accessCount: number[] = [];
@@ -19,8 +30,14 @@ export class ByteAccessTracker {
       this.accessCount = new Array(bufferSize).fill(0);
    }
 
-   trackAccess(position: number, length: number) {
-      console.log('track access called');
+   increaseAccessCount(bytes: number) {
+      this.accessCount = this.accessCount.concat(new Array(bytes).fill(0));
+   }
+
+   trackAccess(position: number, length: number, ctx: Ctx) {
+      // THIS IS NOT WORKING WITH SITCHING ATM.
+      // nor accurately recording byte access because SQ parsing has a new cursor position at 0 and no offset is being used in this method.
+
       for (let i = position; i < position + length; i++) {
          this.accessCount[i]++;
       }

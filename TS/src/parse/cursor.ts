@@ -2,6 +2,7 @@ import { ByteAccessTracker } from "../byteTrace/byteTrace.js";
 import { BufferBoundary } from "../error/errors.js";
 import { Ctx } from "../read/read.js";
 import { inSQ } from "./parse.js";
+import { write } from "../logging/logQ.js";
 
 export type Cursor = {
    pos: number;
@@ -10,19 +11,29 @@ export type Cursor = {
    sync: (ctx: Ctx, buffer: Buffer) => void;
    buf?: Buffer;
    tracker: ByteAccessTracker;
+   isOuter: boolean;
+   id: string;
 };
-
-let x = 0;
 
 /**
  * Create a stateful cursor object to track where we're at in the buffer.
  * @returns Cursor
  */
-export function newCursor(pos = 0, buf?: Buffer, tracker?: ByteAccessTracker): Cursor {
+export function newCursor(
+   pos = 0,
+   buf?: Buffer,
+   tracker?: ByteAccessTracker,
+   isOuter = false
+): Cursor {
+   const id = (Math.random() * 100000).toFixed(0);
+   write(`Created new cursor with ID: ${id}`, "DEBUG");
+
    return {
       buf: buf,
       tracker: tracker,
       pos: pos,
+      isOuter: isOuter,
+      id,
 
       /**
        * Move the cursor forwards by n bytes.
@@ -30,16 +41,40 @@ export function newCursor(pos = 0, buf?: Buffer, tracker?: ByteAccessTracker): C
        * @param ctx
        * @param buffer
        */
-      walk(n: number, ctx: Ctx, buffer?: Buffer, incGlobal = true) {
+      walk(n: number, ctx: Ctx, buffer?: Buffer, isSync = false) {
          if (buffer && this.pos + n > buffer.length) {
             throw new BufferBoundary(`Cursor walk would exceed buffer length`);
+         }
+
+         if (!isSync) {
+            for (let i = this.pos; i < this.pos + n; i++) {
+               // --- Add in un-sync'd traversal as offsets to the outer cursor when working in deeply nested sequences
+               if (ctx.sqStack.length > 1) {
+                  const nestedOffsets = ctx.sqBytesTraversed
+                     .slice(0, -1) // .slice the last one off because that is being traversed by 'this' cursor.
+                     .reduce((a, b) => a + b, 0);
+                  ctx.visitedBytes[ctx.outerCursor.pos + nestedOffsets + i] ??= 0;
+                  ctx.visitedBytes[ctx.outerCursor.pos + nestedOffsets + i]++;
+                  continue;
+               }
+
+               // --- Don't need to touch the stacks' traversal offsets because 'this' cursor is the one doing the 1-level recursion
+               if (ctx.sqStack.length === 1) {
+                  ctx.visitedBytes[ctx.outerCursor.pos + i] ??= 0;
+                  ctx.visitedBytes[ctx.outerCursor.pos + i]++;
+                  continue;
+               }
+
+               // --- Otherwise if we're in the top level no further offset addition required
+               ctx.visitedBytes[i] ??= 0;
+               ctx.visitedBytes[i]++;
+            }
          }
 
          if (inSQ(ctx)) {
             ctx.sqBytesTraversed[ctx.sqBytesTraversed.length - 1] += n;
          }
 
-         tracker?.trackAccess(this.pos, n); // this runs on the top level to avoid double counting from nested SQ's where walk() is called in the child cursor, which ++ its own internal state and the sqBytesTraversed stack AND any global counter, and then .sync() calls .walk() on the parent i.e. double counting those bytes in the global counter. Same solution as using the now un-used incGobal variable that we call false on when running this.walk() from inside cursor.sync()
          this.pos += n;
       },
 
@@ -60,7 +95,7 @@ export function newCursor(pos = 0, buf?: Buffer, tracker?: ByteAccessTracker): C
        * to ensure the cursor is in the correct position when returning
        * from a nested SQ recursion, i.e. before popping the last SQ off
        * the stack, otherwise the parent<>recurseive cursor sync breaks.
-       * i.e. last one to second to last one. This then propagates whenever 
+       * i.e. last one to second to last one. This then propagates whenever
        * called and ensures the traversal is correct when we return to the parent parse() call.
        *
        * WARN: must be called before LIFO pop() otherwise the sync can't happen
@@ -69,10 +104,12 @@ export function newCursor(pos = 0, buf?: Buffer, tracker?: ByteAccessTracker): C
        * @param ctx
        */
       sync(ctx: Ctx, buffer: Buffer) {
-         ctx.sqBytesTraversed[ctx.sqBytesTraversed.length - 2] =
-            ctx.sqBytesTraversed[ctx.sqBytesTraversed.length - 2] +
-            ctx.sqBytesTraversed[ctx.sqBytesTraversed.length - 1];
-         this.walk(ctx.sqBytesTraversed.at(-1), ctx, buffer, false); // sync cursor with the recursive cursor. This must be called BEFORE the LIFO stack.pop else it's either walking 'undefined' if 1 layer of recursion, or by itself, if the nesting is more than 1 layer deep
+         if (ctx.sqStack.length > 1) {
+            ctx.sqBytesTraversed[ctx.sqBytesTraversed.length - 2] =
+               ctx.sqBytesTraversed[ctx.sqBytesTraversed.length - 2] +
+               ctx.sqBytesTraversed[ctx.sqBytesTraversed.length - 1];
+         }
+         this.walk(ctx.sqBytesTraversed.at(-1), ctx, buffer, true);
       },
    };
 }

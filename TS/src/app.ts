@@ -12,9 +12,9 @@ const testDirs = {
       "../data/with_1-depth_sequences_undefinedSQlen_undefinedItemlen", // 130 elements
 
    // nested SQs
-   nestedSQ_singleItemsInsideSQ_definedLengthSQ_definedLengthItems: "../data/Pi", //42 elements. (misplacing elements atm because of nested sequences, see sitrep note below)
+   nestedSQ_singleItemsInsideSQ_definedLengthSQ_definedLengthItems: "../data/Pi",
    nestedSQ_undefinedLens_multipleItems:
-      "/Users/chriskennedy/Desktop/SWE/aesirax/data/QUANTREDEUSIX",
+      "/Users/chriskennedy/Desktop/SWE/aesirax/data/QUANTREDEUSIX", // 111
    nestedSQ_undefinedLens_multipleItems2:
       "/Users/chriskennedy/Desktop/SWE/aesirax/data/CUMMINSMARJORIE",
 
@@ -39,8 +39,8 @@ async function main(cfg: Global.Cfg) {
 
    await init();
 
+   // cfg.targetDir = testDirs.nestedSQ_undefinedLens_multipleItems;
    cfg.targetDir = testDirs.nestedSQ_undefinedLens_multipleItems;
-   // cfg.targetDir = '/Users/chriskennedy/Desktop/SWE/aesirax/data/JonathanSnowMR/isolate2NoSQ'
    // cfg.targetDir = '/Users/chriskennedy/Desktop/SWE/aesirax/data/STANWORTHLORNAMISS/SER00001'
    const fileCount = readdirSync(cfg.targetDir).length;
 

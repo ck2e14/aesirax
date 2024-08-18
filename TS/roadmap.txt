@@ -98,3 +98,24 @@ emitting/piping of the data, e.g. perhaps to a TCP stream for DIMSE or a HTTP st
 // worker threads are probably better for this because the actual computation
 // we'll be doing will not be done in the systemcall-land, which is where I/O
 // parallesation gains are made, it's done inside JS land.
+
+
+Exploring how DICOM can be used to craft attack vectors
+
+1. SQLi 
+If systems are dynamically creating SQL query parameters from DICOM element values this can risk SQLi.
+However, using appropriate tooling that comes bundled with sanitisation, and not injecting directly into SQL query  strings (instead using parameterised queries) this should be a safely mitigated vector.
+
+2. File type confusion 
+One of the challenges of using DICOM to embed malicious code is that the filetype is not an executable and a systm will therefore not try to execute it or its contents as code. One approach to forming an attack vector here is to create confusion in the handling system about what the file actually is - lying about itself 
+
+3. Embed XSS exploitative javascript inside DICOM values 
+
+4. CLI injections. 
+Poorly sanitised element values, passed to command line tooling. 
+Requires knowledge or well-founded expectation of what CLI tools - and commands - are being used. Speculative attacking would still be plausible but pretty unlikely to elicit specific desired effects rather than just some sort of generalised mayhem given the breadth of tooling and commands that could possibly be in use by systems. 
+
+5. Secondary payload delivery
+This doesn't involve trying to get a malicious payload or data to be executed itself but may form part of obfuscation and/or recombination techniques. This would be highly elaborate and relies on some other combined, separeate attack vector exploitation to actuall recombine and/or execute payloads in some description. Sophisticated approach that may not even be the best way for an attacker to craft an attack. 
+
+6. Steganography could be used, given DICOMs intrinsic link to imaging formats, to hide the existence of malicious code. 

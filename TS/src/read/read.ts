@@ -1,10 +1,11 @@
 import { DicomErrorType, TransferSyntaxUid } from "../globalEnums.js";
 import { DicomError, UnsupportedTSN } from "../error/errors.js";
-import { createReadStream } from "fs";
+import { createReadStream, writeFileSync } from "fs";
 import { dataSetLength } from "../utils.js";
 import { TagStr } from "../parse/parsers.js";
 import { Cursor } from "../parse/cursor.js";
 import { write } from "../logging/logQ.js";
+import { ByteAccessTracker } from "../byteTrace/byteTrace.js";
 import {
    Element,
    DataSet,
@@ -15,7 +16,6 @@ import {
    premableLen,
    header,
 } from "../parse/parse.js";
-import { ByteAccessTracker } from "../byteTrace/byteTrace.js";
 
 export type Ctx = {
    first: boolean;
@@ -34,7 +34,48 @@ export type Ctx = {
    sqBytesTraversed: number[];
    outerCursor: Cursor;
    totalTraversedBytes: 0;
+
+   // debugging
+   visitedBytes: Record<number, number>;
 };
+
+/**
+ * ctxFactory() is a factory function for creating a Ctx
+ * with default values for the first buffer read from disk.
+ * @param path
+ * @param skipPixels
+ * @returns Ctx
+ */
+export function ctxFactory(
+   path: string,
+   cfg = null,
+   assumeDefaults = true,
+   skipPixels = true
+): Ctx {
+   if (!assumeDefaults) {
+      return { ...cfg, path };
+   }
+
+   return {
+      first: true,
+      dataSet: {},
+      dataSetStack: [],
+      truncatedBuffer: Buffer.alloc(0),
+      bufWatermark: cfg?.bufWatermark ?? 1024 * 1024,
+      totalBytes: 0,
+      path,
+      nByteArray: 0,
+      skipPixelData: skipPixels,
+      transferSyntaxUid: TransferSyntaxUid.ExplicitVRLittleEndian,
+      usingLE: true,
+      sqStack: [],
+      sqLens: [],
+      sqBytesTraversed: [],
+      outerCursor: null,
+      totalTraversedBytes: 0,
+      visitedBytes: {},
+   };
+}
 
 const SMALL_BUF_THRESHOLD = 1024;
 const SMALL_BUF_ADVISORY = `PER_BUF_MAX is less than ${SMALL_BUF_THRESHOLD} bytes. This will work but isn't ideal for I/O efficiency`;
@@ -74,7 +115,6 @@ export function streamParse(
 
       stream.on("data", (currBytes: Buffer) => {
          write(`Streamed ${currBytes.length} bytes to memory from ${path}`, "DEBUG");
-
          ctx.nByteArray = ctx.nByteArray + 1;
          ctx.totalBytes = ctx.totalBytes + currBytes.length;
          ctx.truncatedBuffer = handleDicomBytes(ctx, currBytes);
@@ -84,6 +124,7 @@ export function streamParse(
          detectMisalignment(ctx, false);
          write(`Stream end: Parsed ${dataSetLength(ctx.dataSet)} elements from ${path}`, "DEBUG");
          resolve(ctx.dataSet);
+         writeFileSync("./visisted.json", JSON.stringify(ctx.visitedBytes, null, 3));
          stream.close();
       });
 
@@ -98,22 +139,41 @@ export function streamParse(
  * detectMisalignment() is a helper function for streamParse()
  * to detect if the total bytes traversed by the outer cursor
  * is equal to the expected total bytes traversed. Should always
- * be bang-on else something is wrong.
+ * be bang-on else something is wrong. WARN not working with
+ * stitching nor properly writing which bytes were accessed when
+ * using SQs (because position passed to byteacces.track is 0
+ * and its not aware of the offset, i.e. last access position,
+ * needed to reflect actual position in the files contiguous
+ * bytes versus the seqbuffer we window to the start of the sq)
  * @param ctx
+ * @param throwMode
  */
 function detectMisalignment(ctx: Ctx, throwMode = false) {
    const outerCursorTraversal = ctx.outerCursor.tracker.getTotalBytesAccessed();
    const expectedTraversal = ctx.totalBytes - (premableLen + header.length);
+   const dif = Math.abs(outerCursorTraversal - expectedTraversal);
 
-   write(
-      `Traversed: ${outerCursorTraversal}, expected ${expectedTraversal} (${ctx.totalBytes} - 132)`,
-      "DEBUG"
-   );
+   if (ctx.nByteArray > 1) {
+      write(
+         `Misalignment detection is not currently supported for multi-buffer (stitched) parsing.`,
+         "WARN"
+      );
+      write(
+         `Total file bytes streamed to mem: ${ctx.totalBytes}. Minus preamble & header: ${expectedTraversal}`,
+         "DEBUG"
+      );
+      return;
+   }
 
    if (outerCursorTraversal !== expectedTraversal) {
       write(
-         `!! => Traversed (${outerCursorTraversal}) !== total bytes traversed ${expectedTraversal}`,
+         `!! => BYTE MISALIGNMENT DETECTED: Dif: ${dif}, traversed: ${outerCursorTraversal.toLocaleString()} bytes, expected ${expectedTraversal.toLocaleString()} (${ctx.totalBytes.toLocaleString()} - 132)`,
          "ERROR"
+      );
+   } else {
+      write(
+         `Cursor correctly alignment at finish. Dif: ${dif}, traversed: ${outerCursorTraversal.toLocaleString()} bytes, expected ${expectedTraversal.toLocaleString()} (${ctx.totalBytes.toLocaleString()} - 132)`,
+         "DEBUG"
       );
    }
 
@@ -188,6 +248,7 @@ function handleFirstBuffer(ctx: Ctx, buffer: Buffer): TruncEl {
 function stitchBytes(ctx: Ctx, currBytes: Buffer): Buffer {
    const { truncatedBuffer, path } = ctx;
    write(`Stitching ${truncatedBuffer.length} + ${currBytes.length} bytes (${path})`, "DEBUG");
+   ctx.outerCursor.tracker.increaseAccessCount(currBytes.length); // this bit seems to work ok so leaving here
    return Buffer.concat([truncatedBuffer, currBytes]);
 }
 
@@ -205,41 +266,4 @@ function stitchBytes(ctx: Ctx, currBytes: Buffer): Buffer {
  */
 function getElementValue<T = unknown>(tag: TagStr, elements: DataSet): T {
    return (elements[tag]?.value ?? "NOT FOUND") as T;
-}
-
-/**
- * ctxFactory() is a factory function for creating a Ctx
- * with default values for the first buffer read from disk.
- * @param path
- * @param skipPixels
- * @returns Ctx
- */
-export function ctxFactory(
-   path: string,
-   cfg = null,
-   assumeDefaults = true,
-   skipPixels = true
-): Ctx {
-   if (!assumeDefaults) {
-      return { ...cfg, path };
-   }
-
-   return {
-      first: true,
-      dataSet: {},
-      dataSetStack: [],
-      truncatedBuffer: Buffer.alloc(0),
-      bufWatermark: cfg?.bufWatermark ?? 1024 * 1024,
-      totalBytes: 0,
-      path,
-      nByteArray: 0,
-      skipPixelData: skipPixels,
-      transferSyntaxUid: TransferSyntaxUid.ExplicitVRLittleEndian,
-      usingLE: true,
-      sqStack: [],
-      sqLens: [],
-      sqBytesTraversed: [],
-      outerCursor: null,
-      totalTraversedBytes: 0,
-   };
 }
