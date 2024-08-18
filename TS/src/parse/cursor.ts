@@ -1,7 +1,8 @@
+import { writeFileSync } from "fs";
 import { ByteAccessTracker } from "../byteTrace/byteTrace.js";
 import { BufferBoundary } from "../error/errors.js";
 import { Ctx } from "../read/read.js";
-import { inSQ } from "./parse.js";
+import { inSQ, stacks } from "./parse.js";
 
 export type Cursor = {
    pos: number;
@@ -10,19 +11,29 @@ export type Cursor = {
    sync: (ctx: Ctx, buffer: Buffer) => void;
    buf?: Buffer;
    tracker: ByteAccessTracker;
+   isOuter: boolean;
+   id: string;
 };
-
-let x = 0;
 
 /**
  * Create a stateful cursor object to track where we're at in the buffer.
  * @returns Cursor
  */
-export function newCursor(pos = 0, buf?: Buffer, tracker?: ByteAccessTracker): Cursor {
+export function newCursor(
+   pos = 0,
+   buf?: Buffer,
+   tracker?: ByteAccessTracker,
+   isOuter = false
+): Cursor {
+   const id = (Math.random() * 100000).toFixed(0);
+   console.log(`created new cursor with id: ${id}`);
+
    return {
       buf: buf,
       tracker: tracker,
       pos: pos,
+      isOuter: isOuter,
+      id,
 
       /**
        * Move the cursor forwards by n bytes.
@@ -35,16 +46,41 @@ export function newCursor(pos = 0, buf?: Buffer, tracker?: ByteAccessTracker): C
             throw new BufferBoundary(`Cursor walk would exceed buffer length`);
          }
 
+         if (!isSync) {
+            // for (let i = this.pos; i < this.pos + n; i++) {
+            //    if (inSQ(ctx)) {
+            //       if (ctx.outerCursor.pos + i === 612) {
+            //          console.log("here ", this.id);
+            //       }
+
+            //       ctx.visitedBytes[ctx.outerCursor.pos + i] ??= 0;
+            //       ctx.visitedBytes[ctx.outerCursor.pos + i]++;
+
+            //       console.log(`Visited pos (sq): ${ctx.outerCursor.pos + i}`);
+            //    } else {
+            //       ctx.visitedBytes[i] ??= 0;
+            //       ctx.visitedBytes[i]++;
+            //       console.log(`Visited pos: ${i}`);
+            //    }
+            // }
+         }
+
          if (inSQ(ctx)) {
             ctx.sqBytesTraversed[ctx.sqBytesTraversed.length - 1] += n;
          }
 
          if (!isSync) {
-            ctx.outerCursor.tracker?.trackAccess(this.pos, n, ctx); // note this doesnt support stitching atm...also poorly handles recording SQ byte access because it treats as position 0 again per new SQ and the tracker isn't made aware of this so it just gets pos 0 and accesses index 0 on its tracking array. Cooked. Works for tallying still if not stitching but doens't correctly know which bytes of the overall file have been accessed - thinks the low end indexes are getting repeatedly accessed which obviously they aren't.
-            // this runs on the top level to avoid double counting from nested SQ's where walk() is called in the child cursor, which ++ its own internal state and the sqBytesTraversed stack AND any global counter, and then .sync() calls .walk() on the parent i.e. double counting those bytes in the global counter. Same solution as using the now un-used incGobal variable that we call false on when running this.walk() from inside cursor.sync()
+            // if walk() is called by this.sync() need to avoid double counting byte access
+            ctx.outerCursor.tracker?.trackAccess(ctx.outerCursor.pos ?? 0 + this.pos, n, ctx); // note this doesnt support stitching atm...also poorly handles recording SQ byte access because it treats as position 0 again per new SQ and the tracker isn't made aware of this so it just gets pos 0 and accesses index 0 on its tracking array. Cooked. Works for tallying still if not stitching but doens't correctly know which bytes of the overall file have been accessed - thinks the low end indexes are getting repeatedly accessed which obviously they aren't.// this runs on the top level to avoid double counting from nested SQ's where walk() is called in the child cursor, which ++ its own internal state and the sqBytesTraversed stack AND any global counter, and then .sync() calls .walk() on the parent i.e. double counting those bytes in the global counter. Same solution as using the now un-used incGobal variable that we call false on when running this.walk() from inside cursor.sync()
          }
 
          this.pos += n;
+
+         if (isSync) {
+            // console.log("debug exit");
+            // writeFileSync("./visisted.json", JSON.stringify(ctx.visitedBytes, null, 3));
+            // process.exit();
+         }
       },
 
       /**

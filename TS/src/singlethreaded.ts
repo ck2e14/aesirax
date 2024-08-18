@@ -1,4 +1,4 @@
-import { writeFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { write } from "./logging/logQ.js";
 import { streamParse } from "./read/read.js";
 import { findDICOM, prettyPrintMap } from "./utils.js";
@@ -14,6 +14,7 @@ export async function singleTheaded(cfg: Global.Cfg) {
    const parsedFiles = [];
 
    for (let i = 0; i < paths.length; i++) {
+      const debugLen = readFileSync(paths[i]);
       const elements = await streamParse(paths[i], cfg);
       parsedFiles.push(elements);
    }
@@ -25,10 +26,6 @@ export async function singleTheaded(cfg: Global.Cfg) {
    write(
       `Time elapsed including finding images in dir, streaming, and parsing: ${end - start} ms`,
       "INFO"
-   );
-
-   console.log(
-      `Time elapsed including finding images in dir, streaming, and parsing: ${end - start} ms`
    );
 
    return parsedFiles;

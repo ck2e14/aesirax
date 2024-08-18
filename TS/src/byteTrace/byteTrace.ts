@@ -36,16 +36,7 @@ export class ByteAccessTracker {
 
    trackAccess(position: number, length: number, ctx: Ctx) {
       // THIS IS NOT WORKING WITH SITCHING ATM.
-
-      // It also poorly handles SQ nesting because our parseSQ function feeds parse() a new
-      // buffer subarray, and a new cursor is made, so our position that gets fed to this
-      // function becomes 0 again. This doesn't stop the final tally from working - as long
-      // as stitching isn't being used. But incorrectly records the indexes that are being
-      // accessed and thinks bytes are being repeatedly visited while others never visisted,
-      // which is obviously wrong. This whole class needs a synchronised approach with the
-      // lifo stacking or cba, idk. Brain fucking tired, im calling it quits today. For now
-      // i've just disabled using it for cursor alignment tracking in read() at the end, if
-      // ctx.nByteArrays is higher than 1 (i.e. stitching detected. )
+      // nor accurately recording byte access because SQ parsing has a new cursor position at 0 and no offset is being used in this method.
 
       for (let i = position; i < position + length; i++) {
          this.accessCount[i]++;

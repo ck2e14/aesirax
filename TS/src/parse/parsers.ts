@@ -228,7 +228,7 @@ export function parseVR(buffer: Buffer, cursor: Cursor, el: Element, ctx: Ctx) {
  * @param buffer
  * @returns Continue
  */
-export function decodeLenMoveAndCursor(el: Element, cursor: Cursor, buffer: Buffer, ctx: Ctx) {
+export function parseLength(el: Element, cursor: Cursor, buffer: Buffer, ctx: Ctx) {
    // ----  Standard VR ----
    if (!isExtVr(el.vr)) {
       decodeValueBytesLength(el, buffer, cursor, ctx);
@@ -281,9 +281,9 @@ function decodeValueBytesLength(el: Element, buffer: Buffer, cursor: Cursor, ctx
  * @param buf
  * @returns string
  */
-export function decodeTagNum(buf: Buffer): TagStr {
+export function decodeTag(buf: Buffer): TagStr {
    if (buf.length !== 4) {
-      throw new BufferBoundary(`decodeTagNum() expected 4 bytes, got ${buf.length}`);
+      throw new BufferBoundary(`decodeTag() expected 4 bytes, got ${buf.length}`);
    }
 
    const decode = (offset: number): string => {
