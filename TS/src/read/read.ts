@@ -1,11 +1,10 @@
 import { DicomErrorType, TransferSyntaxUid } from "../globalEnums.js";
-import { DicomError, UnsupportedTSN } from "../error/errors.js";
 import { createReadStream, writeFileSync } from "fs";
+import { DicomError, UnsupportedTSN } from "../error/errors.js";
 import { dataSetLength } from "../utils.js";
 import { TagStr } from "../parse/parsers.js";
 import { Cursor } from "../parse/cursor.js";
 import { write } from "../logging/logQ.js";
-import { ByteAccessTracker } from "../byteTrace/byteTrace.js";
 import {
    Element,
    DataSet,
@@ -13,30 +12,25 @@ import {
    validatePreamble,
    parse,
    TruncEl,
-   premableLen,
-   header,
 } from "../parse/parse.js";
 
 export type Ctx = {
    first: boolean;
+   path: string;
    dataSet: DataSet;
-   dataSetStack: DataSet[];
    truncatedBuffer: Buffer;
    bufWatermark: number;
-   totalBytes: number;
-   path: string;
+   totalStreamedBytes: number; // this is not cursor-driven, i.e. nothing to do with parse(). It's the sum of the size of all buffers streamed into memory.
    nByteArray: number;
    skipPixelData: boolean;
    transferSyntaxUid: TransferSyntaxUid;
    usingLE: boolean;
+   outerCursor: Cursor;
+   visitedBytes: Record<number, number>; // cursor-walk driven. Refers to bytes we actually interacted with. Doesn't necessarily mean read from, may have walked straight past some depending on what they were expected to have been e.g. null VR bytes
+   // --- sq stacking
    sqStack: Element[];
    sqLens: number[];
-   sqBytesTraversed: number[];
-   outerCursor: Cursor;
-   totalTraversedBytes: 0;
-
-   // debugging
-   visitedBytes: Record<number, number>;
+   sqBytesStack: number[];
 };
 
 /**
@@ -57,22 +51,20 @@ export function ctxFactory(
    }
 
    return {
+      path,
       first: true,
       dataSet: {},
-      dataSetStack: [],
       truncatedBuffer: Buffer.alloc(0),
       bufWatermark: cfg?.bufWatermark ?? 1024 * 1024,
-      totalBytes: 0,
-      path,
+      totalStreamedBytes: 0,
       nByteArray: 0,
       skipPixelData: skipPixels,
       transferSyntaxUid: TransferSyntaxUid.ExplicitVRLittleEndian,
       usingLE: true,
       sqStack: [],
       sqLens: [],
-      sqBytesTraversed: [],
+      sqBytesStack: [],
       outerCursor: null,
-      totalTraversedBytes: 0,
       visitedBytes: {},
    };
 }
@@ -116,7 +108,7 @@ export function streamParse(
       stream.on("data", (currBytes: Buffer) => {
          write(`Streamed ${currBytes.length} bytes to memory from ${path}`, "DEBUG");
          ctx.nByteArray = ctx.nByteArray + 1;
-         ctx.totalBytes = ctx.totalBytes + currBytes.length;
+         ctx.totalStreamedBytes = ctx.totalStreamedBytes + currBytes.length;
          ctx.truncatedBuffer = handleDicomBytes(ctx, currBytes);
       });
 
@@ -145,43 +137,46 @@ export function streamParse(
  * and its not aware of the offset, i.e. last access position,
  * needed to reflect actual position in the files contiguous
  * bytes versus the seqbuffer we window to the start of the sq)
+ *
+ * TODO implement throwMode
+ *
  * @param ctx
  * @param throwMode
  */
 function detectMisalignment(ctx: Ctx, throwMode = false) {
-   const outerCursorTraversal = ctx.outerCursor.tracker.getTotalBytesAccessed();
-   const expectedTraversal = ctx.totalBytes - (premableLen + header.length);
-   const dif = Math.abs(outerCursorTraversal - expectedTraversal);
+   const fileLen = ctx.totalStreamedBytes - 132; // minus preamble + header
+   const fileLenStr = fileLen.toLocaleString();
+   const outerCursorPosStr = ctx.outerCursor.pos.toLocaleString();
 
-   if (ctx.nByteArray > 1) {
-      write(
-         `Misalignment detection is not currently supported for multi-buffer (stitched) parsing.`,
-         "WARN"
-      );
-      write(
-         `Total file bytes streamed to mem: ${ctx.totalBytes}. Minus preamble & header: ${expectedTraversal}`,
-         "DEBUG"
-      );
-      return;
+   for (let i = 0; i < fileLen; i++) {
+      if (!ctx.visitedBytes.hasOwnProperty(i)) {
+         write(
+            `Linear byte traversal demands each byte is walked at least once, but visitedBytes is missing position ${i}`,
+            "WARN"
+         );
+      }
+
+      if (ctx.nByteArray === 1) {
+         // if no stitching, then it should be truly linear runtime algo
+         if (ctx.visitedBytes[i] !== 1) {
+            write(
+               `Expected a single visit to byte position ${i} given that no stitching occured. Visisted (or wrongly tracked) ${ctx.visitedBytes[i]} times`,
+               "WARN"
+            );
+         }
+      }
    }
 
-   if (outerCursorTraversal !== expectedTraversal) {
+   if (ctx.outerCursor.pos !== fileLen) {
       write(
-         `!! => BYTE MISALIGNMENT DETECTED: Dif: ${dif}, traversed: ${outerCursorTraversal.toLocaleString()} bytes, expected ${expectedTraversal.toLocaleString()} (${ctx.totalBytes.toLocaleString()} - 132)`,
-         "ERROR"
+         `OuterCursor was expected to be at the end of the file (length: ${fileLenStr}) after completion but is at position: ${ctx.outerCursor.pos}`,
+         "WARN"
       );
    } else {
       write(
-         `Cursor correctly alignment at finish. Dif: ${dif}, traversed: ${outerCursorTraversal.toLocaleString()} bytes, expected ${expectedTraversal.toLocaleString()} (${ctx.totalBytes.toLocaleString()} - 132)`,
+         `OuterCursor (position ${outerCursorPosStr}) is correctly placed at the end of the file (length: ${fileLenStr}) after parsing.`,
          "DEBUG"
       );
-   }
-
-   if (outerCursorTraversal !== expectedTraversal && throwMode) {
-      throw new DicomError({
-         message: `Cursor traversal (${outerCursorTraversal}) !== total bytes traversed ${expectedTraversal}`,
-         errorType: DicomErrorType.PARSING,
-      });
    }
 }
 
@@ -223,7 +218,6 @@ function handleFirstBuffer(ctx: Ctx, buffer: Buffer): TruncEl {
    validatePreamble(buffer); // throws if not void
    validateHeader(buffer); // throws if not void
 
-   ctx.totalTraversedBytes += premableLen + header.length;
    const parseResponse = parse(buffer.subarray(HEADER_END, buffer.length), ctx); // window the buffer beyond 'DICM' header to start at File Meta Info section
    const tsn = getElementValue<string>("(0002,0010)", ctx.dataSet);
 

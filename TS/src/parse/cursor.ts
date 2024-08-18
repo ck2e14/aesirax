@@ -46,11 +46,15 @@ export function newCursor(
             throw new BufferBoundary(`Cursor walk would exceed buffer length`);
          }
 
+         // WARN don't think this supports stitching atm. But it does support any depth of nested SQs
+
          if (!isSync) {
             for (let i = this.pos; i < this.pos + n; i++) {
+               // TODO do a similar offset process for handling sitched buffers?
+
                // --- Add in un-sync'd traversal as offsets to the outer cursor when working in deeply nested sequences
                if (ctx.sqStack.length > 1) {
-                  const nestedOffsets = ctx.sqBytesTraversed
+                  const nestedOffsets = ctx.sqBytesStack
                      .slice(0, -1) // .slice the last one off because that is being traversed by 'this' cursor.
                      .reduce((a, b) => a + b, 0);
                   ctx.visitedBytes[ctx.outerCursor.pos + nestedOffsets + i] ??= 0;
@@ -72,7 +76,7 @@ export function newCursor(
          }
 
          if (inSQ(ctx)) {
-            ctx.sqBytesTraversed[ctx.sqBytesTraversed.length - 1] += n;
+            ctx.sqBytesStack[ctx.sqBytesStack.length - 1] += n;
          }
 
          this.pos += n;
@@ -105,11 +109,11 @@ export function newCursor(
        */
       sync(ctx: Ctx, buffer: Buffer) {
          if (ctx.sqStack.length > 1) {
-            ctx.sqBytesTraversed[ctx.sqBytesTraversed.length - 2] =
-               ctx.sqBytesTraversed[ctx.sqBytesTraversed.length - 2] +
-               ctx.sqBytesTraversed[ctx.sqBytesTraversed.length - 1];
+            ctx.sqBytesStack[ctx.sqBytesStack.length - 2] =
+               ctx.sqBytesStack[ctx.sqBytesStack.length - 2] +
+               ctx.sqBytesStack[ctx.sqBytesStack.length - 1];
          }
-         this.walk(ctx.sqBytesTraversed.at(-1), ctx, buffer, true);
+         this.walk(ctx.sqBytesStack.at(-1), ctx, buffer, true);
       },
    };
 }

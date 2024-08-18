@@ -278,8 +278,7 @@ function handleParserErrors(
 export function removeSqFromStack(ctx: Ctx) {
    ctx.sqLens.pop();
    ctx.sqStack.pop();
-   ctx.sqBytesTraversed.pop();
-   console.log(printSqCtx(ctx));
+   ctx.sqBytesStack.pop();
 }
 
 /**
@@ -381,7 +380,7 @@ export function parseSQ(buffer: Buffer, ctx: Ctx, el: Element, parentCursor: Cur
 function trackSequenceElement(ctx: Ctx, el: Element, newSq: Element) {
    ctx.sqLens.push(el.length);
    ctx.sqStack.push(newSq);
-   ctx.sqBytesTraversed.push(0);
+   ctx.sqBytesStack.push(0);
 }
 
 /**
@@ -462,9 +461,9 @@ export function stacks(ctx: Ctx) {
       len: ctx.sqLens.at(-1),
       sq: ctx.sqStack.at(-1),
       lastSqItem: ctx.sqStack.at(-1)?.items?.at(-1),
-      bytes: ctx.sqBytesTraversed.at(-1),
-      allBytesN: () => ctx.sqBytesTraversed.reduce((a, b) => a + b, 0),
-      allBytes: ctx.sqBytesTraversed,
+      bytes: ctx.sqBytesStack.at(-1),
+      allBytesN: () => ctx.sqBytesStack.reduce((a, b) => a + b, 0),
+      allBytes: ctx.sqBytesStack,
    };
 }
 

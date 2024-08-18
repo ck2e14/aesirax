@@ -153,7 +153,7 @@ export function printSqCtx(ctx: Ctx) {
    const printObj = {
       sqLens: ctx.sqLens,
       sqStack: ctx.sqStack.map(sq => sq.name).join(" > "),
-      sqBytesTraversed: ctx.sqBytesTraversed,
+      sqBytesStack: ctx.sqBytesStack,
    };
    return `SQ Context: ${json(printObj)}`;
 }
