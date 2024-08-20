@@ -6,31 +6,31 @@ import { TagStr } from "../parse/parsers.js";
 import { Cursor } from "../parse/cursor.js";
 import { write } from "../logging/logQ.js";
 import {
-   Element,
-   DataSet,
-   validateHeader,
-   validatePreamble,
-   parse,
-   PartialEl,
+  Element,
+  DataSet,
+  validateHeader,
+  validatePreamble,
+  parse,
+  PartialEl,
 } from "../parse/parse.js";
 
 export type Ctx = {
-   first: boolean;
-   path: string;
-   dataSet: DataSet;
-   truncatedBuffer: Buffer;
-   bufWatermark: number;
-   totalStreamedBytes: number; // this is not cursor-driven, i.e. nothing to do with parse(). It's the sum of the size of all buffers streamed into memory.
-   nByteArray: number;
-   skipPixelData: boolean;
-   transferSyntaxUid: TransferSyntaxUid;
-   usingLE: boolean;
-   outerCursor: Cursor;
-   visitedBytes: Record<number, number>; // cursor-walk driven. Refers to bytes we actually interacted with. Doesn't necessarily mean read from, may have walked straight past some depending on what they were expected to have been e.g. null VR bytes
-   // --- sq stacking
-   sqStack: Element[];
-   sqLens: number[];
-   sqBytesStack: number[];
+  first: boolean;
+  path: string;
+  dataSet: DataSet;
+  truncatedBuffer: Buffer;
+  bufWatermark: number;
+  totalStreamedBytes: number; // this is not cursor-driven, i.e. nothing to do with parse(). It's the sum of the size of all buffers streamed into memory.
+  nByteArray: number;
+  skipPixelData: boolean;
+  transferSyntaxUid: TransferSyntaxUid;
+  usingLE: boolean;
+  outerCursor: Cursor;
+  visitedBytes: Record<number, number>; // cursor-walk driven. Refers to bytes we actually interacted with. Doesn't necessarily mean read from, may have walked straight past some depending on what they were expected to have been e.g. null VR bytes
+  // --- sq stacking
+  sqStack: Element[];
+  sqLens: number[];
+  sqBytesStack: number[];
 };
 
 /**
@@ -41,32 +41,32 @@ export type Ctx = {
  * @returns Ctx
  */
 export function ctxFactory(
-   path: string,
-   cfg = null,
-   assumeDefaults = true,
-   skipPixels = true
+  path: string,
+  cfg = null,
+  assumeDefaults = true,
+  skipPixels = true
 ): Ctx {
-   if (!assumeDefaults) {
-      return { ...cfg, path };
-   }
+  if (!assumeDefaults) {
+    return { ...cfg, path };
+  }
 
-   return {
-      path,
-      first: true,
-      dataSet: {},
-      truncatedBuffer: Buffer.alloc(0),
-      bufWatermark: cfg?.bufWatermark ?? 1024 * 1024,
-      totalStreamedBytes: 0,
-      nByteArray: 0,
-      skipPixelData: skipPixels,
-      transferSyntaxUid: TransferSyntaxUid.ExplicitVRLittleEndian,
-      usingLE: true,
-      sqStack: [],
-      sqLens: [],
-      sqBytesStack: [],
-      outerCursor: null,
-      visitedBytes: {},
-   };
+  return {
+    path,
+    first: true,
+    dataSet: {},
+    truncatedBuffer: Buffer.alloc(0),
+    bufWatermark: cfg?.bufWatermark ?? 1024 * 1024,
+    totalStreamedBytes: 0,
+    nByteArray: 0,
+    skipPixelData: skipPixels,
+    transferSyntaxUid: TransferSyntaxUid.ExplicitVRLittleEndian,
+    usingLE: true,
+    sqStack: [],
+    sqLens: [],
+    sqBytesStack: [],
+    outerCursor: null,
+    visitedBytes: {},
+  };
 }
 
 const SMALL_BUF_THRESHOLD = 1024;
@@ -85,46 +85,46 @@ const HEADER_END = 132;
  * @throws DicomError
  */
 export function streamParse(
-   path: string,
-   cfg: Global.Cfg = null,
-   skipPixelData = true
+  path: string,
+  cfg: Global.Cfg = null,
+  skipPixelData = true
 ): Promise<DataSet> {
-   const ctx = ctxFactory(path, cfg, true, skipPixelData);
+  const ctx = ctxFactory(path, cfg, true, skipPixelData);
 
-   if (ctx.bufWatermark < HEADER_END + 1) {
-      throw new DicomError({
-         message: `PER_BUF_MAX must be at least ${HEADER_END + 1} bytes.`,
-         errorType: DicomErrorType.BUNDLE_CONFIG,
-      });
-   }
+  if (ctx.bufWatermark < HEADER_END + 1) {
+    throw new DicomError({
+      message: `PER_BUF_MAX must be at least ${HEADER_END + 1} bytes.`,
+      errorType: DicomErrorType.BUNDLE_CONFIG,
+    });
+  }
 
-   if (ctx.bufWatermark < SMALL_BUF_THRESHOLD) {
-      write(SMALL_BUF_ADVISORY, "WARN");
-   }
+  if (ctx.bufWatermark < SMALL_BUF_THRESHOLD) {
+    write(SMALL_BUF_ADVISORY, "WARN");
+  }
 
-   return new Promise<DataSet>((resolve, reject) => {
-      const stream = createReadStream(path, { highWaterMark: ctx.bufWatermark });
+  return new Promise<DataSet>((resolve, reject) => {
+    const stream = createReadStream(path, { highWaterMark: ctx.bufWatermark });
 
-      stream.on("data", (currBytes: Buffer) => {
-         write(`Streamed ${currBytes.length} bytes to memory from ${path}`, "DEBUG");
-         ctx.nByteArray = ctx.nByteArray + 1;
-         ctx.totalStreamedBytes = ctx.totalStreamedBytes + currBytes.length;
-         ctx.truncatedBuffer = handleDicomBytes(ctx, currBytes);
-      });
+    stream.on("data", (currBytes: Buffer) => {
+      write(`Streamed ${currBytes.length} bytes to memory from ${path}`, "DEBUG");
+      ctx.nByteArray = ctx.nByteArray + 1;
+      ctx.totalStreamedBytes = ctx.totalStreamedBytes + currBytes.length;
+      ctx.truncatedBuffer = handleDicomBytes(ctx, currBytes);
+    });
 
-      stream.on("end", () => {
-         detectMisalignment(ctx, false);
-         write(`Stream end: Parsed ${dataSetLength(ctx.dataSet)} elements from ${path}`, "DEBUG");
-         resolve(ctx.dataSet);
-         writeFileSync("./visisted.json", JSON.stringify(ctx.visitedBytes, null, 3));
-         stream.close();
-      });
+    stream.on("end", () => {
+      detectMisalignment(ctx, false);
+      write(`Stream end: Parsed ${dataSetLength(ctx.dataSet)} elements from ${path}`, "DEBUG");
+      resolve(ctx.dataSet);
+      writeFileSync("./visisted.json", JSON.stringify(ctx.visitedBytes, null, 3));
+      stream.close();
+    });
 
-      stream.on("error", error => {
-         reject(DicomError.from(error, DicomErrorType.READ));
-         stream.close();
-      });
-   });
+    stream.on("error", error => {
+      reject(DicomError.from(error, DicomErrorType.READ));
+      stream.close();
+    });
+  });
 }
 
 /**
@@ -144,43 +144,44 @@ export function streamParse(
  * @param throwMode
  */
 function detectMisalignment(ctx: Ctx, throwMode = false) {
-   const fileLen = ctx.totalStreamedBytes - 132; // minus preamble + HEADER
-   const fileLenStr = fileLen.toLocaleString();
-   const outerCursorPosStr = ctx.outerCursor.pos.toLocaleString();
+  const fileLen = ctx.totalStreamedBytes - 132; // minus preamble + HEADER
+  const fileLenStr = fileLen.toLocaleString();
+  const outerCursorPosStr = ctx.outerCursor.pos.toLocaleString();
 
-   // if no stitching, then it should be truly linear runtime algo. otherwise by necessity there are some revisited bytes,
-   // for which we can optimise in future. For now as well, stitching is not supported in the visitedBytes access tracking
-   // so constrain this check to when we've read the entire file as one buffer. Seems also that ctx.outerCursor is also
-   // not properly incrementing when stitching??
-   if (ctx.nByteArray === 1) {
-      for (let i = 0; i < fileLen; i++) {
-         if (!ctx.visitedBytes.hasOwnProperty(i)) {
-            write(
-               `Linear byte traversal demands each byte is walked at least once, but visitedBytes is missing position ${i}`,
-               "WARN"
-            );
-         }
-
-         if (ctx.visitedBytes[i] !== 1) {
-            write(
-               `Expected a single visit to byte position ${i} given that no stitching occured. Visisted (or wrongly tracked) ${ctx.visitedBytes[i]} times`,
-               "WARN"
-            );
-         }
+  // if no stitching, then it should be truly linear runtime algo. otherwise by necessity there are some revisited bytes,
+  // for which we can optimise in future. For now as well, stitching is not supported in the visitedBytes access tracking
+  // so constrain this check to when we've read the entire file as one buffer. Seems also that ctx.outerCursor is also
+  // not properly incrementing when stitching??
+  if (ctx.nByteArray === 1) {
+    for (let i = 0; i < fileLen; i++) {
+      if (!ctx.visitedBytes.hasOwnProperty(i)) {
+        write(
+          `Linear byte traversal demands each byte is walked at least once, but visitedBytes is missing position ${i}`,
+          "WARN"
+        );
       }
 
-      if (ctx.outerCursor.pos !== fileLen) {
-         write(
-            `OuterCursor was expected to be at the end of the file (length: ${fileLenStr}) after completion but is at position: ${ctx.outerCursor.pos}`,
-            "WARN"
-         );
-      } else {
-         write(
-            `OuterCursor (position ${outerCursorPosStr}) is correctly placed at the end of the file (length: ${fileLenStr}) after parsing.`,
-            "DEBUG"
-         );
+      if (ctx.visitedBytes[i] !== 1) {
+        return 
+        write(
+          `Expected a single visit to byte position ${i} given that no stitching occured. Visisted (or wrongly tracked) ${ctx.visitedBytes[i]} times`,
+          "WARN"
+        );
       }
-   }
+    }
+
+    if (ctx.outerCursor.pos !== fileLen) {
+      write(
+        `OuterCursor was expected to be at the end of the file (length: ${fileLenStr}) after completion but is at position: ${ctx.outerCursor.pos}`,
+        "WARN"
+      );
+    } else {
+      write(
+        `OuterCursor (position ${outerCursorPosStr}) is correctly placed at the end of the file (length: ${fileLenStr}) after parsing.`,
+        "DEBUG"
+      );
+    }
+  }
 }
 
 /**
@@ -189,7 +190,7 @@ function detectMisalignment(ctx: Ctx, throwMode = false) {
  * @returns boolean
  */
 function isSupportedTSN(uid: string): uid is TransferSyntaxUid {
-   return Object.values(TransferSyntaxUid).includes(uid as TransferSyntaxUid);
+  return Object.values(TransferSyntaxUid).includes(uid as TransferSyntaxUid);
 }
 
 /**
@@ -201,10 +202,10 @@ function isSupportedTSN(uid: string): uid is TransferSyntaxUid {
  * @returns TruncatedBuffer (byte[])
  */
 export function handleDicomBytes(ctx: Ctx, currBytes: Buffer): PartialEl {
-   write(`Reading buffer (#${ctx.nByteArray} - ${currBytes.length} bytes) (${ctx.path})`, "DEBUG");
-   return ctx.first //
-      ? handleFirstBuffer(ctx, currBytes)
-      : parse(stitchBytes(ctx, currBytes), ctx);
+  write(`Reading buffer (#${ctx.nByteArray} - ${currBytes.length} bytes) (${ctx.path})`, "DEBUG");
+  return ctx.first //
+    ? handleFirstBuffer(ctx, currBytes)
+    : parse(stitchBytes(ctx, currBytes), ctx);
 }
 
 /**
@@ -218,21 +219,21 @@ export function handleDicomBytes(ctx: Ctx, currBytes: Buffer): PartialEl {
  * @returns TruncatedBuffer (byte[])
  */
 function handleFirstBuffer(ctx: Ctx, buffer: Buffer): PartialEl {
-   validatePreamble(buffer); // throws if not void
-   validateHeader(buffer); // throws if not void
+  validatePreamble(buffer); // throws if not void
+  validateHeader(buffer); // throws if not void
 
-   const parseResponse = parse(buffer.subarray(HEADER_END, buffer.length), ctx); // window the buffer beyond 'DICM' HEADER to start at File Meta Info section
-   const tsn = getElementValue<string>("(0002,0010)", ctx.dataSet);
+  const parseResponse = parse(buffer.subarray(HEADER_END, buffer.length), ctx); // window the buffer beyond 'DICM' HEADER to start at File Meta Info section
+  const tsn = getElementValue<string>("(0002,0010)", ctx.dataSet);
 
-   if (tsn && !isSupportedTSN(tsn)) {
-      throw new UnsupportedTSN(`TSN: ${tsn} is unsupported.`);
-   }
+  if (tsn && !isSupportedTSN(tsn)) {
+    throw new UnsupportedTSN(`TSN: ${tsn} is unsupported.`);
+  }
 
-   if (isSupportedTSN(tsn)) {
-      ctx.transferSyntaxUid = tsn ?? TransferSyntaxUid.ExplicitVRLittleEndian;
-      ctx.first = false;
-      return parseResponse;
-   }
+  if (isSupportedTSN(tsn)) {
+    ctx.transferSyntaxUid = tsn ?? TransferSyntaxUid.ExplicitVRLittleEndian;
+    ctx.first = false;
+    return parseResponse;
+  }
 }
 
 /**
@@ -243,9 +244,9 @@ function handleFirstBuffer(ctx: Ctx, buffer: Buffer): PartialEl {
  * @returns Buffer
  */
 function stitchBytes(ctx: Ctx, currBytes: Buffer): Buffer {
-   const { truncatedBuffer, path } = ctx;
-   write(`Stitching ${truncatedBuffer.length} + ${currBytes.length} bytes (${path})`, "DEBUG");
-   return Buffer.concat([truncatedBuffer, currBytes]);
+  const { truncatedBuffer, path } = ctx;
+  write(`Stitching ${truncatedBuffer.length} + ${currBytes.length} bytes (${path})`, "DEBUG");
+  return Buffer.concat([truncatedBuffer, currBytes]);
 }
 
 /**
@@ -261,5 +262,5 @@ function stitchBytes(ctx: Ctx, currBytes: Buffer): Buffer {
  * @returns T
  */
 function getElementValue<T = unknown>(tag: TagStr, elements: DataSet): T {
-   return (elements[tag]?.value ?? "NOT FOUND") as T;
+  return (elements[tag]?.value ?? "NOT FOUND") as T;
 }
