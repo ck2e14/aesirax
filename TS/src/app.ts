@@ -40,7 +40,7 @@ async function main(cfg: Global.Cfg) {
    await init();
 
    // cfg.targetDir = testDirs.nestedSQ_undefinedLens_multipleItems;
-   cfg.targetDir = testDirs.nestedSQ_undefinedLens_multipleItems;
+   cfg.targetDir = "/Users/chriskennedy/Desktop/SWE/aesirax/data/fuckedAidence";
    // cfg.targetDir = '/Users/chriskennedy/Desktop/SWE/aesirax/data/STANWORTHLORNAMISS/SER00001'
    const fileCount = readdirSync(cfg.targetDir).length;
 

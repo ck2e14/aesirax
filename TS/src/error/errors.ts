@@ -1,4 +1,4 @@
-import { DicomErrorType } from "../globalEnums.js";
+import { DicomErrorType } from "../enums.js";
 import { write } from "../logging/logQ.js";
 
 type Args = {
@@ -137,9 +137,9 @@ export class UndefinedLength extends Error {
    }
 }
 
-export class MalformedDicom extends Error {
+export class Malformed extends Error {
    constructor(message: string) {
       super(message);
-      this.name = "MalformedDicom";
+      this.name = "Malformed";
    }
 }

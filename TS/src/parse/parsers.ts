@@ -1,5 +1,5 @@
-import { ByteLen, DicomErrorType, TagDictByHex, TransferSyntaxUid, VR } from "../globalEnums.js";
-import { Element, maxUint32, valueIsTruncated } from "./parse.js";
+import { ByteLen, DicomErrorType, TagDictByHex, TransferSyntaxUid, VR } from "../enums.js";
+import { Element, MAX_UINT32, valueIsTruncated } from "./parse.js";
 import { BufferBoundary, DicomError } from "../error/errors.js";
 import { isExtVr, isVr } from "../utils.js";
 import { Cursor } from "./cursor.js";
@@ -244,7 +244,7 @@ export function parseLength(el: Element, cursor: Cursor, buffer: Buffer, ctx: Ct
    const unsupported =
       el.vr === VR.OB && //
       el.name !== "FileMetaInformationVersion" &&
-      el.length === maxUint32;
+      el.length === MAX_UINT32;
 
    if (unsupported) {
       throw new DicomError({

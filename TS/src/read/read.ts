@@ -1,4 +1,4 @@
-import { DicomErrorType, TransferSyntaxUid } from "../globalEnums.js";
+import { DicomErrorType, TransferSyntaxUid } from "../enums.js";
 import { createReadStream, writeFileSync } from "fs";
 import { DicomError, UnsupportedTSN } from "../error/errors.js";
 import { dataSetLength } from "../utils.js";
@@ -11,7 +11,7 @@ import {
    validateHeader,
    validatePreamble,
    parse,
-   TruncEl,
+   PartialEl,
 } from "../parse/parse.js";
 
 export type Ctx = {
@@ -144,20 +144,23 @@ export function streamParse(
  * @param throwMode
  */
 function detectMisalignment(ctx: Ctx, throwMode = false) {
-   const fileLen = ctx.totalStreamedBytes - 132; // minus preamble + header
+   const fileLen = ctx.totalStreamedBytes - 132; // minus preamble + HEADER
    const fileLenStr = fileLen.toLocaleString();
    const outerCursorPosStr = ctx.outerCursor.pos.toLocaleString();
 
-   for (let i = 0; i < fileLen; i++) {
-      if (!ctx.visitedBytes.hasOwnProperty(i)) {
-         write(
-            `Linear byte traversal demands each byte is walked at least once, but visitedBytes is missing position ${i}`,
-            "WARN"
-         );
-      }
+   // if no stitching, then it should be truly linear runtime algo. otherwise by necessity there are some revisited bytes,
+   // for which we can optimise in future. For now as well, stitching is not supported in the visitedBytes access tracking
+   // so constrain this check to when we've read the entire file as one buffer. Seems also that ctx.outerCursor is also
+   // not properly incrementing when stitching??
+   if (ctx.nByteArray === 1) {
+      for (let i = 0; i < fileLen; i++) {
+         if (!ctx.visitedBytes.hasOwnProperty(i)) {
+            write(
+               `Linear byte traversal demands each byte is walked at least once, but visitedBytes is missing position ${i}`,
+               "WARN"
+            );
+         }
 
-      if (ctx.nByteArray === 1) {
-         // if no stitching, then it should be truly linear runtime algo
          if (ctx.visitedBytes[i] !== 1) {
             write(
                `Expected a single visit to byte position ${i} given that no stitching occured. Visisted (or wrongly tracked) ${ctx.visitedBytes[i]} times`,
@@ -165,18 +168,18 @@ function detectMisalignment(ctx: Ctx, throwMode = false) {
             );
          }
       }
-   }
 
-   if (ctx.outerCursor.pos !== fileLen) {
-      write(
-         `OuterCursor was expected to be at the end of the file (length: ${fileLenStr}) after completion but is at position: ${ctx.outerCursor.pos}`,
-         "WARN"
-      );
-   } else {
-      write(
-         `OuterCursor (position ${outerCursorPosStr}) is correctly placed at the end of the file (length: ${fileLenStr}) after parsing.`,
-         "DEBUG"
-      );
+      if (ctx.outerCursor.pos !== fileLen) {
+         write(
+            `OuterCursor was expected to be at the end of the file (length: ${fileLenStr}) after completion but is at position: ${ctx.outerCursor.pos}`,
+            "WARN"
+         );
+      } else {
+         write(
+            `OuterCursor (position ${outerCursorPosStr}) is correctly placed at the end of the file (length: ${fileLenStr}) after parsing.`,
+            "DEBUG"
+         );
+      }
    }
 }
 
@@ -197,7 +200,7 @@ function isSupportedTSN(uid: string): uid is TransferSyntaxUid {
  * @param currBytes
  * @returns TruncatedBuffer (byte[])
  */
-export function handleDicomBytes(ctx: Ctx, currBytes: Buffer): TruncEl {
+export function handleDicomBytes(ctx: Ctx, currBytes: Buffer): PartialEl {
    write(`Reading buffer (#${ctx.nByteArray} - ${currBytes.length} bytes) (${ctx.path})`, "DEBUG");
    return ctx.first //
       ? handleFirstBuffer(ctx, currBytes)
@@ -207,18 +210,18 @@ export function handleDicomBytes(ctx: Ctx, currBytes: Buffer): TruncEl {
 /**
  * handleFirstBuffer() is a helper function for handleDicomBytes()
  * to handle the first buffer read from disk, which contains the
- * DICOM preamble and header. Note that in all DICOM the File Meta
+ * DICOM preamble and HEADER. Note that in all DICOM the File Meta
  * Information which will be encoded as Explicit VR Little Endian.
  * @param ctx
  * @param buffer
  * @throws DicomError
  * @returns TruncatedBuffer (byte[])
  */
-function handleFirstBuffer(ctx: Ctx, buffer: Buffer): TruncEl {
+function handleFirstBuffer(ctx: Ctx, buffer: Buffer): PartialEl {
    validatePreamble(buffer); // throws if not void
    validateHeader(buffer); // throws if not void
 
-   const parseResponse = parse(buffer.subarray(HEADER_END, buffer.length), ctx); // window the buffer beyond 'DICM' header to start at File Meta Info section
+   const parseResponse = parse(buffer.subarray(HEADER_END, buffer.length), ctx); // window the buffer beyond 'DICM' HEADER to start at File Meta Info section
    const tsn = getElementValue<string>("(0002,0010)", ctx.dataSet);
 
    if (tsn && !isSupportedTSN(tsn)) {
@@ -242,7 +245,6 @@ function handleFirstBuffer(ctx: Ctx, buffer: Buffer): TruncEl {
 function stitchBytes(ctx: Ctx, currBytes: Buffer): Buffer {
    const { truncatedBuffer, path } = ctx;
    write(`Stitching ${truncatedBuffer.length} + ${currBytes.length} bytes (${path})`, "DEBUG");
-   ctx.outerCursor.tracker.increaseAccessCount(currBytes.length); // this bit seems to work ok so leaving here
    return Buffer.concat([truncatedBuffer, currBytes]);
 }
 
