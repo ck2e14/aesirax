@@ -1,16 +1,14 @@
-import { ByteAccessTracker } from "../byteTrace/byteTrace.js";
 import { BufferBoundary } from "../error/errors.js";
-import { Ctx } from "../read/read.js";
-import { inSQ } from "./parse.js";
 import { write } from "../logging/logQ.js";
+import { inSQ } from "./parse.js";
+import { Ctx } from "../read/read.js";
 
 export type Cursor = {
    pos: number;
    walk: (n: number, ctx: Ctx, buffer?: Buffer) => void;
    retreat: (n: number) => void;
    sync: (ctx: Ctx, buffer: Buffer) => void;
-   buf?: Buffer;
-   tracker: ByteAccessTracker;
+   buf: Buffer;
    isOuter: boolean;
    id: string;
 };
@@ -19,18 +17,12 @@ export type Cursor = {
  * Create a stateful cursor object to track where we're at in the buffer.
  * @returns Cursor
  */
-export function newCursor(
-   pos = 0,
-   buf?: Buffer,
-   tracker?: ByteAccessTracker,
-   isOuter = false
-): Cursor {
+export function newCursor(pos = 0, buf?: Buffer, isOuter = false): Cursor {
    const id = (Math.random() * 100000).toFixed(0);
    write(`Created new cursor with ID: ${id}`, "DEBUG");
 
    return {
       buf: buf,
-      tracker: tracker,
       pos: pos,
       isOuter: isOuter,
       id,
@@ -41,16 +33,18 @@ export function newCursor(
        * @param ctx
        * @param buffer
        */
-      walk(n: number, ctx: Ctx, buffer?: Buffer, isSync = false) {
+      walk(n: number, ctx: Ctx, buffer: Buffer, isSync = false) {
          if (buffer && this.pos + n > buffer.length) {
             throw new BufferBoundary(`Cursor walk would exceed buffer length`);
          }
 
-         // WARN don't think this supports stitching atm. But it does support any depth of nested SQs
+         // WARN doesn't support stitching byte access tracking atm. But it does support any depth of nested SQs
 
          if (!isSync) {
             for (let i = this.pos; i < this.pos + n; i++) {
                // TODO do a similar offset process for handling sitched buffers?
+               //  - if nbytesarray > 1 then we need to calc a different offset. But that offset needs to work alongside
+               //    nested SQ offsets if they exist, as well (and vice versa).
 
                // --- Add in un-sync'd traversal as offsets to the outer cursor when working in deeply nested sequences
                if (ctx.sqStack.length > 1) {

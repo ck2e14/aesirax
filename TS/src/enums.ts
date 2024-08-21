@@ -4,7 +4,7 @@
 // required, e.g. throwing errors and need the DicomErrorType enum. Make sure they're
 // in sync with the global.d.ts file. This is even though we tell tsconfig.json to
 // compile the global.d.ts file, but whatever lol. it doens't even throw errors, maybe
-// should make a pull request on this for the typescript compiler but can't be arsed
+// should make a pull request on this for the typescript compiler lol but can't be arsed
 
 export enum TransferSyntaxUid {
    ImplicitVRLittleEndian = "1.2.840.10008.1.2",
@@ -12,27 +12,27 @@ export enum TransferSyntaxUid {
    DeflatedExplicitVRLittleEndian = "1.2.840.10008.1.2.1.99",
    JPEG2000Lossless = "1.2.840.10008.1.2.4.90",
    JPEG2000ImageCompression = "1.2.840.10008.1.2.4.91",
-   JPEG2000NonhierarchicalFirstOrderPrediction ='1.2.840.10008.1.2.4.70'
+   JPEG2000NonhierarchicalFirstOrderPrediction = "1.2.840.10008.1.2.4.70",
 }
 
 export const TagDictByName = {
    ItemStart: {
       tag: "(fffe,e000)",
-      vr: 'special',
-      name:"ItemStart",
-      version:"DICOM"
+      vr: "special",
+      name: "ItemStart",
+      version: "DICOM",
    },
    ItemEnd: {
       tag: "(fffe,e00d)",
-      vr: 'special',
-      name:"ItemEnd",
-      version:"DICOM"
+      vr: "special",
+      name: "ItemEnd",
+      version: "DICOM",
    },
    SequenceEnd: {
       tag: "(fffe,e0dd)",
-      vr: 'special',
-      name:"SequenceEnd",
-      version:"DICOM"
+      vr: "special",
+      name: "SequenceEnd",
+      version: "DICOM",
    },
    CommandGroupLength: {
       tag: "(0000,0000)",
@@ -42471,10 +42471,10 @@ export const TagDictByName = {
       vm: "1",
       version: "PrivateTag",
    },
-   Header: {
+   HEADER: {
       tag: '(7003,"SIEMENS MED",10)',
       vr: "LT",
-      name: "Header",
+      name: "HEADER",
       vm: "1",
       version: "PrivateTag",
    },
@@ -47401,25 +47401,24 @@ export const TagDictByName = {
    },
 };
 
-
 export const TagDictByHex = {
    "(fffe,e000)": {
       tag: "(fffe,e000)",
-      vr: 'special',
-      name:"ItemStart",
-      version:"DICOM"
+      vr: "special",
+      name: "ItemStart",
+      version: "DICOM",
    },
    "(fffe,e00d)": {
       tag: "(fffe,e00d)",
-      vr: 'special',
-      name:"ItemEnd",
-      version:"DICOM"
+      vr: "special",
+      name: "ItemEnd",
+      version: "DICOM",
    },
    "(fffe,e0dd)": {
       tag: "(fffe,e0dd)",
-      vr: 'special',
-      name:"SequenceEnd",
-      version:"DICOM"
+      vr: "special",
+      name: "SequenceEnd",
+      version: "DICOM",
    },
 
    "(0000,0000)": {
@@ -91715,7 +91714,7 @@ export const TagDictByHex = {
    '(7003,"SIEMENS MED",10)': {
       tag: '(7003,"SIEMENS MED",10)',
       vr: "LT",
-      name: "Header",
+      name: "HEADER",
       vm: "1",
       version: "PrivateTag",
    },
@@ -99419,7 +99418,7 @@ export enum DicomErrorType {
    READ = "READ",
    VALIDATE = "VALIDATE",
    PARSING = "PARSING",
-   BUNDLE_CONFIG  = "BUNDLE_CONFIG"
+   BUNDLE_CONFIG = "BUNDLE_CONFIG",
 }
 
 export enum ByteLen {

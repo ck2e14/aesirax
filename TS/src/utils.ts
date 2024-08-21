@@ -1,7 +1,7 @@
 import { readdirSync, statSync } from "fs";
 import * as path from "path";
 import { DataSet } from "./parse/parse.js";
-import { TagDictByHex, TransferSyntaxUid, VR } from "./globalEnums.js";
+import { TagDictByHex, TransferSyntaxUid, VR } from "./enums.js";
 import { Element } from "./parse/parse.js";
 import { write } from "./logging/logQ.js";
 import { Cursor } from "./parse/cursor.js";
@@ -94,7 +94,7 @@ export function printElement(el: Element, cursor: Cursor, buffer: Buffer) {
       VR: el.vr,
       Length: el.length,
       Value: el.value,
-      Cursor: cursor.pos,
+      "Cursor After Parse": cursor.pos,
       CurrentBufferWindow: buffer.length,
    };
 
@@ -119,7 +119,7 @@ export function printMinusValue(el: Element, cursor: Cursor, buffer: Buffer) {
       Name: el.name,
       VR: el.vr,
       Length: el.length,
-      Cursor: cursor.pos,
+      "Cursor After Parse": cursor.pos,
       CurrentBufferWindow: buffer.length,
    };
 

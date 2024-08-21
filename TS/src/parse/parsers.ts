@@ -1,5 +1,5 @@
-import { ByteLen, DicomErrorType, TagDictByHex, TransferSyntaxUid, VR } from "../globalEnums.js";
-import { Element, maxUint32, valueIsTruncated } from "./parse.js";
+import { ByteLen, DicomErrorType, TagDictByHex, TransferSyntaxUid, VR } from "../enums.js";
+import { Element, MAX_UINT32, valueIsTruncated } from "./parse.js";
 import { BufferBoundary, DicomError } from "../error/errors.js";
 import { isExtVr, isVr } from "../utils.js";
 import { Cursor } from "./cursor.js";
@@ -231,20 +231,22 @@ export function parseVR(buffer: Buffer, cursor: Cursor, el: Element, ctx: Ctx) {
 export function parseLength(el: Element, cursor: Cursor, buffer: Buffer, ctx: Ctx) {
    // ----  Standard VR ----
    if (!isExtVr(el.vr)) {
-      decodeValueBytesLength(el, buffer, cursor, ctx);
+      decodeLength(el, buffer, cursor, ctx);
       cursor.walk(ByteLen.UINT_16, ctx, buffer);
       return false;
    }
 
    // ----- Extended VR ------
    cursor.walk(ByteLen.EXT_VR_RESERVED, ctx, buffer); // 2 unused bytes on all ext VRs - can ignore
-   decodeValueBytesLength(el, buffer, cursor, ctx); // lens < 4 bytes, (4,294,967,295)
+   decodeLength(el, buffer, cursor, ctx); // lens < 4 bytes, (4,294,967,295)
    cursor.walk(ByteLen.UINT_32, ctx, buffer);
 
+   return 
+   // disable this shit while supporting undef len OB elements
    const unsupported =
       el.vr === VR.OB && //
       el.name !== "FileMetaInformationVersion" &&
-      el.length === maxUint32;
+      el.length === MAX_UINT32;
 
    if (unsupported) {
       throw new DicomError({
@@ -261,7 +263,7 @@ export function parseLength(el: Element, cursor: Cursor, buffer: Buffer, ctx: Ct
  * @param cursor
  * @param ctx
  */
-function decodeValueBytesLength(el: Element, buffer: Buffer, cursor: Cursor, ctx: Ctx) {
+export function decodeLength(el: Element, buffer: Buffer, cursor: Cursor, ctx: Ctx) {
    if (isExtVr(el.vr)) {
       el.length = ctx.usingLE //
          ? buffer.readUInt32LE(cursor.pos)
