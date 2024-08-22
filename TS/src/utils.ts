@@ -186,6 +186,6 @@ export const isVr = (vr: string): vr is Global.VR => {
  * @returns boolean
  */
 export function isExtVr(vr: Global.VR): boolean {
-   const extVrPattern = /^OB|OW|OF|SQ|UT|UN$/;
+   const extVrPattern = /^UC|OB|OW|OF|SQ|UT|UN$/;
    return extVrPattern.test(vr);
 }

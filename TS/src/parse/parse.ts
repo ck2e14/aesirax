@@ -1,7 +1,7 @@
 import { BufferBoundary, DicomError, Malformed, UndefinedLength } from "../error/errors.js";
 import { parseLength, decodeTag, parseValue, parseVR, TagStr, } from "./parsers.js";
 import { ByteLen, DicomErrorType, TagDictByName, VR } from "../enums.js";
-import { getTagName, logElement, } from "../utils.js";
+import { getTagName, logElement, printSqCtx, } from "../utils.js";
 import { newCursor, Cursor } from "./cursor.js";
 import { write } from "../logging/logQ.js";
 import { Ctx } from "../read/read.js";
@@ -81,22 +81,36 @@ export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
       parseTag(buffer, cursor, el, ctx);
 
       // ------- Handle SQ control flow -------
-      if (inSQ(ctx) && isEndOfItem(ctx, el)) {
-        const next = tagAfterEndOfItem(ctx, cursor, buffer);
-        // ------- Parse Next Dataset -------
-        if (next === ITEM_START_TAG) {
-          sq.items.push({});
-          continue;
+      if (inSQ(ctx)) {
+        // ---- Handle defined length next item control flow ----
+        if (inSQ(ctx) && el.length < MAX_UINT32 && el.tag === ITEM_START_TAG) {
+          sq.items.push({})
+          cursor.walk(ByteLen.LENGTH, ctx, buffer)
+          continue
         }
-        // ----- Undefined Len SQ Basecase -----
-        if (next === SQ_END_TAG) {
-          write(`End of SQ ${sq.tag} ${sq.name}`, "DEBUG");
-          stacks(ctx).sq.length = stacks(ctx).bytes
-          return;
-        }
-        throw new Malformed(`Got ${next}, expected ${ITEM_END_TAG}/${SQ_END_TAG}`);
-      }
 
+        // --- Handle undefined length control flow ---- 
+        // Note that you have duplication here where in defined length sqs with multiple items
+        // you gonna see item start tags, so the couple lines below this are pretty much the same 
+        // as the defined length handling code a few lines above - only i think that the tagAfterEndOfItem 
+        // may not be geared up to work correctly with the above hence why being lazy and duplicating code
+        // but im too tired to fix that right now. 
+        if (isEndOfItem(ctx, el)) {
+          const next = tagAfterEndOfItem(ctx, cursor, buffer);
+          // ------- Parse Next Dataset -------
+          if (next === ITEM_START_TAG) {
+            sq.items.push({});
+            continue;
+          }
+          // ----- Undefined Len SQ Basecase -----
+          if (next === SQ_END_TAG) {
+            write(`End of SQ ${sq.tag} ${sq.name}`, "DEBUG");
+            stacks(ctx).sq.length = stacks(ctx).bytes
+            return;
+          }
+          throw new Malformed(`Got ${next}, expected ${ITEM_END_TAG}/${SQ_END_TAG}`);
+        }
+      }
       // ----------- Parse VR -------------
       parseVR(buffer, cursor, el, ctx);
 
@@ -143,8 +157,8 @@ export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
  * @param lastSqItem
  * @param el
  */
-function saveElement(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer) {
-  logElement(el, cursor, buffer)
+function saveElement(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer, print = true) {
+  if (print) logElement(el, cursor, buffer)
   if (inSQ(ctx)) {
     const { lastSqItem } = stacks(ctx);
     lastSqItem[el.tag] = el;
@@ -175,7 +189,10 @@ function detectDefLenSqEnd(ctx: Ctx, el: Element) {
         `Traversed: ${bytes} - `
       );
     }
-    write(`End of defined length SQ: ${sq.name}. Final element decoded was ${el.tag}"`, "DEBUG");
+    write(`End of defined length SQ: ${sq.name}. Final element decoded was ${el.tag} ${JSON.stringify(ctx.sqLens.length)}`, "DEBUG");
+    printSqCtx(ctx)
+    if (sq.name === 'PerformedProcessingParametersSequence') {
+    }
   }
 
   return isEnd;
@@ -320,7 +337,7 @@ export function parseSQ(buffer: Buffer, ctx: Ctx, el: Element, parentCursor: Cur
 
   // ---- Convert element to SQ & save to appropriate dataset (top level or nested)
   const newSq = convertElToSq(el);
-  saveElement(ctx, newSq, parentCursor, buffer);
+  saveElement(ctx, newSq, parentCursor, buffer, false);
 
   // ---- 0-Length, Defined length SQs
   if (isEmptyDefinedLengthSQ(el)) {
@@ -588,9 +605,8 @@ export function valueIsTruncated(buffer: Buffer, cursor: Cursor, elementLen: num
 
 /**
  * Validate the DICOM preamble by checking that the first 128 bytes
- * are all 0x00. This is a security design choice by me to prevent
+ * are all 0x00. This is a security design choice to prevent
  * the execution of arbitrary code within the preamble. See spec notes.
- * TODO work out what quarantining really entails.
  * @param buffer
  * @throws DicomError
  */
@@ -644,9 +660,10 @@ export function newElement(): Element {
 }
 
 function logEntryToSQ(ctx: Ctx, el: Element, parentCursor: Cursor) {
+  const printLen = el.length === MAX_UINT32 ? 'undef len' : el.length
   if (inSQ(ctx)) {
-    write(`Parsing nested SQ ${el.tag}, ${el.name}, parentCursor: ${parentCursor.pos}`, "DEBUG");
+    write(`Parsing nested SQ ${el.tag}, ${el.name}, len: ${printLen}, parentCursor: ${parentCursor.pos}`, "DEBUG");
   } else {
-    write(`Parsing SQ ${el.tag}, ${el.name}, parentCursor: ${parentCursor.pos}`, "DEBUG");
+    write(`Parsing SQ ${el.tag}, ${el.name}, len: ${printLen}, parentCursor: ${parentCursor.pos}`, "DEBUG");
   }
 }
