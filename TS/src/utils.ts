@@ -77,9 +77,9 @@ export function useLE(tsn: TransferSyntaxUid): boolean {
  */
 export function UNIMPLEMENTED_VR_PARSING(vr: Global.VR): string {
    if (vr === VR.UN) {
-      return `Byte parsing support for VR: ${vr} is unimplemeted in this version but attempted to decode to string as it doesn't harm the parse process`;
+      return `No support for VR: ${vr} but tried decoding to ascii`;
    } else {
-      return `Byte parsing support for VR: ${vr} is unimplemeted in this version`;
+      return `No support for VR: ${vr}`;
    }
 }
 

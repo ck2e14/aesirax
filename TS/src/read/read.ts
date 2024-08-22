@@ -162,7 +162,6 @@ function detectMisalignment(ctx: Ctx, throwMode = false) {
       }
 
       if (ctx.visitedBytes[i] !== 1) {
-        return 
         write(
           `Expected a single visit to byte position ${i} given that no stitching occured. Visisted (or wrongly tracked) ${ctx.visitedBytes[i]} times`,
           "WARN"

@@ -1,0 +1,1009 @@
+{
+   "(0002,0000)": {
+      "vr": "UL",
+      "tag": "(0002,0000)",
+      "value": "238",
+      "name": "FileMetaInformationGroupLength",
+      "length": 4
+   },
+   "(0002,0001)": {
+      "vr": "OB",
+      "tag": "(0002,0001)",
+      "value": "Binary data (OB): 2 bytes",
+      "name": "FileMetaInformationVersion",
+      "length": 2,
+      "devNote": "No support for VR: OB"
+   },
+   "(0002,0002)": {
+      "vr": "UI",
+      "tag": "(0002,0002)",
+      "value": "1.2.840.10008.5.1.4.1.1.2",
+      "name": "MediaStorageSOPClassUID",
+      "length": 26
+   },
+   "(0002,0003)": {
+      "vr": "UI",
+      "tag": "(0002,0003)",
+      "value": "1.2.392.200036.9116.2.6.1.15484.1072719488.1692438886.199945",
+      "name": "MediaStorageSOPInstanceUID",
+      "length": 60
+   },
+   "(0002,0010)": {
+      "vr": "UI",
+      "tag": "(0002,0010)",
+      "value": "1.2.840.10008.1.2.1",
+      "name": "TransferSyntaxUID",
+      "length": 20
+   },
+   "(0002,0012)": {
+      "vr": "UI",
+      "tag": "(0002,0012)",
+      "value": "1.2.826.0.1.3680043.2.1143.107.104.103.115.3.0.22",
+      "name": "ImplementationClassUID",
+      "length": 50
+   },
+   "(0002,0013)": {
+      "vr": "SH",
+      "tag": "(0002,0013)",
+      "value": "GDCM 3.0.22 ",
+      "name": "ImplementationVersionName",
+      "length": 12
+   },
+   "(0002,0016)": {
+      "vr": "AE",
+      "tag": "(0002,0016)",
+      "value": "gdcmconv",
+      "name": "SourceApplicationEntityTitle",
+      "length": 8
+   },
+   "(0008,0005)": {
+      "vr": "CS",
+      "tag": "(0008,0005)",
+      "value": "ISO_IR 100",
+      "name": "SpecificCharacterSet",
+      "length": 10
+   },
+   "(0008,0008)": {
+      "vr": "CS",
+      "tag": "(0008,0008)",
+      "value": "ORIGINAL\\PRIMARY\\LOCALIZER",
+      "name": "ImageType",
+      "length": 26
+   },
+   "(0008,0016)": {
+      "vr": "UI",
+      "tag": "(0008,0016)",
+      "value": "1.2.840.10008.5.1.4.1.1.2",
+      "name": "SOPClassUID",
+      "length": 26
+   },
+   "(0008,0018)": {
+      "vr": "UI",
+      "tag": "(0008,0018)",
+      "value": "1.2.392.200036.9116.2.6.1.15484.1072719488.1692438886.199945",
+      "name": "SOPInstanceUID",
+      "length": 60
+   },
+   "(0008,0020)": {
+      "vr": "DA",
+      "tag": "(0008,0020)",
+      "value": "20230819",
+      "name": "StudyDate",
+      "length": 8
+   },
+   "(0008,0021)": {
+      "vr": "DA",
+      "tag": "(0008,0021)",
+      "value": "20230819",
+      "name": "SeriesDate",
+      "length": 8
+   },
+   "(0008,0022)": {
+      "vr": "DA",
+      "tag": "(0008,0022)",
+      "value": "20230819",
+      "name": "AcquisitionDate",
+      "length": 8
+   },
+   "(0008,0023)": {
+      "vr": "DA",
+      "tag": "(0008,0023)",
+      "value": "20230819",
+      "name": "ContentDate",
+      "length": 8
+   },
+   "(0008,0030)": {
+      "vr": "TM",
+      "tag": "(0008,0030)",
+      "value": "185414.000",
+      "name": "StudyTime",
+      "length": 10
+   },
+   "(0008,0031)": {
+      "vr": "TM",
+      "tag": "(0008,0031)",
+      "value": "185446.198",
+      "name": "SeriesTime",
+      "length": 10
+   },
+   "(0008,0032)": {
+      "vr": "TM",
+      "tag": "(0008,0032)",
+      "value": "185441.216",
+      "name": "AcquisitionTime",
+      "length": 10
+   },
+   "(0008,0033)": {
+      "vr": "TM",
+      "tag": "(0008,0033)",
+      "value": "185441.216",
+      "name": "ContentTime",
+      "length": 10
+   },
+   "(0008,0050)": {
+      "vr": "SH",
+      "tag": "(0008,0050)",
+      "value": "RX1918936852",
+      "name": "AccessionNumber",
+      "length": 12
+   },
+   "(0008,0060)": {
+      "vr": "CS",
+      "tag": "(0008,0060)",
+      "value": "CT",
+      "name": "Modality",
+      "length": 2
+   },
+   "(0008,0070)": {
+      "vr": "LO",
+      "tag": "(0008,0070)",
+      "value": "Canon Medical Systems ",
+      "name": "Manufacturer",
+      "length": 22
+   },
+   "(0008,0080)": {
+      "vr": "LO",
+      "tag": "(0008,0080)",
+      "value": "TLHC Nottingham City",
+      "name": "InstitutionName",
+      "length": 20
+   },
+   "(0008,0090)": {
+      "vr": "PN",
+      "tag": "(0008,0090)",
+      "value": "",
+      "name": "ReferringPhysicianName",
+      "length": 0
+   },
+   "(0008,1010)": {
+      "vr": "SH",
+      "tag": "(0008,1010)",
+      "value": "IHMCT26 ",
+      "name": "StationName",
+      "length": 8
+   },
+   "(0008,1030)": {
+      "vr": "LO",
+      "tag": "(0008,1030)",
+      "value": "CT Low dose thorax",
+      "name": "StudyDescription",
+      "length": 18
+   },
+   "(0008,1032)": {
+      "vr": "SQ",
+      "tag": "(0008,1032)",
+      "name": "ProcedureCodeSequence",
+      "length": 70,
+      "items": [
+         {
+            "(0008,0100)": {
+               "vr": "SH",
+               "tag": "(0008,0100)",
+               "value": "CLDTH ",
+               "name": "CodeValue",
+               "length": 6
+            },
+            "(0008,0102)": {
+               "vr": "SH",
+               "tag": "(0008,0102)",
+               "value": "GEIIS ",
+               "name": "CodingSchemeDesignator",
+               "length": 6
+            },
+            "(0008,0104)": {
+               "vr": "LO",
+               "tag": "(0008,0104)",
+               "value": "CT Low dose thorax",
+               "name": "CodeMeaning",
+               "length": 18
+            }
+         }
+      ]
+   },
+   "(0008,103e)": {
+      "vr": "LO",
+      "tag": "(0008,103e)",
+      "value": "2.0 ",
+      "name": "SeriesDescription",
+      "length": 4
+   },
+   "(0008,1040)": {
+      "vr": "LO",
+      "tag": "(0008,1040)",
+      "value": "RADIOLOGY ",
+      "name": "InstitutionalDepartmentName",
+      "length": 10
+   },
+   "(0008,1070)": {
+      "vr": "PN",
+      "tag": "(0008,1070)",
+      "value": "NO HX ",
+      "name": "OperatorsName",
+      "length": 6
+   },
+   "(0008,1090)": {
+      "vr": "LO",
+      "tag": "(0008,1090)",
+      "value": "Aquilion Prime SP ",
+      "name": "ManufacturerModelName",
+      "length": 18
+   },
+   "(0008,1110)": {
+      "vr": "SQ",
+      "tag": "(0008,1110)",
+      "name": "ReferencedStudySequence",
+      "length": 104,
+      "items": [
+         {
+            "(0008,1150)": {
+               "vr": "UI",
+               "tag": "(0008,1150)",
+               "value": "1.2.840.10008.3.1.2.3.1",
+               "name": "ReferencedSOPClassUID",
+               "length": 24
+            },
+            "(0008,1155)": {
+               "vr": "UI",
+               "tag": "(0008,1155)",
+               "value": "1.2.840.113619.6.95.31.0.3.4.1.1762.13.10821810",
+               "name": "ReferencedSOPInstanceUID",
+               "length": 48
+            }
+         }
+      ]
+   },
+   "(0010,0010)": {
+      "vr": "PN",
+      "tag": "(0010,0010)",
+      "value": "Simpson^Alexander^^Mr ",
+      "name": "PatientName",
+      "length": 22
+   },
+   "(0010,0020)": {
+      "vr": "LO",
+      "tag": "(0010,0020)",
+      "value": "RX1K0528264 ",
+      "name": "PatientID",
+      "length": 12
+   },
+   "(0010,0030)": {
+      "vr": "DA",
+      "tag": "(0010,0030)",
+      "value": "19640318",
+      "name": "PatientBirthDate",
+      "length": 8
+   },
+   "(0010,0040)": {
+      "vr": "CS",
+      "tag": "(0010,0040)",
+      "value": "M ",
+      "name": "PatientSex",
+      "length": 2
+   },
+   "(0010,1010)": {
+      "vr": "AS",
+      "tag": "(0010,1010)",
+      "value": "059Y",
+      "name": "PatientAge",
+      "length": 4
+   },
+   "(0010,1030)": {
+      "vr": "DS",
+      "tag": "(0010,1030)",
+      "value": "79",
+      "name": "PatientWeight",
+      "length": 2
+   },
+   "(0018,0015)": {
+      "vr": "CS",
+      "tag": "(0018,0015)",
+      "value": "LUNG SCREENING",
+      "name": "BodyPartExamined",
+      "length": 14
+   },
+   "(0018,0022)": {
+      "vr": "CS",
+      "tag": "(0018,0022)",
+      "value": "SCANOSCOPE",
+      "name": "ScanOptions",
+      "length": 10
+   },
+   "(0018,0050)": {
+      "vr": "DS",
+      "tag": "(0018,0050)",
+      "value": "2.0 ",
+      "name": "SliceThickness",
+      "length": 4
+   },
+   "(0018,0060)": {
+      "vr": "DS",
+      "tag": "(0018,0060)",
+      "value": "120 ",
+      "name": "KVP",
+      "length": 4
+   },
+   "(0018,0090)": {
+      "vr": "DS",
+      "tag": "(0018,0090)",
+      "value": "500.00",
+      "name": "DataCollectionDiameter",
+      "length": 6
+   },
+   "(0018,1000)": {
+      "vr": "LO",
+      "tag": "(0018,1000)",
+      "value": "5CA2172426",
+      "name": "DeviceSerialNumber",
+      "length": 10
+   },
+   "(0018,1020)": {
+      "vr": "LO",
+      "tag": "(0018,1020)",
+      "value": "V10.40ER012 ",
+      "name": "SoftwareVersions",
+      "length": 12
+   },
+   "(0018,1030)": {
+      "vr": "LO",
+      "tag": "(0018,1030)",
+      "value": "IH Lung Screening 70-90Kg ",
+      "name": "ProtocolName",
+      "length": 26
+   },
+   "(0018,1100)": {
+      "vr": "DS",
+      "tag": "(0018,1100)",
+      "value": "500.00",
+      "name": "ReconstructionDiameter",
+      "length": 6
+   },
+   "(0018,1110)": {
+      "vr": "DS",
+      "tag": "(0018,1110)",
+      "value": "1072.5",
+      "name": "DistanceSourceToDetector",
+      "length": 6
+   },
+   "(0018,1120)": {
+      "vr": "DS",
+      "tag": "(0018,1120)",
+      "value": "+0.0",
+      "name": "GantryDetectorTilt",
+      "length": 4
+   },
+   "(0018,1130)": {
+      "vr": "DS",
+      "tag": "(0018,1130)",
+      "value": "+130.00 ",
+      "name": "TableHeight",
+      "length": 8
+   },
+   "(0018,1140)": {
+      "vr": "CS",
+      "tag": "(0018,1140)",
+      "value": "CW",
+      "name": "RotationDirection",
+      "length": 2
+   },
+   "(0018,1150)": {
+      "vr": "IS",
+      "tag": "(0018,1150)",
+      "value": "4452",
+      "name": "ExposureTime",
+      "length": 4
+   },
+   "(0018,1151)": {
+      "vr": "IS",
+      "tag": "(0018,1151)",
+      "value": "10",
+      "name": "XRayTubeCurrent",
+      "length": 2
+   },
+   "(0018,1152)": {
+      "vr": "IS",
+      "tag": "(0018,1152)",
+      "value": "44",
+      "name": "Exposure",
+      "length": 2
+   },
+   "(0018,1160)": {
+      "vr": "SH",
+      "tag": "(0018,1160)",
+      "value": "LARGE ",
+      "name": "FilterType",
+      "length": 6
+   },
+   "(0018,1170)": {
+      "vr": "IS",
+      "tag": "(0018,1170)",
+      "value": "1 ",
+      "name": "GeneratorPower",
+      "length": 2
+   },
+   "(0018,1190)": {
+      "vr": "DS",
+      "tag": "(0018,1190)",
+      "value": "0.9\\0.8 ",
+      "name": "FocalSpots",
+      "length": 8
+   },
+   "(0018,1210)": {
+      "vr": "SH",
+      "tag": "(0018,1210)",
+      "value": "FL04",
+      "name": "ConvolutionKernel",
+      "length": 4
+   },
+   "(0018,5100)": {
+      "vr": "CS",
+      "tag": "(0018,5100)",
+      "value": "FFS ",
+      "name": "PatientPosition",
+      "length": 4
+   },
+   "(0018,7050)": {
+      "vr": "CS",
+      "tag": "(0018,7050)",
+      "value": "ALUMINUM\\COPPER ",
+      "name": "FilterMaterial",
+      "length": 16
+   },
+   "(0018,9302)": {
+      "vr": "CS",
+      "tag": "(0018,9302)",
+      "value": "CONSTANT_ANGLE",
+      "name": "AcquisitionType",
+      "length": 14
+   },
+   "(0018,9303)": {
+      "vr": "FD",
+      "tag": "(0018,9303)",
+      "value": "0",
+      "name": "TubeAngle",
+      "length": 8
+   },
+   "(0018,9305)": {
+      "vr": "FD",
+      "tag": "(0018,9305)",
+      "value": "4.452",
+      "name": "RevolutionTime",
+      "length": 8
+   },
+   "(0018,9306)": {
+      "vr": "FD",
+      "tag": "(0018,9306)",
+      "value": "1",
+      "name": "SingleCollimationWidth",
+      "length": 8
+   },
+   "(0018,9307)": {
+      "vr": "FD",
+      "tag": "(0018,9307)",
+      "value": "2",
+      "name": "TotalCollimationWidth",
+      "length": 8
+   },
+   "(0018,9318)": {
+      "vr": "FD",
+      "tag": "(0018,9318)",
+      "value": "0",
+      "name": "ReconstructionTargetCenterPatient",
+      "length": 24
+   },
+   "(0018,9327)": {
+      "vr": "FD",
+      "tag": "(0018,9327)",
+      "value": "222",
+      "name": "TablePosition",
+      "length": 8
+   },
+   "(0018,9334)": {
+      "vr": "CS",
+      "tag": "(0018,9334)",
+      "value": "NO",
+      "name": "FluoroscopyFlag",
+      "length": 2
+   },
+   "(0018,9345)": {
+      "vr": "FD",
+      "tag": "(0018,9345)",
+      "value": "0.03",
+      "name": "CTDIvol",
+      "length": 8
+   },
+   "(0020,000d)": {
+      "vr": "UI",
+      "tag": "(0020,000d)",
+      "value": "1.2.840.113619.6.95.31.0.3.4.1.1762.13.10821810",
+      "name": "StudyInstanceUID",
+      "length": 48
+   },
+   "(0020,000e)": {
+      "vr": "UI",
+      "tag": "(0020,000e)",
+      "value": "1.2.392.200036.9116.2.6.1.15484.1072719488.1692438886.198214",
+      "name": "SeriesInstanceUID",
+      "length": 60
+   },
+   "(0020,0010)": {
+      "vr": "SH",
+      "tag": "(0020,0010)",
+      "value": "10821810",
+      "name": "StudyID",
+      "length": 8
+   },
+   "(0020,0011)": {
+      "vr": "IS",
+      "tag": "(0020,0011)",
+      "value": "1 ",
+      "name": "SeriesNumber",
+      "length": 2
+   },
+   "(0020,0012)": {
+      "vr": "IS",
+      "tag": "(0020,0012)",
+      "value": "1 ",
+      "name": "AcquisitionNumber",
+      "length": 2
+   },
+   "(0020,0013)": {
+      "vr": "IS",
+      "tag": "(0020,0013)",
+      "value": "1 ",
+      "name": "InstanceNumber",
+      "length": 2
+   },
+   "(0020,0020)": {
+      "vr": "CS",
+      "tag": "(0020,0020)",
+      "value": "L\\F ",
+      "name": "PatientOrientation",
+      "length": 4
+   },
+   "(0020,0032)": {
+      "vr": "DS",
+      "tag": "(0020,0032)",
+      "value": "-275.50000\\0.00007\\1981.50000 ",
+      "name": "ImagePositionPatient",
+      "length": 30
+   },
+   "(0020,0037)": {
+      "vr": "DS",
+      "tag": "(0020,0037)",
+      "value": "1.00000\\0.00000\\0.00000\\0.00000\\0.00000\\-1.00000",
+      "name": "ImageOrientationPatient",
+      "length": 48
+   },
+   "(0020,0052)": {
+      "vr": "UI",
+      "tag": "(0020,0052)",
+      "value": "1.2.392.200036.9116.2.6.1.15484.1072719488.1692438870.127152",
+      "name": "FrameOfReferenceUID",
+      "length": 60
+   },
+   "(0020,1040)": {
+      "vr": "LO",
+      "tag": "(0020,1040)",
+      "value": "",
+      "name": "PositionReferenceIndicator",
+      "length": 0
+   },
+   "(0020,1041)": {
+      "vr": "DS",
+      "tag": "(0020,1041)",
+      "value": "+222.00 ",
+      "name": "SliceLocation",
+      "length": 8
+   },
+   "(0028,0002)": {
+      "vr": "US",
+      "tag": "(0028,0002)",
+      "value": "1",
+      "name": "SamplesPerPixel",
+      "length": 2
+   },
+   "(0028,0004)": {
+      "vr": "CS",
+      "tag": "(0028,0004)",
+      "value": "MONOCHROME2 ",
+      "name": "PhotometricInterpretation",
+      "length": 12
+   },
+   "(0028,0010)": {
+      "vr": "US",
+      "tag": "(0028,0010)",
+      "value": "438",
+      "name": "Rows",
+      "length": 2
+   },
+   "(0028,0011)": {
+      "vr": "US",
+      "tag": "(0028,0011)",
+      "value": "552",
+      "name": "Columns",
+      "length": 2
+   },
+   "(0028,0030)": {
+      "vr": "DS",
+      "tag": "(0028,0030)",
+      "value": "1.000\\1.000 ",
+      "name": "PixelSpacing",
+      "length": 12
+   },
+   "(0028,0100)": {
+      "vr": "US",
+      "tag": "(0028,0100)",
+      "value": "16",
+      "name": "BitsAllocated",
+      "length": 2
+   },
+   "(0028,0101)": {
+      "vr": "US",
+      "tag": "(0028,0101)",
+      "value": "16",
+      "name": "BitsStored",
+      "length": 2
+   },
+   "(0028,0102)": {
+      "vr": "US",
+      "tag": "(0028,0102)",
+      "value": "15",
+      "name": "HighBit",
+      "length": 2
+   },
+   "(0028,0103)": {
+      "vr": "US",
+      "tag": "(0028,0103)",
+      "value": "1",
+      "name": "PixelRepresentation",
+      "length": 2
+   },
+   "(0028,0120)": {
+      "vr": "SS",
+      "tag": "(0028,0120)",
+      "value": "-2048",
+      "name": "PixelPaddingValue",
+      "length": 2
+   },
+   "(0028,1050)": {
+      "vr": "DS",
+      "tag": "(0028,1050)",
+      "value": "130 ",
+      "name": "WindowCenter",
+      "length": 4
+   },
+   "(0028,1051)": {
+      "vr": "DS",
+      "tag": "(0028,1051)",
+      "value": "250 ",
+      "name": "WindowWidth",
+      "length": 4
+   },
+   "(0028,1052)": {
+      "vr": "DS",
+      "tag": "(0028,1052)",
+      "value": "0 ",
+      "name": "RescaleIntercept",
+      "length": 2
+   },
+   "(0028,1053)": {
+      "vr": "DS",
+      "tag": "(0028,1053)",
+      "value": "1 ",
+      "name": "RescaleSlope",
+      "length": 2
+   },
+   "(0040,0002)": {
+      "vr": "DA",
+      "tag": "(0040,0002)",
+      "value": "20230819",
+      "name": "ScheduledProcedureStepStartDate",
+      "length": 8
+   },
+   "(0040,0003)": {
+      "vr": "TM",
+      "tag": "(0040,0003)",
+      "value": "185000",
+      "name": "ScheduledProcedureStepStartTime",
+      "length": 6
+   },
+   "(0040,0004)": {
+      "vr": "DA",
+      "tag": "(0040,0004)",
+      "value": "20230819",
+      "name": "ScheduledProcedureStepEndDate",
+      "length": 8
+   },
+   "(0040,0005)": {
+      "vr": "TM",
+      "tag": "(0040,0005)",
+      "value": "192000.000",
+      "name": "ScheduledProcedureStepEndTime",
+      "length": 10
+   },
+   "(0040,0244)": {
+      "vr": "DA",
+      "tag": "(0040,0244)",
+      "value": "20230819",
+      "name": "PerformedProcedureStepStartDate",
+      "length": 8
+   },
+   "(0040,0245)": {
+      "vr": "TM",
+      "tag": "(0040,0245)",
+      "value": "185414.000",
+      "name": "PerformedProcedureStepStartTime",
+      "length": 10
+   },
+   "(0040,0253)": {
+      "vr": "SH",
+      "tag": "(0040,0253)",
+      "value": "13326 ",
+      "name": "PerformedProcedureStepID",
+      "length": 6
+   },
+   "(0040,0275)": {
+      "vr": "SQ",
+      "tag": "(0040,0275)",
+      "name": "RequestAttributesSequence",
+      "length": 100,
+      "items": [
+         {
+            "(0032,1060)": {
+               "vr": "LO",
+               "tag": "(0032,1060)",
+               "value": "CT Low dose thorax",
+               "name": "RequestedProcedureDescription",
+               "length": 18
+            },
+            "(0040,0007)": {
+               "vr": "LO",
+               "tag": "(0040,0007)",
+               "value": "CT Low dose thorax",
+               "name": "ScheduledProcedureStepDescription",
+               "length": 18
+            },
+            "(0040,0009)": {
+               "vr": "SH",
+               "tag": "(0040,0009)",
+               "value": "10821810",
+               "name": "ScheduledProcedureStepID",
+               "length": 8
+            },
+            "(0040,1001)": {
+               "vr": "SH",
+               "tag": "(0040,1001)",
+               "value": "10821810",
+               "name": "RequestedProcedureID",
+               "length": 8
+            }
+         }
+      ]
+   },
+   "(7005,0010)": {
+      "vr": "LO",
+      "tag": "(7005,0010)",
+      "value": "TOSHIBA_MEC_CT3 ",
+      "name": "Private or Unrecognised Tag",
+      "length": 16
+   },
+   "(7005,0011)": {
+      "vr": "LO",
+      "tag": "(7005,0011)",
+      "value": "CANON_MEC_CT3 ",
+      "name": "Private or Unrecognised Tag",
+      "length": 14
+   },
+   "(7005,1008)": {
+      "vr": "UN",
+      "tag": "(7005,1008)",
+      "value": "1.0 ",
+      "name": "Private or Unrecognised Tag",
+      "length": 4,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7005,100b)": {
+      "vr": "UN",
+      "tag": "(7005,100b)",
+      "value": "AIDR 3D ",
+      "name": "Private or Unrecognised Tag",
+      "length": 8,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7005,100d)": {
+      "vr": "UN",
+      "tag": "(7005,100d)",
+      "value": "LUNG SCREENING",
+      "name": "Private or Unrecognised Tag",
+      "length": 14,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7005,100e)": {
+      "vr": "UN",
+      "tag": "(7005,100e)",
+      "value": "IMG ",
+      "name": "Private or Unrecognised Tag",
+      "length": 4,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7005,100f)": {
+      "vr": "UN",
+      "tag": "(7005,100f)",
+      "value": "FF",
+      "name": "Private or Unrecognised Tag",
+      "length": 2,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7005,1012)": {
+      "vr": "UN",
+      "tag": "(7005,1012)",
+      "value": "SU",
+      "name": "Private or Unrecognised Tag",
+      "length": 2,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7005,1013)": {
+      "vr": "UN",
+      "tag": "(7005,1013)",
+      "value": "\u0001\u0000",
+      "name": "Private or Unrecognised Tag",
+      "length": 2,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7005,1016)": {
+      "vr": "UN",
+      "tag": "(7005,1016)",
+      "value": "1.2.392.200036.9116.2.6.1.15484.1072719488.1692438886.199945",
+      "name": "Private or Unrecognised Tag",
+      "length": 60,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7005,1017)": {
+      "vr": "UN",
+      "tag": "(7005,1017)",
+      "value": "\u0001\u0000",
+      "name": "Private or Unrecognised Tag",
+      "length": 2,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7005,1018)": {
+      "vr": "UN",
+      "tag": "(7005,1018)",
+      "value": "\u0001\u0000",
+      "name": "Private or Unrecognised Tag",
+      "length": 2,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7005,1019)": {
+      "vr": "UN",
+      "tag": "(7005,1019)",
+      "value": "\u000b\u0011\u0019\u0000",
+      "name": "Private or Unrecognised Tag",
+      "length": 4,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7005,101a)": {
+      "vr": "UN",
+      "tag": "(7005,101a)",
+      "value": "\u0000\u0000",
+      "name": "Private or Unrecognised Tag",
+      "length": 2,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7005,101b)": {
+      "vr": "UN",
+      "tag": "(7005,101b)",
+      "value": "FL04",
+      "name": "Private or Unrecognised Tag",
+      "length": 4,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7005,101e)": {
+      "vr": "UN",
+      "tag": "(7005,101e)",
+      "value": "\u0000\u0000\u0000\u0000",
+      "name": "Private or Unrecognised Tag",
+      "length": 4,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7005,101f)": {
+      "vr": "UN",
+      "tag": "(7005,101f)",
+      "value": "00",
+      "name": "Private or Unrecognised Tag",
+      "length": 2,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7005,1020)": {
+      "vr": "UN",
+      "tag": "(7005,1020)",
+      "value": "\u0001\u0000\u0000\u0000",
+      "name": "Private or Unrecognised Tag",
+      "length": 4,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7005,1024)": {
+      "vr": "UN",
+      "tag": "(7005,1024)",
+      "value": "20230701",
+      "name": "Private or Unrecognised Tag",
+      "length": 8,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7005,1030)": {
+      "vr": "UN",
+      "tag": "(7005,1030)",
+      "value": "CT",
+      "name": "Private or Unrecognised Tag",
+      "length": 2,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7005,1040)": {
+      "vr": "UN",
+      "tag": "(7005,1040)",
+      "value": "\u0000\u0000\u0000\u0000\u0000\u0000�?",
+      "name": "Private or Unrecognised Tag",
+      "length": 8,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7005,1041)": {
+      "vr": "UN",
+      "tag": "(7005,1041)",
+      "value": "1.0x2 ",
+      "name": "Private or Unrecognised Tag",
+      "length": 6,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7005,1043)": {
+      "vr": "UN",
+      "tag": "(7005,1043)",
+      "value": "-0.00000\\1.00000\\0.00000",
+      "name": "Private or Unrecognised Tag",
+      "length": 24,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7005,1063)": {
+      "vr": "UN",
+      "tag": "(7005,1063)",
+      "value": "�\u001e��Q��?",
+      "name": "Private or Unrecognised Tag",
+      "length": 8,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7005,1109)": {
+      "vr": "UN",
+      "tag": "(7005,1109)",
+      "value": "ORIGINAL\\PRIMARY\\LOCALIZER",
+      "name": "Private or Unrecognised Tag",
+      "length": 26,
+      "devNote": "No support for VR: UN but tried decoding to ascii"
+   },
+   "(7fe0,0010)": {
+      "vr": "OW",
+      "tag": "(7fe0,0010)",
+      "value": "Binary data (OW): 483552 bytes",
+      "name": "PixelData",
+      "length": 483552,
+      "devNote": "No support for VR: OW"
+   }
+}

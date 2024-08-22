@@ -8,25 +8,30 @@ import { findDICOM, prettyPrintMap } from "./utils.js";
  * @param cfg
  * @returns void
  */
-export async function singleTheaded(cfg: Global.Cfg) {
-   const start = performance.now();
-   const paths = findDICOM(cfg.targetDir);
-   const parsedFiles = [];
+export async function singleTheaded(cfg: Global.Cfg, writeTo?: string) {
+  const start = performance.now();
+  const paths = findDICOM(cfg.targetDir);
+  const parsedFiles = [];
 
-   for (let i = 0; i < paths.length; i++) {
-      const debugLen = readFileSync(paths[i]);
-      const elements = await streamParse(paths[i], cfg);
-      parsedFiles.push(elements);
-   }
+  if (!paths.length) return
 
-   const end = performance.now();
+  for (let i = 0; i < paths.length; i++) {
+    const debugLen = readFileSync(paths[i]);
+    const elements = await streamParse(paths[i], cfg);
+    parsedFiles.push(elements);
+  }
 
-   writeFileSync("./output.json", JSON.stringify(parsedFiles[0], null, 3));
-   write(`Parsed ${parsedFiles.length} file(s)`, "INFO");
-   write(
-      `Time elapsed including finding images in dir, streaming, and parsing: ${end - start} ms`,
-      "INFO"
-   );
+  const end = performance.now();
+  const imgName = paths[0].split('/').at(-1).split('.')[0] // should change this to UID or at least accession number
+  console.log(`${writeTo}/${imgName}.json`)
+  const writePath = writeTo ? `${writeTo}/${imgName}.json` : `./output.json`
 
-   return parsedFiles;
+  writeFileSync(writePath, JSON.stringify(parsedFiles[0], null, 3));
+  write(`Parsed ${parsedFiles.length} file(s)`, "INFO");
+  write(
+    `Time elapsed including finding images in dir, streaming, and parsing: ${end - start} ms`,
+    "INFO"
+  );
+
+  return parsedFiles;
 }

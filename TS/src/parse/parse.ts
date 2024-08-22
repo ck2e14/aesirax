@@ -1,18 +1,16 @@
 import { BufferBoundary, DicomError, Malformed, UndefinedLength } from "../error/errors.js";
-import { parseLength, decodeTag, parseValue, parseVR, TagStr, decodeLength } from "./parsers.js";
+import { parseLength, decodeTag, parseValue, parseVR, TagStr, } from "./parsers.js";
 import { ByteLen, DicomErrorType, TagDictByName, VR } from "../enums.js";
-import { getTagName, logElement, printSqCtx } from "../utils.js";
+import { getTagName, logElement, } from "../utils.js";
 import { newCursor, Cursor } from "./cursor.js";
 import { write } from "../logging/logQ.js";
 import { Ctx } from "../read/read.js";
-import { sep } from "node:path";
-import { spec } from "node:test/reporters";
-import { off } from "node:process";
 
 export type ParseResult = { truncated: true | null; buf: PartialEl };
 export type PartialEl = Buffer | null; // because streaming
 export type DataSet = Record<string, Element>;
 export type Item = DataSet; // items are dataset aliases, in sequences
+export type Fragments = Record<number, { value: string, length: number }>;
 export type Element = {
   tag: TagStr;
   name: string;
@@ -20,6 +18,7 @@ export type Element = {
   length: number;
   items?: Item[];
   value?: string | number | Buffer;
+  fragments?: Fragments;
   devNote?: string;
 };
 
@@ -89,9 +88,10 @@ export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
           sq.items.push({});
           continue;
         }
-        // ----- Defined Len SQ Basecase -----
+        // ----- Undefined Len SQ Basecase -----
         if (next === SQ_END_TAG) {
           write(`End of SQ ${sq.tag} ${sq.name}`, "DEBUG");
+          stacks(ctx).sq.length = stacks(ctx).bytes
           return;
         }
         throw new Malformed(`Got ${next}, expected ${ITEM_END_TAG}/${SQ_END_TAG}`);
@@ -106,7 +106,7 @@ export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
       // -------- Parse OB Value ----------
       if (el.vr === VR.OB && el.length === MAX_UINT32) {
         parseUndefLenOB(ctx, el, cursor, buffer)
-        continue
+        continue // just have a parseOB method that handles undef and def lens 
       }
 
       // -------- Parse OW Value ----------
@@ -125,8 +125,7 @@ export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
       parseValue(buffer, cursor, el, ctx);
 
       // ------- Persist to dataset --------
-      saveElement(ctx, el);
-      logElement(el, cursor, buffer);
+      saveElement(ctx, el, cursor, buffer);
 
       // ----- Defined len SQ basecase -----
       if (detectDefLenSqEnd(ctx, el)) {
@@ -144,7 +143,8 @@ export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
  * @param lastSqItem
  * @param el
  */
-function saveElement(ctx: Ctx, el: Element) {
+function saveElement(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer) {
+  logElement(el, cursor, buffer)
   if (inSQ(ctx)) {
     const { lastSqItem } = stacks(ctx);
     lastSqItem[el.tag] = el;
@@ -196,7 +196,7 @@ function isEndOfItem(ctx: Ctx, el: Element): boolean {
  * @param tag
  * @returns boolean
  */
-function isItemStart(ctx: Ctx, tag: TagStr): boolean {
+function isItemStart(tag: TagStr): boolean {
   return tag === ITEM_START_TAG;
 }
 
@@ -320,7 +320,7 @@ export function parseSQ(buffer: Buffer, ctx: Ctx, el: Element, parentCursor: Cur
 
   // ---- Convert element to SQ & save to appropriate dataset (top level or nested)
   const newSq = convertElToSq(el);
-  saveElement(ctx, newSq);
+  saveElement(ctx, newSq, parentCursor, buffer);
 
   // ---- 0-Length, Defined length SQs
   if (isEmptyDefinedLengthSQ(el)) {
@@ -340,7 +340,7 @@ export function parseSQ(buffer: Buffer, ctx: Ctx, el: Element, parentCursor: Cur
     return;
   }
 
-  // ---- Walk up to the first item, a dataset, ready to give to parse()
+  // ---- Window from the first item, a dataset, ready to give to parse()
   const firstItemDataSet = buffer.subarray(parentCursor.pos, buffer.length);
 
   // ---- Track the sequence's state by pushing properties to context stacks
@@ -376,33 +376,58 @@ function trackSequenceElement(ctx: Ctx, el: Element, newSq: Element) {
 }
 
 export function parseUndefLenOB(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer) {
-  //
-  console.log(`fucking now parsing undefined length OB...`, el.name, el.tag)
-  // throw if we dont get an item start tag here
-  const x = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM)
-  const y = decodeTag(x)
-  if (y !== ITEM_START_TAG) {
-    throw new Malformed(`Expeted an item start tag in undefined len ${el.tag} but got ${y}`)
+  const itemTagBytes = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM)
+  const itemTag = decodeTag(itemTagBytes)
+  if (itemTag !== ITEM_START_TAG) {
+    throw new Malformed(`Expeted an item start tag in undefined len ${el.tag} but got ${itemTag}`)
   } else {
     cursor.walk(ByteLen.TAG_NUM, ctx, buffer)
   }
 
-  // now determine whether we have an offset table or straight into the fragment data
-  // will only need to do this once for the whole element - once determined once, all subsequent fragments 
-  // will not be preceded by an offset table. 0 or 1 offset table per element, 1-n fragments per element. 
-  // we determine this by length decoding - if its 0 then no offset table to read, and we can just walk the length
-  // and read the fragment. otherwise we get the length of the offset table. Optionally we can decode the table 
-  // but its equally valid to sack that shit off and just walk past it to get to the fragments.
-  
+  // ---- Seek offset table - if it exists. Walk past it, idgaf about that.
   const offsetLenBytes = buffer.subarray(cursor.pos, cursor.pos + ByteLen.LENGTH)
   const offsetLen = offsetLenBytes.readUint32LE(0) // note we are assuming LE here for speed of prototyping
+
   cursor.walk(ByteLen.LENGTH, ctx, buffer)
-  
-  console.log('offset len is ', offsetLen)
   cursor.walk(offsetLen, ctx, buffer)
-  
-  console.log('now at frag data, bytes left from cursor pos are: ', buffer.length - cursor.pos)
-  process.exit()
+
+  let i = 0
+  el.length = 24 + offsetLen // I.e. all the fixed length bytes that we walked and then whatever was the size of the offset as well. 
+  el.fragments = {} as Fragments
+
+  while (1) {
+    const tagBytes = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM)
+    const tag = decodeTag(tagBytes)
+    cursor.walk(ByteLen.TAG_NUM, ctx, buffer)
+
+    if (tag === SQ_END_TAG) {
+      cursor.walk(ByteLen.LENGTH, ctx, buffer)
+      break
+    }
+
+    const fragLen = buffer
+      .subarray(cursor.pos, cursor.pos + ByteLen.LENGTH)
+      .readUInt32LE(0)
+    cursor.walk(ByteLen.LENGTH, ctx, buffer)
+
+    el.length += fragLen
+
+    if (valueIsTruncated(buffer, cursor, fragLen)) {
+      throw new BufferBoundary(`${el.name} is truncated`)
+    }
+
+    const pixels = buffer.subarray(cursor.pos, cursor.pos + fragLen)
+    cursor.walk(fragLen, ctx, buffer)
+
+    if (ctx.skipPixelData) {
+      el.fragments[i] = { length: fragLen, value: "SKIPPED PIXEL DATA" }
+    } else {
+      el.fragments[i] = { length: fragLen, value: pixels.toString('hex') }
+    }
+  }
+
+  saveElement(ctx, el, cursor, buffer)
+  i++
 }
 
 /**
@@ -415,17 +440,10 @@ export function parseUndefLenOB(ctx: Ctx, el: Element, cursor: Cursor, buffer: B
  * @param buffer
  */
 export function parseOW(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer) {
-  const isUndefinedLength = el.length === MAX_UINT32
   const isDefinedLength = el.length > 0 && el.length < MAX_UINT32
-
   if (isDefinedLength) {
     parseValue(buffer, cursor, el, ctx)
-    saveElement(ctx, el)
-    return
-  }
-
-  if (isUndefinedLength) {
-    console.log('its fucking undefined length ', el.length)
+    saveElement(ctx, el, cursor, buffer)
     return
   }
 
@@ -477,7 +495,7 @@ export function parseOW(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer) {
       .toString("hex");
 
   // ---- Persist element to dataset
-  saveElement(ctx, el);
+  saveElement(ctx, el, cursor, buffer);
 
   // ---- Place cursor 1 byte past frag
   cursor.walk(fragLen, ctx, buffer);

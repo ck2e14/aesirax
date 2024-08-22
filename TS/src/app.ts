@@ -7,7 +7,7 @@ import { readdirSync } from "node:fs";
 const testDirs = {
   // no nested SQs
   noNestedSQ_multipleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems:
-    "../data/with_1-depthSQ_multiple_items_undefined_SQlen_undefinedItemLen", // 102 elements
+    "../data/with_1-depthSQ_multiple_items_undefined_SQlen_undefinedItemLen", // 103 elements
   noNestedSQ_singleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems:
     "../data/with_1-depth_sequences_undefinedSQlen_undefinedItemlen", // 130 elements
 
@@ -16,7 +16,7 @@ const testDirs = {
   nestedSQ_undefinedLens_multipleItems:
     "/Users/chriskennedy/Desktop/SWE/aesirax/data/QUANTREDEUSIX", // 111
   nestedSQ_undefinedLens_multipleItems2:
-    "/Users/chriskennedy/Desktop/SWE/aesirax/data/CUMMINSMARJORIE",
+    "/Users/chriskennedy/Desktop/SWE/aesirax/data/CUMMINSMARJORIE", // 150 elements
 
   // other
   x: "../data/x", // 115 elements
@@ -39,8 +39,7 @@ async function main(cfg: Global.Cfg) {
 
   await init();
 
-  cfg.targetDir = testDirs.noNestedSQ_multipleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems
-  // cfg.targetDir = testDirs.nestedSQ_undefinedLens_multipleItems2
+  cfg.targetDir = testDirs.noNestedSQ_singleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems;
 
   const fileCount = readdirSync(cfg.targetDir).length;
 
@@ -59,10 +58,10 @@ async function main(cfg: Global.Cfg) {
 
   setTimeout(() => {
     if (cfg.verbose) {
-      write(`Completed work - shutting down.`, "INFO");
+      write(`Completed current parsing work`, "INFO");
     }
-    process.exit(); // make this robust but its basically always fine but better to check q length
-  }, 2_000); // Wait for logs to finish writing
+    //process.exit(); // make this robust but its basically always fine but better to check q length
+  }, 100); // Wait for logs to finish writing
 }
 
 main(cfg);
