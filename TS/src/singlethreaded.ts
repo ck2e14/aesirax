@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync } from "fs";
 import { write } from "./logging/logQ.js";
 import { streamParse } from "./read/read.js";
 import { findDICOM, prettyPrintMap } from "./utils.js";
+import { DataSet } from "./parse/parse.js";
 
 /**
  * Parse DICOM files using a single thread
@@ -11,7 +12,7 @@ import { findDICOM, prettyPrintMap } from "./utils.js";
 export async function singleTheaded(cfg: Global.Cfg, writeTo?: string) {
   const start = performance.now();
   const paths = findDICOM(cfg.targetDir);
-  const parsedFiles = [];
+  const parsedFiles: DataSet[] = [];
 
   if (!paths.length) return
 
@@ -22,12 +23,15 @@ export async function singleTheaded(cfg: Global.Cfg, writeTo?: string) {
   }
 
   const end = performance.now();
-  const imgName = paths[0].split('/').at(-1).split('.')[0] // should change this to UID or at least accession number
-  console.log(`${writeTo}/${imgName}.json`)
-  const writePath = writeTo ? `${writeTo}/${imgName}.json` : `./output.json`
-
-  writeFileSync(writePath, JSON.stringify(parsedFiles[0], null, 3));
   write(`Parsed ${parsedFiles.length} file(s)`, "INFO");
+
+  for (const imageData of parsedFiles) {
+    const studyUid = imageData["(0020,000d)"].value ?? "UNKNOWN STUDY UID"
+    const imageUid = imageData["(0008,0018)"].value ?? "UNKNOWN IMAGE UID"
+    const writePath = writeTo ? `${writeTo}/${studyUid}-${imageUid}.json` : `./output.json`
+    writeFileSync(writePath, JSON.stringify(parsedFiles[0], null, 3));
+  }
+
   write(
     `Time elapsed including finding images in dir, streaming, and parsing: ${end - start} ms`,
     "INFO"
