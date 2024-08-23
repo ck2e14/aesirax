@@ -1,0 +1,19 @@
+{
+	"files": [
+		{
+			"path": "src/parse/parse.ts",
+			"bookmarks": [
+				{
+					"line": 97,
+					"column": 67,
+					"label": ""
+				},
+				{
+					"line": 228,
+					"column": 26,
+					"label": ""
+				}
+			]
+		}
+	]
+}

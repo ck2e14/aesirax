@@ -12,7 +12,7 @@
       "value": "Binary data (OB): 2 bytes",
       "name": "FileMetaInformationVersion",
       "length": 2,
-      "devNote": "Byte parsing support for VR: OB is unimplemeted in this version"
+      "devNote": "No support for VR: OB"
    },
    "(0002,0002)": {
       "vr": "UI",
@@ -141,10 +141,10 @@
       "length": 16
    },
    "(0008,1032)": {
+      "vr": "SQ",
       "tag": "(0008,1032)",
       "name": "ProcedureCodeSequence",
-      "length": null,
-      "vr": "SQ",
+      "length": 78,
       "items": [
          {
             "(0008,0100)": {
@@ -375,10 +375,10 @@
       "length": 10
    },
    "(0088,0200)": {
+      "vr": "SQ",
       "tag": "(0088,0200)",
       "name": "IconImageSequence",
-      "length": null,
-      "vr": "SQ",
+      "length": 962,
       "items": [
          {
             "(0028,0002)": {
@@ -471,7 +471,7 @@
                "value": "Binary data (OW): 256 bytes",
                "name": "RedPaletteColorLookupTableData",
                "length": 256,
-               "devNote": "Byte parsing support for VR: OW is unimplemeted in this version"
+               "devNote": "No support for VR: OW"
             },
             "(0028,1202)": {
                "vr": "OW",
@@ -479,7 +479,7 @@
                "value": "Binary data (OW): 256 bytes",
                "name": "GreenPaletteColorLookupTableData",
                "length": 256,
-               "devNote": "Byte parsing support for VR: OW is unimplemeted in this version"
+               "devNote": "No support for VR: OW"
             },
             "(0028,1203)": {
                "vr": "OW",
@@ -487,7 +487,7 @@
                "value": "Binary data (OW): 256 bytes",
                "name": "BluePaletteColorLookupTableData",
                "length": 256,
-               "devNote": "Byte parsing support for VR: OW is unimplemeted in this version"
+               "devNote": "No support for VR: OW"
             }
          }
       ]
@@ -498,6 +498,6 @@
       "value": "Binary data (OW): 1021440 bytes",
       "name": "PixelData",
       "length": 1021440,
-      "devNote": "Byte parsing support for VR: OW is unimplemeted in this version"
+      "devNote": "No support for VR: OW"
    }
 }

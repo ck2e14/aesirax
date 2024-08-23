@@ -1,5 +1,7 @@
 # DICOM Project Notes and Future Plans
 
+would be nice as well to implement object pooling. 
+
 ## Current Limitations and Warnings
 
 -  **Large Pixel Data Handling**: Currently loading all pixel data into memory. Consider implementing a discard approach for memory efficiency.

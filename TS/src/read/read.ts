@@ -13,6 +13,7 @@ import {
   parse,
   PartialEl,
 } from "../parse/parse.js";
+import { json } from "stream/consumers";
 
 export type Ctx = {
   first: boolean;
@@ -114,7 +115,7 @@ export function streamParse(
 
     stream.on("end", () => {
       detectMisalignment(ctx, false);
-      write(`Stream end: Parsed ${dataSetLength(ctx.dataSet)} elements from ${path}`, "DEBUG");
+      write(`Stream end: Parsed ${dataSetLength(ctx.dataSet)} outer datatset elements from ${path}`, "DEBUG");
       resolve(ctx.dataSet);
       writeFileSync("./visisted.json", JSON.stringify(ctx.visitedBytes, null, 3));
       stream.close();
@@ -144,42 +145,20 @@ export function streamParse(
  * @param throwMode
  */
 function detectMisalignment(ctx: Ctx, throwMode = false) {
-  const fileLen = ctx.totalStreamedBytes - 132; // minus preamble + HEADER
-  const fileLenStr = fileLen.toLocaleString();
+  const fileLenMinus = ctx.totalStreamedBytes - 132; // minus preamble + HEADER
+  const fileLenMinusStr = fileLenMinus.toLocaleString();
   const outerCursorPosStr = ctx.outerCursor.pos.toLocaleString();
 
-  // if no stitching, then it should be truly linear runtime algo. otherwise by necessity there are some revisited bytes,
-  // for which we can optimise in future. For now as well, stitching is not supported in the visitedBytes access tracking
-  // so constrain this check to when we've read the entire file as one buffer. Seems also that ctx.outerCursor is also
-  // not properly incrementing when stitching??
-  if (ctx.nByteArray === 1) {
-    for (let i = 0; i < fileLen; i++) {
-      if (!ctx.visitedBytes.hasOwnProperty(i)) {
-        write(
-          `Linear byte traversal demands each byte is walked at least once, but visitedBytes is missing position ${i}`,
-          "WARN"
-        );
-      }
-
-      if (ctx.visitedBytes[i] !== 1) {
-        write(
-          `Expected a single visit to byte position ${i} given that no stitching occured. Visisted (or wrongly tracked) ${ctx.visitedBytes[i]} times`,
-          "WARN"
-        );
-      }
-    }
-
-    if (ctx.outerCursor.pos !== fileLen) {
-      write(
-        `OuterCursor was expected to be at the end of the file (length: ${fileLenStr}) after completion but is at position: ${ctx.outerCursor.pos}`,
-        "WARN"
-      );
-    } else {
-      write(
-        `OuterCursor (position ${outerCursorPosStr}) is correctly placed at the end of the file (length: ${fileLenStr}) after parsing.`,
-        "DEBUG"
-      );
-    }
+  if (ctx.outerCursor.pos !== ctx.totalStreamedBytes - 132 /* minus preamble + header */) {
+    write(
+      `OuterCursor was expected to be at the end of the file (length: ${fileLenMinusStr}) after completion but is at position: ${ctx.outerCursor.pos}`,
+      "WARN"
+    );
+  } else {
+    write(
+      `OuterCursor (position ${outerCursorPosStr}) is correctly placed at the end of the file (length: ${fileLenMinusStr}) after parsing.`,
+      "DEBUG"
+    );
   }
 }
 

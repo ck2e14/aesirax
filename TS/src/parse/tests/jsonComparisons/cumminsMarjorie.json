@@ -997,6 +997,7 @@
       "vr": "SQ",
       "tag": "(0038,0502)",
       "name": "PatientClinicalTrialParticipationSequence",
+      "length": 0,
       "items": []
    },
    "(0040,0009)": {
