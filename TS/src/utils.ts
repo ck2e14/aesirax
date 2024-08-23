@@ -77,9 +77,9 @@ export function useLE(tsn: TransferSyntaxUid): boolean {
  */
 export function UNIMPLEMENTED_VR_PARSING(vr: Global.VR): string {
    if (vr === VR.UN) {
-      return `Byte parsing support for VR: ${vr} is unimplemeted in this version but attempted to decode to string as it doesn't harm the parse process`;
+      return `No support for VR: ${vr} but tried decoding to ascii`;
    } else {
-      return `Byte parsing support for VR: ${vr} is unimplemeted in this version`;
+      return `No support for VR: ${vr}`;
    }
 }
 
@@ -186,6 +186,6 @@ export const isVr = (vr: string): vr is Global.VR => {
  * @returns boolean
  */
 export function isExtVr(vr: Global.VR): boolean {
-   const extVrPattern = /^OB|OW|OF|SQ|UT|UN$/;
+   const extVrPattern = /^UC|OB|OW|OF|SQ|UT|UN$/;
    return extVrPattern.test(vr);
 }

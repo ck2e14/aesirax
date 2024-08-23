@@ -1,26 +1,25 @@
 import { BufferBoundary, DicomError, Malformed, UndefinedLength } from "../error/errors.js";
-import { parseLength, decodeTag, parseValue, parseVR, TagStr, decodeLength } from "./parsers.js";
+import { parseLength, decodeTag, parseValue, parseVR, TagStr } from "./parsers.js";
 import { ByteLen, DicomErrorType, TagDictByName, VR } from "../enums.js";
 import { getTagName, logElement, printSqCtx } from "../utils.js";
 import { newCursor, Cursor } from "./cursor.js";
 import { write } from "../logging/logQ.js";
 import { Ctx } from "../read/read.js";
-import { sep } from "node:path";
-import { spec } from "node:test/reporters";
-import { off } from "node:process";
 
 export type ParseResult = { truncated: true | null; buf: PartialEl };
 export type PartialEl = Buffer | null; // because streaming
 export type DataSet = Record<string, Element>;
 export type Item = DataSet; // items are dataset aliases, in sequences
+export type Fragments = Record<number, { value: string; length: number }>;
 export type Element = {
-  tag: TagStr;
-  name: string;
-  vr: VR;
-  length: number;
-  items?: Item[];
-  value?: string | number | Buffer;
-  devNote?: string;
+   tag: TagStr;
+   name: string;
+   vr: VR;
+   length: number;
+   items?: Item[];
+   value?: string | number | Buffer;
+   fragments?: Fragments;
+   devNote?: string;
 };
 
 export const MAX_UINT16 = 65_535;
@@ -46,96 +45,113 @@ export const SQ_END_TAG = TagDictByName.SequenceEnd.tag; //   (fffe,e0dd)
  * must be for a new element starting at the first byte of the
  * tag number.
  *
- * TODO for really long values like pixel data where we have to
- * re-enter parse() a lot for stitching when using small
- * highwatermarks we could basically calculate the offset from
- * the next, stitched buffer to start traversing from. I don't
- * know if this is necessarily worth it but would be cool to
- * implement. May have knock-on effects on byte access tracking
- * so at this point we really need to start writing regression
- * tests.
- *
- * Note: parsing fns also walk cursor
- *
  * @param buffer
  * @param ctx
  * @returns PartialEl
  */
 export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
-  let cursor: Cursor;
-  let lastTagStart: number;
+   let cursor: Cursor;
+   let lastTagStart: number;
 
-  if (ctx.outerCursor == null) {
-    cursor = newCursor(0, buffer, true);
-    ctx.outerCursor = cursor;
-  } else {
-    cursor = newCursor(0);
-  }
+   if (ctx.outerCursor == null) {
+      cursor = newCursor(0, buffer, true);
+      ctx.outerCursor = cursor;
+   } else {
+      cursor = newCursor(0);
+   }
 
-  while (cursor.pos < buffer.length) {
-    const el = newElement();
-    const sq = stacks(ctx).sq;
-    lastTagStart = cursor.pos;
+   while (cursor.pos < buffer.length) {
+      const el = newElement();
+      const sq = stacks(ctx).sq;
+      lastTagStart = cursor.pos;
 
-    try {
-      // ------ Parse Tag to (gggg,eeee) ------
-      parseTag(buffer, cursor, el, ctx);
+      try {
+         // ------ Parse Tag (gggg,eeee) ------
+         parseTag(buffer, cursor, el, ctx);
 
-      // ------- Handle SQ control flow -------
-      if (inSQ(ctx) && isEndOfItem(ctx, el)) {
-        const next = tagAfterEndOfItem(ctx, cursor, buffer);
-        // ------- Parse Next Dataset -------
-        if (next === ITEM_START_TAG) {
-          sq.items.push({});
-          continue;
-        }
-        // ----- Defined Len SQ Basecase -----
-        if (next === SQ_END_TAG) {
-          write(`End of SQ ${sq.tag} ${sq.name}`, "DEBUG");
-          return;
-        }
-        throw new Malformed(`Got ${next}, expected ${ITEM_END_TAG}/${SQ_END_TAG}`);
+         // ---- Handle defined length next item control flow ----
+         if (detectStartOfNewDefinedLengthSqItem(ctx, el)) {
+            sq.items.push({});
+            cursor.walk(ByteLen.LENGTH, ctx, buffer);
+            continue;
+         }
+
+         // ------- Handle SQ control flow -------
+         if (detectEndOfUndefinedLengthSqItem(ctx, el)) {
+            const next = tagAfterEndOfItem(ctx, cursor, buffer);
+
+            if (next === ITEM_START_TAG) {
+               sq.items.push({});
+               continue;
+            }
+
+            if (next === SQ_END_TAG) {
+               write(`End of SQ ${sq.tag} ${sq.name}`, "DEBUG");
+               stacks(ctx).sq.length = stacks(ctx).bytes;
+               return; // basecase for undefined length SQs
+            }
+
+            throw new Malformed(`Got ${next}, expected ${ITEM_END_TAG}/${SQ_END_TAG}`);
+         }
+
+         // ----------- Parse VR -------------
+         parseVR(buffer, cursor, el, ctx);
+
+         // --------- Parse Length -----------
+         parseLength(el, cursor, buffer, ctx);
+
+         // -------- Parse OB Value ----------
+         if (el.vr === VR.OB && el.length === MAX_UINT32) {
+            parseUndefLenOB(ctx, el, cursor, buffer);
+            continue;
+         }
+
+         // -------- Parse OW Value ----------
+         if (el.vr === VR.OW) {
+            parseOW(ctx, el, cursor, buffer);
+            continue;
+         }
+
+         // -------- Parse SQ Value ----------
+         if (el.vr === VR.SQ) {
+            parseSQ(buffer, ctx, el, cursor); // recurse with ctx flags
+            continue;
+         }
+
+         // ------ Parse other VR Values ------
+         parseValue(buffer, cursor, el, ctx);
+
+         // ------- Persist to dataset --------
+         saveElement(ctx, el, cursor, buffer);
+
+         // ----- Defined len SQ basecase -----
+         if (detectDefLenSqEnd(ctx, el)) {
+            return;
+         }
+      } catch (error) {
+         return handleParserErrors(error, buffer, lastTagStart, el.tag);
       }
+   }
+}
 
-      // ----------- Parse VR -------------
-      parseVR(buffer, cursor, el, ctx);
+/**
+ * Detect the start of a new defined length SQ's item.
+ * @param ctx
+ * @param el
+ * @returns
+ */
+export function detectStartOfNewDefinedLengthSqItem(ctx: Ctx, el: Element) {
+   return inSQ(ctx) && el.length < MAX_UINT32 && el.tag === ITEM_START_TAG;
+}
 
-      // --------- Parse Length -----------
-      parseLength(el, cursor, buffer, ctx);
-
-      // -------- Parse OB Value ----------
-      if (el.vr === VR.OB && el.length === MAX_UINT32) {
-        parseUndefLenOB(ctx, el, cursor, buffer)
-        continue
-      }
-
-      // -------- Parse OW Value ----------
-      if (el.vr === VR.OW) {
-        parseOW(ctx, el, cursor, buffer);
-        continue;
-      }
-
-      // -------- Parse SQ Value ----------
-      if (el.vr === VR.SQ) {
-        parseSQ(buffer, ctx, el, cursor); // recurse with ctx flags
-        continue;
-      }
-
-      // ------ Parse other VR Values ------
-      parseValue(buffer, cursor, el, ctx);
-
-      // ------- Persist to dataset --------
-      saveElement(ctx, el);
-      logElement(el, cursor, buffer);
-
-      // ----- Defined len SQ basecase -----
-      if (detectDefLenSqEnd(ctx, el)) {
-        return;
-      }
-    } catch (error) {
-      return handleParserErrors(error, buffer, lastTagStart, el.tag);
-    }
-  }
+/**
+ * Detect the end of an undefined length SQ's item.
+ * @param ctx
+ * @param el
+ * @returns
+ */
+export function detectEndOfUndefinedLengthSqItem(ctx: Ctx, el: Element) {
+   return inSQ(ctx) && el.tag === ITEM_END_TAG;
 }
 
 /**
@@ -144,13 +160,14 @@ export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
  * @param lastSqItem
  * @param el
  */
-function saveElement(ctx: Ctx, el: Element) {
-  if (inSQ(ctx)) {
-    const { lastSqItem } = stacks(ctx);
-    lastSqItem[el.tag] = el;
-  } else {
-    ctx.dataSet[el.tag] = el;
-  }
+function saveElement(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer, print = true) {
+   if (print) logElement(el, cursor, buffer);
+   if (inSQ(ctx)) {
+      const { lastSqItem } = stacks(ctx);
+      lastSqItem[el.tag] = el;
+   } else {
+      ctx.dataSet[el.tag] = el;
+   }
 }
 
 /**
@@ -159,36 +176,37 @@ function saveElement(ctx: Ctx, el: Element) {
  * @param ctx
  */
 function detectDefLenSqEnd(ctx: Ctx, el: Element) {
-  const { sq, len, bytes } = stacks(ctx);
-  const isEnd =
-    sq && //
-    len !== MAX_UINT32 &&
-    len === bytes + 8; // +8 because we walked 8 bytes (see parentCursor.walk() in parseSQ() before pushing sq traversal onto the stack)
+   const { sq, len, bytes } = stacks(ctx);
+   const isEnd =
+      sq && //
+      len !== MAX_UINT32 &&
+      len === bytes + 8; // +8 because we walked 8 bytes (see parentCursor.walk() in parseSQ())before pushing sq traversal onto the stack
 
-  if (isEnd) {
-    if (bytes > sq.length) {
-      throw new Malformed(
-        `Traversed more bytes than the defined length of the SQ. ` +
-        `This is a bug or malformed DICOM. ` +
-        `SQ: ${sq} - ` +
-        `Expected SQ length: ${sq}` +
-        `Traversed: ${bytes} - `
-      );
-    }
-    write(`End of defined length SQ: ${sq.name}. Final element decoded was ${el.tag}"`, "DEBUG");
-  }
+   if (isEnd) {
+      if (bytes > sq.length) {
+         throw new Malformed(
+            `Traversed more bytes than the defined length of the SQ. ` +
+               `This is a bug or malformed DICOM. ` +
+               `SQ: ${sq} - ` +
+               `Expected SQ length: ${sq}` +
+               `Traversed: ${bytes} - `
+         );
+      }
+      write(`End of defined length SQ: ${sq.name}. Final element decoded was ${el.tag}`, "DEBUG");
+      write(`outercursor: ${ctx.outerCursor.pos}`, "INFO");
+   }
 
-  return isEnd;
+   return isEnd;
 }
 
-/**
- * Determine if the current tag is the delimiter for the end of an item data set.
- * @param el
- * @returns boolean
- */
-function isEndOfItem(ctx: Ctx, el: Element): boolean {
-  return inSQ(ctx) && el.tag === ITEM_END_TAG;
-}
+// /**
+//  * Determine if the current tag is the delimiter for the end of an item data set.
+//  * @param el
+//  * @returns boolean
+//  */
+// function isEndOfItem(ctx: Ctx, el: Element): boolean {
+//    return inSQ(ctx) && el.tag === ITEM_END_TAG;
+// }
 
 /**
  * Determine if the current tag is the start of an item data set in a sequence.
@@ -196,8 +214,8 @@ function isEndOfItem(ctx: Ctx, el: Element): boolean {
  * @param tag
  * @returns boolean
  */
-function isItemStart(ctx: Ctx, tag: TagStr): boolean {
-  return tag === ITEM_START_TAG;
+function isItemStart(tag: TagStr): boolean {
+   return tag === ITEM_START_TAG;
 }
 
 /**
@@ -213,18 +231,18 @@ function isItemStart(ctx: Ctx, tag: TagStr): boolean {
  * @returns TagStr
  */
 function tagAfterEndOfItem(ctx: Ctx, cursor: Cursor, buffer: Buffer): TagStr {
-  const { sq } = stacks(ctx);
-  write(`Handling end of a dataSet item in SQ ${sq.tag} ${sq.name}`, "DEBUG");
+   const { sq } = stacks(ctx);
+   write(`Handling end of a dataSet item in SQ ${sq.tag} ${sq.name}`, "DEBUG");
 
-  cursor.walk(ByteLen.UINT_32, ctx, buffer); // ignore  length, its always 0x00000000 for item delims
+   cursor.walk(ByteLen.UINT_32, ctx, buffer); // ignore  length, its always 0x00000000 for item delims
 
-  const nextTagBytes = buffer.subarray(cursor.pos, cursor.pos + 4);
-  const nextTag = decodeTag(nextTagBytes);
+   const nextTagBytes = buffer.subarray(cursor.pos, cursor.pos + 4);
+   const nextTag = decodeTag(nextTagBytes);
 
-  cursor.walk(ByteLen.UINT_32, ctx, buffer); // walk past the tag string we just decoded
-  cursor.walk(ByteLen.UINT_32, ctx, buffer); // walk past the SQ_END_TAG's length bytes (always 0x00) - ignore it
+   cursor.walk(ByteLen.UINT_32, ctx, buffer); // walk past the tag string we just decoded
+   cursor.walk(ByteLen.UINT_32, ctx, buffer); // walk past the SQ_END_TAG's length bytes (always 0x00) - ignore it
 
-  return nextTag;
+   return nextTag;
 }
 
 /**
@@ -241,25 +259,25 @@ function tagAfterEndOfItem(ctx: Ctx, cursor: Cursor, buffer: Buffer): TagStr {
  * @returns PartialEl
  */
 function handleParserErrors(
-  error: any,
-  buffer: Buffer,
-  lastTagStart: number,
-  tag?: TagStr
+   error: any,
+   buffer: Buffer,
+   lastTagStart: number,
+   tag?: TagStr
 ): PartialEl {
-  const partialled = [BufferBoundary, RangeError];
-  const isUndefinedLength = error instanceof UndefinedLength;
-  const parsingError = partialled.every(ex => !(error instanceof ex)); // not a truncation error but some unanticipated parsing error
+   const partialled = [BufferBoundary, RangeError];
+   const isUndefinedLength = error instanceof UndefinedLength;
+   const parsingError = partialled.every(ex => !(error instanceof ex)); // not a truncation error but some unanticipated parsing error
 
-  if (parsingError && !isUndefinedLength) {
-    write(`Error parsing tag ${tag ?? ""}: ${error.message}`, "ERROR");
-    throw error;
-  }
+   if (parsingError && !isUndefinedLength) {
+      write(`Error parsing tag ${tag ?? ""}: ${error.message}`, "ERROR");
+      throw error;
+   }
 
-  if (error instanceof BufferBoundary || error instanceof RangeError) {
-    write(`Tag is split across buffer boundary ${tag ?? ""}`, "DEBUG");
-    write(`Last tag was at cursor position: ${lastTagStart}`, "DEBUG");
-    return buffer.subarray(lastTagStart, buffer.length);
-  }
+   if (error instanceof BufferBoundary || error instanceof RangeError) {
+      write(`Tag is split across buffer boundary ${tag ?? ""}`, "DEBUG");
+      write(`Last tag was at cursor position: ${lastTagStart}`, "DEBUG");
+      return buffer.subarray(lastTagStart, buffer.length);
+   }
 }
 
 /**
@@ -267,9 +285,9 @@ function handleParserErrors(
  * @param ctx
  */
 export function removeSqFromStack(ctx: Ctx) {
-  ctx.sqLens.pop();
-  ctx.sqStack.pop();
-  ctx.sqBytesStack.pop();
+   ctx.sqLens.pop();
+   ctx.sqStack.pop();
+   ctx.sqBytesStack.pop();
 }
 
 /**
@@ -277,17 +295,13 @@ export function removeSqFromStack(ctx: Ctx) {
  * @param el
  */
 function convertElToSq(el: Element): Element {
-  const newSq = {
-    ...el,
-    length: undefined,
-    items: [{}],
-  };
-  delete newSq.value;
-  return newSq;
+   const newSq = { ...el, items: [{}] };
+   delete newSq.value;
+   return newSq;
 }
 
 function isEmptyDefinedLengthSQ(el: Element) {
-  return el.vr === VR.SQ && el.length === 0;
+   return el.vr === VR.SQ && el.length === 0;
 }
 
 /**
@@ -301,7 +315,7 @@ function isEmptyDefinedLengthSQ(el: Element) {
  * @returns boolean
  */
 function isEmptyUndefinedLengthSQ(el: Element, tag: TagStr) {
-  return el.vr === VR.SQ && el.length === MAX_UINT32 && tag === SQ_END_TAG;
+   return el.vr === VR.SQ && el.length === MAX_UINT32 && tag === SQ_END_TAG;
 }
 
 /**
@@ -316,49 +330,78 @@ function isEmptyUndefinedLengthSQ(el: Element, tag: TagStr) {
  * @param seqTag
  */
 export function parseSQ(buffer: Buffer, ctx: Ctx, el: Element, parentCursor: Cursor) {
-  logEntryToSQ(ctx, el, parentCursor);
+   logEntryToSQ(ctx, el, parentCursor);
 
-  // ---- Convert element to SQ & save to appropriate dataset (top level or nested)
-  const newSq = convertElToSq(el);
-  saveElement(ctx, newSq);
+   // ---- Convert element to SQ & save to appropriate dataset (top level or nested)
+   const newSq = convertElToSq(el);
+   saveElement(ctx, newSq, parentCursor, buffer, false);
 
-  // ---- 0-Length, Defined length SQs
-  if (isEmptyDefinedLengthSQ(el)) {
-    newSq.items.pop(); // init'd with an empty dataset obj, so remove it
-    return; // Detect this here before walking cursor for further SQ handling to avoid needing to retreat
-  }
-  // ---- Decode the first tag (should always item start tag if !empty)
-  const tagBuffer = buffer.subarray(parentCursor.pos, parentCursor.pos + ByteLen.TAG_NUM);
-  const tag = decodeTag(tagBuffer);
+   // ---- 0-Length, Defined length SQs
+   if (isEmptyDefinedLengthSQ(el)) {
+      newSq.items.pop(); // init'd with an empty dataset obj, so remove it
+      return; // Detect this here before walking cursor for further SQ handling to avoid needing to retreat
+   }
+   // ---- Decode the first tag (should always item start tag if !empty)
+   const tagBuffer = buffer.subarray(parentCursor.pos, parentCursor.pos + ByteLen.TAG_NUM);
+   const tag = decodeTag(tagBuffer);
 
-  parentCursor.walk(ByteLen.TAG_NUM, ctx, buffer); // walk past tag bytes
-  parentCursor.walk(ByteLen.VR + ByteLen.EXT_VR_RESERVED, ctx, buffer); // walk past VR bytes - no interest in these bytes: item tags have no VR
+   parentCursor.walk(ByteLen.TAG_NUM, ctx, buffer); // walk past tag bytes
+   parentCursor.walk(ByteLen.VR + ByteLen.EXT_VR_RESERVED, ctx, buffer); // walk past VR bytes - no interest in these bytes: item tags have no VR
 
-  if (isEmptyUndefinedLengthSQ(el, tag)) {
-    write(`Saving undefined length empty SQ ${el.tag} ${el.name}.`, "DEBUG");
-    newSq.items.pop();
-    return;
-  }
+   if (isEmptyUndefinedLengthSQ(el, tag)) {
+      write(`Saving undefined length empty SQ ${el.tag} ${el.name}.`, "DEBUG");
+      newSq.length = 0;
+      newSq.items.pop();
+      return;
+   }
 
-  // ---- Walk up to the first item, a dataset, ready to give to parse()
-  const firstItemDataSet = buffer.subarray(parentCursor.pos, buffer.length);
+   // ---- Window from the first item, a dataset, ready to give to parse()
+   const firstItemDataSet = buffer.subarray(parentCursor.pos, buffer.length);
 
-  // ---- Track the sequence's state by pushing properties to context stacks
-  trackSequenceElement(ctx, el, newSq);
+   // ---- Track the sequence's state by pushing properties to context stacks
+   trackSequenceElement(ctx, el, newSq);
 
-  // ---- Begin recursive parsing of SQ items
-  const partialEl = parse(firstItemDataSet, ctx);
+   // ---- Begin recursive parsing of SQ items
+   const partialEl = parse(firstItemDataSet, ctx);
 
-  // ---- Sync parent cursor with the recursive child cursor's progress
-  parentCursor.sync(ctx, buffer);
+   // ---- Sync parent cursor with the recursive child cursor's progress
+   parentCursor.sync(ctx, buffer);
 
-  // ---- Remove the sequence from the context stacks
-  removeSqFromStack(ctx);
+   // ---- Remove the sequence from the context stacks
+   removeSqFromStack(ctx);
 
-  // ---- Trigger buffer stitching
-  if (partialEl?.length > 0) {
-    throw new BufferBoundary(`SQ ${stacks(ctx)?.sq?.name} is split across buffer boundary`);
-  }
+   // WARN the below while() loop attempted fix for exiting defined length sequences & keeping cursors properly synced while doing so doesn't
+   // appear to have worked properly. We are not syncing properly, not by enough bytes as far as i can tell.
+   // this is based on the realisation that PerformedProcessingParametersSequence was being reparsed, and resaved, after being read once.
+   // so there is something still fucked about exiting defined length sequnces where the end of one sq is the end of 1+ other, parent sqs.
+
+   // so i am reverting this logic for now because its cooked. this also might mean that the double byte access was correct and not a bug... may waish to
+   // reinstate that later but cba to try to determine if that is a reliable thing right now as well.
+
+   //while (detectDefLenSqEnd(ctx, el)) {
+   //parentCursor.sync(ctx,buffer)
+   //removeSqFromStack(ctx) // this is needed because we need to keep checking each LIFO'd defined length traversal after popping
+
+   //because otherwise there is no handling for when the end of a sequence is the end of multiple sequences. Undefined length SQs
+   // naturally handle this through 1:1 sq:delim tags but not defined length sqs.
+   //
+   // alright so i think the next issue is that while this loop correctly lines up our stacks to properly reflect the current nesting,
+   // our outer cursor isn't synced until much later - i think (not sure) not until we hit the outer datset again in parsing terms.
+   // i think this then has the effect where the bytetracker wrongly counts which bytes we've hit and accidentally marks bytes as revisited?
+   // honestly the byte tracker is fucking confusing at this point and its so hard to keep it in line with logical changes but whatever, i will
+   // still perservere with it i think. I've proven i can get it working, its just then when i hit edge cases or bugs in the parsing logic of nested
+   // sequences it seems to have knock on effects in challenging ways to the byte tracker. Let alone fixing it for stitching as well. super hard.
+   // might not really be worth it given that the outputs are correct?
+   //
+   // also this loop does not i dont think account for some weird case you could technically encounter where the parent sq is undefined length but
+   // the current is defined length. i highly doubt that would be encountered, certainly rarely if at all, and i can't be fucked to support such a
+   // poorly constructed dicom if that is the case anyway. pick a lane on def/undef sq.
+   //}
+
+   // ---- Trigger buffer stitching
+   if (partialEl?.length > 0) {
+      throw new BufferBoundary(`SQ ${stacks(ctx)?.sq?.name} is split across buffer boundary`);
+   }
 }
 
 /**
@@ -370,39 +413,64 @@ export function parseSQ(buffer: Buffer, ctx: Ctx, el: Element, parentCursor: Cur
  * @param newSq
  */
 function trackSequenceElement(ctx: Ctx, el: Element, newSq: Element) {
-  ctx.sqLens.push(el.length);
-  ctx.sqStack.push(newSq);
-  ctx.sqBytesStack.push(0);
+   ctx.sqLens.push(el.length);
+   ctx.sqStack.push(newSq);
+   ctx.sqBytesStack.push(0);
 }
 
 export function parseUndefLenOB(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer) {
-  //
-  console.log(`fucking now parsing undefined length OB...`, el.name, el.tag)
-  // throw if we dont get an item start tag here
-  const x = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM)
-  const y = decodeTag(x)
-  if (y !== ITEM_START_TAG) {
-    throw new Malformed(`Expeted an item start tag in undefined len ${el.tag} but got ${y}`)
-  } else {
-    cursor.walk(ByteLen.TAG_NUM, ctx, buffer)
-  }
+   const itemTagBytes = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM);
+   const itemTag = decodeTag(itemTagBytes);
+   if (itemTag !== ITEM_START_TAG) {
+      throw new Malformed(
+         `Expeted an item start tag in undefined len ${el.tag} but got ${itemTag}`
+      );
+   } else {
+      cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
+   }
 
-  // now determine whether we have an offset table or straight into the fragment data
-  // will only need to do this once for the whole element - once determined once, all subsequent fragments 
-  // will not be preceded by an offset table. 0 or 1 offset table per element, 1-n fragments per element. 
-  // we determine this by length decoding - if its 0 then no offset table to read, and we can just walk the length
-  // and read the fragment. otherwise we get the length of the offset table. Optionally we can decode the table 
-  // but its equally valid to sack that shit off and just walk past it to get to the fragments.
-  
-  const offsetLenBytes = buffer.subarray(cursor.pos, cursor.pos + ByteLen.LENGTH)
-  const offsetLen = offsetLenBytes.readUint32LE(0) // note we are assuming LE here for speed of prototyping
-  cursor.walk(ByteLen.LENGTH, ctx, buffer)
-  
-  console.log('offset len is ', offsetLen)
-  cursor.walk(offsetLen, ctx, buffer)
-  
-  console.log('now at frag data, bytes left from cursor pos are: ', buffer.length - cursor.pos)
-  process.exit()
+   // ---- Seek offset table - if it exists. Walk past it, idgaf about that.
+   const offsetLenBytes = buffer.subarray(cursor.pos, cursor.pos + ByteLen.LENGTH);
+   const offsetLen = offsetLenBytes.readUint32LE(0); // note we are assuming LE here for speed of prototyping
+
+   cursor.walk(ByteLen.LENGTH, ctx, buffer);
+   cursor.walk(offsetLen, ctx, buffer);
+
+   let i = 0;
+   el.length = 24 + offsetLen; // I.e. all the fixed length bytes that we walked and then whatever was the size of the offset as well.
+   el.fragments = {} as Fragments;
+
+   while (1) {
+      const tagBytes = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM);
+      const tag = decodeTag(tagBytes);
+      cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
+
+      if (tag === SQ_END_TAG) {
+         cursor.walk(ByteLen.LENGTH, ctx, buffer);
+         break;
+      }
+
+      const fragLen = buffer.subarray(cursor.pos, cursor.pos + ByteLen.LENGTH).readUInt32LE(0);
+      cursor.walk(ByteLen.LENGTH, ctx, buffer);
+
+      el.length += fragLen;
+
+      if (valueIsTruncated(buffer, cursor, fragLen)) {
+         throw new BufferBoundary(`${el.name} is truncated`);
+      }
+
+      const pixels = buffer.subarray(cursor.pos, cursor.pos + fragLen);
+      cursor.walk(fragLen, ctx, buffer);
+
+      if (ctx.skipPixelData) {
+         el.fragments[i] = { length: fragLen, value: "SKIPPED PIXEL DATA" };
+      } else {
+         el.fragments[i] = { length: fragLen, value: pixels.toString("hex") };
+      }
+   }
+
+   saveElement(ctx, el, cursor, buffer);
+   i++;
 }
 
 /**
@@ -415,95 +483,87 @@ export function parseUndefLenOB(ctx: Ctx, el: Element, cursor: Cursor, buffer: B
  * @param buffer
  */
 export function parseOW(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer) {
-  const isUndefinedLength = el.length === MAX_UINT32
-  const isDefinedLength = el.length > 0 && el.length < MAX_UINT32
+   const isDefinedLength = el.length > 0 && el.length < MAX_UINT32;
+   if (isDefinedLength) {
+      parseValue(buffer, cursor, el, ctx);
+      saveElement(ctx, el, cursor, buffer);
+      return;
+   }
 
-  if (isDefinedLength) {
-    parseValue(buffer, cursor, el, ctx)
-    saveElement(ctx, el)
-    return
-  }
+   // ---- Parse the first tag (could be fragment start tag)
+   const tagBytes = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM);
+   const tag = decodeTag(tagBytes);
+   if (tag === FRAG_START_TAG) {
+      write(`Detected a fragment in ${el.tag} (${el.vr}). Inspecting offset table...`, "DEBUG");
+   }
 
-  if (isUndefinedLength) {
-    console.log('its fucking undefined length ', el.length)
-    return
-  }
+   cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
 
-  // ---- Parse the first tag (could be fragment start tag)
-  const tagBytes = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM);
-  const tag = decodeTag(tagBytes);
-  if (tag === FRAG_START_TAG) {
-    write(`Detected a fragment in ${el.tag} (${el.vr}). Inspecting offset table...`, "DEBUG");
-  }
+   // ---- Parse offset table length
+   const offSetTableLen = buffer //
+      .subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM)
+      .readUint32LE(0);
 
-  cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
+   // ---- If nonzero, parse the length and walk past it
+   if (offSetTableLen > 0) {
+      cursor.walk(offSetTableLen, ctx, buffer);
+      const offset = buffer.readUInt32LE(cursor.pos);
+      cursor.walk(ByteLen.UINT_32 + offset, ctx, buffer);
+   }
 
-  // ---- Parse offset table length
-  const offSetTableLen = buffer //
-    .subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM)
-    .readUint32LE(0);
+   // ---- Expect next tag to be the start of the pixel data
+   const nextTag = decodeTag(buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM));
+   if (nextTag !== ITEM_START_TAG) {
+      throw new Malformed(`Expected ${ITEM_START_TAG} but got ${nextTag}, in OW: ${el.tag})`);
+   } else {
+      cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
+   }
 
-  // ---- If nonzero, parse the length and walk past it
-  if (offSetTableLen > 0) {
-    cursor.walk(offSetTableLen, ctx, buffer);
-    const offset = buffer.readUInt32LE(cursor.pos);
-    cursor.walk(ByteLen.UINT_32 + offset, ctx, buffer);
-  }
+   // ---- Parse the fragment length
+   const fragLen = buffer //
+      .subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM)
+      .readUint32LE(0);
 
-  // ---- Expect next tag to be the start of the pixel data
-  const nextTag = decodeTag(buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM));
-  if (nextTag !== ITEM_START_TAG) {
-    throw new Malformed(`Expected ${ITEM_START_TAG} but got ${nextTag}, in OW: ${el.tag})`);
-  } else {
-    cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
-  }
+   // ---- Check for truncation, trigger stitching
+   if (valueIsTruncated(buffer, cursor, fragLen)) {
+      throw new BufferBoundary(`Fragmented OW tag is split across buffer boundary`);
+   }
 
-  // ---- Parse the fragment length
-  const fragLen = buffer //
-    .subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM)
-    .readUint32LE(0);
+   // ---- Parse the fragment
+   el.value = ctx.skipPixelData
+      ? "SKIPPED PIXEL DATA"
+      : buffer //
+           .subarray(cursor.pos, fragLen)
+           .toString("hex");
 
-  // ---- Check for truncation, trigger stitching
-  if (valueIsTruncated(buffer, cursor, fragLen)) {
-    console.log("yeah");
-    throw new BufferBoundary(`Fragmented OW tag is split across buffer boundary`);
-  }
+   // ---- Persist element to dataset
+   saveElement(ctx, el, cursor, buffer);
 
-  // ---- Parse the fragment
-  el.value = ctx.skipPixelData
-    ? "SKIPPED PIXEL DATA"
-    : buffer //
-      .subarray(cursor.pos, fragLen)
-      .toString("hex");
+   // ---- Place cursor 1 byte past frag
+   cursor.walk(fragLen, ctx, buffer);
 
-  // ---- Persist element to dataset
-  saveElement(ctx, el);
+   // ---- Seek JPEG EOI tag
+   const eoiBytes = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM);
+   const eoi = decodeTag(eoiBytes);
+   if (eoi !== ("(5e9f,d9ff)" as TagStr)) {
+      throw new Malformed(`Expected JPEG EOI but got ${eoi}`);
+   } else {
+      cursor.walk(ByteLen.TAG_NUM, ctx, buffer); // past EOI tag
+   }
 
-  // ---- Place cursor 1 byte past frag
-  cursor.walk(fragLen, ctx, buffer);
+   // ---- Seek SQ end tag
+   const sqDelim = decodeTag(buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM));
+   if (sqDelim !== SQ_END_TAG) {
+      throw new Malformed(`Expected sq delim but got ${sqDelim}`);
+   } else {
+      cursor.walk(ByteLen.TAG_NUM + ByteLen.LENGTH, ctx, buffer); // len always 0x00, can ignore
+   }
 
-  // ---- Seek JPEG EOI tag
-  const eoiBytes = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM);
-  const eoi = decodeTag(eoiBytes);
-  if (eoi !== ("(5e9f,d9ff)" as TagStr)) {
-    throw new Malformed(`Expected JPEG EOI but got ${eoi}`);
-  } else {
-    cursor.walk(ByteLen.TAG_NUM, ctx, buffer); // past EOI tag
-  }
-
-  // ---- Seek SQ end tag
-  const sqDelim = decodeTag(buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM));
-  if (sqDelim !== SQ_END_TAG) {
-    throw new Malformed(`Expected sq delim but got ${sqDelim}`);
-  } else {
-    cursor.walk(ByteLen.TAG_NUM + ByteLen.LENGTH, ctx, buffer); // len always 0x00, can ignore
-  }
-
-  logElement(el, cursor, buffer);
+   logElement(el, cursor, buffer);
 }
 
 export function inSQ(ctx: Ctx): boolean {
-  return stacks(ctx).len > 0;
+   return stacks(ctx).len > 0;
 }
 
 /**
@@ -515,14 +575,14 @@ export function inSQ(ctx: Ctx): boolean {
  * @param ctx
  */
 export function stacks(ctx: Ctx) {
-  return {
-    bytes: ctx.sqBytesStack.at(-1),
-    allBytes: ctx.sqBytesStack,
-    allBytesN: () => ctx.sqBytesStack.reduce((a, b) => a + b, 0),
-    lastSqItem: ctx.sqStack.at(-1)?.items?.at(-1),
-    len: ctx.sqLens.at(-1),
-    sq: ctx.sqStack.at(-1),
-  };
+   return {
+      bytes: ctx.sqBytesStack.at(-1),
+      allBytes: ctx.sqBytesStack,
+      allBytesN: () => ctx.sqBytesStack.reduce((a, b) => a + b, 0),
+      lastSqItem: ctx.sqStack.at(-1)?.items?.at(-1),
+      len: ctx.sqLens.at(-1),
+      sq: ctx.sqStack.at(-1),
+   };
 }
 
 /**
@@ -533,14 +593,14 @@ export function stacks(ctx: Ctx) {
  * @param el
  */
 function parseTag(buffer: Buffer, cursor: Cursor, el: Element, ctx: Ctx) {
-  const start = cursor.pos;
-  const end = cursor.pos + ByteLen.TAG_NUM;
-  const tagBuffer = buffer.subarray(start, end);
+   const start = cursor.pos;
+   const end = cursor.pos + ByteLen.TAG_NUM;
+   const tagBuffer = buffer.subarray(start, end);
 
-  el.tag = decodeTag(tagBuffer);
-  el.name = getTagName(el.tag);
+   el.tag = decodeTag(tagBuffer);
+   el.name = getTagName(el.tag);
 
-  cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
+   cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
 }
 
 /**
@@ -550,7 +610,7 @@ function parseTag(buffer: Buffer, cursor: Cursor, el: Element, ctx: Ctx) {
  * @returns number
  */
 function bytesLeft(buffer: Buffer, cursor: number): number {
-  return buffer.length - cursor;
+   return buffer.length - cursor;
 }
 
 /**
@@ -564,29 +624,28 @@ function bytesLeft(buffer: Buffer, cursor: number): number {
  * @returns boolean
  */
 export function valueIsTruncated(buffer: Buffer, cursor: Cursor, elementLen: number): boolean {
-  // if(elementLen === MAX_UINT32) return false; kinda think this is required but havent got time to test it right now
-  return elementLen > bytesLeft(buffer, cursor.pos);
+   // if(elementLen === MAX_UINT32) return false; kinda think this is required but havent got time to test it right now
+   return elementLen > bytesLeft(buffer, cursor.pos);
 }
 
 /**
  * Validate the DICOM preamble by checking that the first 128 bytes
- * are all 0x00. This is a security design choice by me to prevent
+ * are all 0x00. This is a security design choice to prevent
  * the execution of arbitrary code within the preamble. See spec notes.
- * TODO work out what quarantining really entails.
  * @param buffer
  * @throws DicomError
  */
 export function validatePreamble(buffer: Buffer): void | never {
-  const start = 0;
-  const end = PREAMBLE_LEN;
-  const preamble = buffer.subarray(start, end);
+   const start = 0;
+   const end = PREAMBLE_LEN;
+   const preamble = buffer.subarray(start, end);
 
-  if (!preamble.every(byte => byte === 0x00)) {
-    throw new DicomError({
-      errorType: DicomErrorType.VALIDATE,
-      message: `DICOM file must begin with contain 128 bytes of 0x00 for security reasons. Quarantining this file`,
-    });
-  }
+   if (!preamble.every(byte => byte === 0x00)) {
+      throw new DicomError({
+         errorType: DicomErrorType.VALIDATE,
+         message: `DICOM file must begin with contain 128 bytes of 0x00 for security reasons. Quarantining this file`,
+      });
+   }
 }
 
 /**
@@ -598,17 +657,17 @@ export function validatePreamble(buffer: Buffer): void | never {
  * @throws DicomError
  */
 export function validateHeader(buffer: Buffer): void | never {
-  const strAtHeaderPosition = buffer //
-    .subarray(HEADER_START, HEADER_END)
-    .toString();
+   const strAtHeaderPosition = buffer //
+      .subarray(HEADER_START, HEADER_END)
+      .toString();
 
-  if (strAtHeaderPosition !== HEADER) {
-    throw new DicomError({
-      errorType: DicomErrorType.VALIDATE,
-      message: `DICOM file does not contain 'DICM' at bytes 128-132. Found: ${strAtHeaderPosition}`,
-      buffer: buffer,
-    });
-  }
+   if (strAtHeaderPosition !== HEADER) {
+      throw new DicomError({
+         errorType: DicomErrorType.VALIDATE,
+         message: `DICOM file does not contain 'DICM' at bytes 128-132. Found: ${strAtHeaderPosition}`,
+         buffer: buffer,
+      });
+   }
 }
 
 /**
@@ -616,19 +675,26 @@ export function validateHeader(buffer: Buffer): void | never {
  * @returns Element
  */
 export function newElement(): Element {
-  return {
-    vr: null,
-    tag: null,
-    value: null,
-    name: null,
-    length: null,
-  };
+   return {
+      vr: null,
+      tag: null,
+      value: null,
+      name: null,
+      length: null,
+   };
 }
 
 function logEntryToSQ(ctx: Ctx, el: Element, parentCursor: Cursor) {
-  if (inSQ(ctx)) {
-    write(`Parsing nested SQ ${el.tag}, ${el.name}, parentCursor: ${parentCursor.pos}`, "DEBUG");
-  } else {
-    write(`Parsing SQ ${el.tag}, ${el.name}, parentCursor: ${parentCursor.pos}`, "DEBUG");
-  }
+   const printLen = el.length === MAX_UINT32 ? "undef len" : el.length;
+   if (inSQ(ctx)) {
+      write(
+         `Parsing nested SQ ${el.tag}, ${el.name}, len: ${printLen}, parentCursor: ${parentCursor.pos}`,
+         "DEBUG"
+      );
+   } else {
+      write(
+         `Parsing SQ ${el.tag}, ${el.name}, len: ${printLen}, parentCursor: ${parentCursor.pos}`,
+         "DEBUG"
+      );
+   }
 }

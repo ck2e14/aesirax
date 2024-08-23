@@ -12,7 +12,7 @@
       "value": "Binary data (OB): 2 bytes",
       "name": "FileMetaInformationVersion",
       "length": 2,
-      "devNote": "Byte parsing support for VR: OB is unimplemeted in this version"
+      "devNote": "No support for VR: OB"
    },
    "(0002,0002)": {
       "vr": "UI",
@@ -211,10 +211,10 @@
       "length": 6
    },
    "(0008,1110)": {
+      "vr": "SQ",
       "tag": "(0008,1110)",
       "name": "ReferencedStudySequence",
-      "length": null,
-      "vr": "SQ",
+      "length": 120,
       "items": [
          {
             "(0008,1150)": {
@@ -235,10 +235,10 @@
       ]
    },
    "(0008,1140)": {
+      "vr": "SQ",
       "tag": "(0008,1140)",
       "name": "ReferencedImageSequence",
-      "length": null,
-      "vr": "SQ",
+      "length": 366,
       "items": [
          {
             "(0008,1150)": {
@@ -326,10 +326,10 @@
       "length": 2
    },
    "(0010,1002)": {
+      "vr": "SQ",
       "tag": "(0010,1002)",
       "name": "OtherPatientIDsSequence",
-      "length": null,
-      "vr": "SQ",
+      "length": 0,
       "items": []
    },
    "(0010,1010)": {
@@ -375,10 +375,10 @@
       "length": 60
    },
    "(0012,0064)": {
+      "vr": "SQ",
       "tag": "(0012,0064)",
       "name": "DeidentificationMethodCodeSequence",
-      "length": null,
-      "vr": "SQ",
+      "length": 906,
       "items": [
          {
             "(0008,0100)": {
@@ -1091,10 +1091,10 @@
       "length": 16
    },
    "(0040,0275)": {
+      "vr": "SQ",
       "tag": "(0040,0275)",
       "name": "RequestAttributesSequence",
-      "length": null,
-      "vr": "SQ",
+      "length": 40,
       "items": [
          {
             "(0040,1001)": {
@@ -1122,10 +1122,10 @@
       "length": 16
    },
    "(0088,0200)": {
+      "vr": "SQ",
       "tag": "(0088,0200)",
       "name": "IconImageSequence",
-      "length": null,
-      "vr": "SQ",
+      "length": 108,
       "items": [
          {
             "(0028,0002)": {
@@ -1190,7 +1190,7 @@
                "value": "Binary data (OW): 2 bytes",
                "name": "PixelData",
                "length": 2,
-               "devNote": "Byte parsing support for VR: OW is unimplemeted in this version"
+               "devNote": "No support for VR: OW"
             }
          }
       ]
@@ -1201,6 +1201,6 @@
       "value": "Binary data (OW): 204800 bytes",
       "name": "PixelData",
       "length": 204800,
-      "devNote": "Byte parsing support for VR: OW is unimplemeted in this version"
+      "devNote": "No support for VR: OW"
    }
 }

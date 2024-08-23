@@ -1,64 +1,162 @@
+import { validatePreamble, validateHeader, newElement, valueIsTruncated } from "../parse.js";
 import { singleTheaded } from "../../singlethreaded.js";
 import { cfg, init } from "../../init/init.js";
 import { readFileSync } from "fs";
+import { DicomError } from "../../error/errors.js";
+import { Cursor } from "../cursor.js";
 
-// This doesn't need a test and its causing dotenv to want to load which is breaking in ESM land.
-// So have just copied it here. No biggie.
+const testDirs = {
+   undefinedLengthSQs: {
+      withNesting: [
+         {
+            input: "../data/x",
+            output: "src/parse/tests/jsonComparisons/x.json",
+            notes: "",
+         },
+         {
+            input: "../data/QUANTREDEUSIX",
+            output: "src/parse/tests/jsonComparisons/QUANTREDUSIX.json",
+            notes: "",
+         },
+      ],
 
-describe("Single Threaded Parser Output Testing", () => {
+      withoutNesting: [
+         {
+            input: "../data/turkey",
+            output: "src/parse/tests/jsonComparisons/turkey.json",
+            notes: "",
+         },
+         {
+            input: "../data/Aidence",
+            output: "src/parse/tests/jsonComparisons/aidenceWithPrivateTag.json",
+            notes: "",
+         },
+         {
+            input: "../data/CUMMINSMARJORIE",
+            output: "src/parse/tests/jsonComparisons/CUMMINSMARJORIE.json",
+            notes: "",
+         },
+      ],
+   },
+
+   definedLengthSQs: {
+      withNesting: [
+         {
+            input: "../data/pi",
+            output: "src/parse/tests/jsonComparisons/pi-sr.json",
+            notes: "",
+         },
+         // cant right the fucking test for this because your current test approach is about detecting
+         // regressions but you've never been able to get the de-nesting of the siemens CT to work - YET
+         // i got something working but it was (A) revisiting visited bytes (B) persiting that proc code sq twice at different levels...
+         // {
+         //    input: "../data/QUANTREDUSIX",
+         //    output: "src/parse/tests/jsonComparisons/x.",
+         //    notes: "This siemens CT teminates a defined length sequence, which is also the termination of more than 1 parent sequence. This needs to be explicitly handled",
+         // },
+      ],
+      withoutNesting: [],
+   },
+};
+
+describe("(singlethreaded) parsing, focused on Sequence Elements", () => {
    beforeAll(async () => {
       const dotenv = await import("dotenv");
       dotenv.config();
       await init();
    });
 
-   it("Correctly outputs for a DICOM that has a single depth of SQ (no nested SQ), and has undefined length SQ and items.", async () => {
-      cfg.targetDir =
-         "/Users/chriskennedy/Desktop/SWE/aesirax/data/with_1-depth_sequences_undefinedSQlen_undefinedItemlen";
-
-      const [x] = await singleTheaded(cfg);
-      const expectedOutput = JSON.parse(
-         readFileSync("./src/parse/tests/jsonComparisons/1.json", "utf-8")
-      );
-
-      expect(x).toStrictEqual(expectedOutput);
-      expect(Object.keys(x)).toHaveLength(130);
+   const undefNestSqTestObjs = testDirs.undefinedLengthSQs.withNesting;
+   const undefNestSqTests = undefNestSqTestObjs.length;
+   it(`correctly parses ${undefNestSqTests} DICOM images with undefined length, nested SQs`, async () => {
+      //
+      for (const testObj of undefNestSqTestObjs) {
+         const { input, output, notes = "" } = testObj;
+         const [data] = await singleTheaded({ ...cfg, targetDir: input });
+         const outFile = readFileSync(output, "utf8");
+         const out = JSON.parse(outFile);
+         expect(data).toStrictEqual(out);
+      }
    });
 
-   it("Correctly outputs for a DICOM that has a single depth of SQ (no nested SQ), and has undefined length SQ, and multiple items.", async () => {
-      cfg.targetDir =
-         "/Users/chriskennedy/Desktop/SWE/aesirax/data/with_1-depthSQ_multiple_items_undefined_SQlen_undefinedItemLen";
-
-      const [x] = await singleTheaded(cfg);
-      const expectedOutput = JSON.parse(
-         readFileSync("./src/parse/tests/jsonComparisons/3.json", "utf-8")
-      );
-
-      expect(x).toStrictEqual(expectedOutput);
-      expect(Object.keys(x)).toHaveLength(102);
+   const undefNoNestSqTestObjs = testDirs.undefinedLengthSQs.withoutNesting;
+   const undefNoNestSqTests = undefNoNestSqTestObjs.length;
+   it(`correctly parses ${undefNoNestSqTests} DICOM images with undefined length, non-nested SQs`, async () => {
+      //
+      for (const testObj of undefNoNestSqTestObjs) {
+         const { input, output, notes = "" } = testObj;
+         const [data] = await singleTheaded({ ...cfg, targetDir: input });
+         const outFile = readFileSync(output, "utf8");
+         const out = JSON.parse(outFile);
+         expect(data).toStrictEqual(out);
+      }
    });
 
-   it("Correctly outputs the Turkey's DICOM. Gobble Gobble.", async () => {
-      cfg.targetDir = "/Users/chriskennedy/Desktop/SWE/aesirax/data/turkey";
+   const defNestSqTestObjs = testDirs.definedLengthSQs.withNesting;
+   const defNestSqTests = defNestSqTestObjs.length;
+   it(`correctly parses ${defNestSqTests} DICOM images with defined length, nested SQs`, async () => {
+      //
+      for (const testObj of defNestSqTestObjs) {
+         const { input, output, notes = "" } = testObj;
+         const [data] = await singleTheaded({ ...cfg, targetDir: input });
+         const outFile = readFileSync(output, "utf8");
+         const out = JSON.parse(outFile);
+         expect(data).toStrictEqual(out);
+      }
+   });
+});
 
-      const [x] = await singleTheaded(cfg);
-      const expectedOutput = JSON.parse(
-         readFileSync("./src/parse/tests/jsonComparisons/2.json", "utf-8")
-      );
+describe("DICOM Parser", () => {
+   // We'll add individual test cases here
+});
 
-      expect(x).toStrictEqual(expectedOutput);
-      expect(Object.keys(x)).toHaveLength(51);
+describe("validatePreamble", () => {
+   it("should not throw an error for a valid preamble", () => {
+      const validPreamble = Buffer.alloc(128, 0x00);
+      expect(() => validatePreamble(validPreamble)).not.toThrow();
    });
 
-   it("Correctly outputs for a DICOM that has a single depth of SQ (no nested SQ), and has defined length SQ and items.", async () => {
-      cfg.targetDir = "/Users/chriskennedy/Desktop/SWE/aesirax/data/X";
+   it("should throw a DicomError for an invalid preamble", () => {
+      const invalidPreamble = Buffer.from("Invalid preamble");
+      expect(() => validatePreamble(invalidPreamble)).toThrow(DicomError);
+   });
+});
 
-      const [x] = await singleTheaded(cfg);
-      const expectedOutput = JSON.parse(
-         readFileSync("./src/parse/tests/jsonComparisons/4.json", "utf-8")
-      );
+describe("validateHeader", () => {
+   it("should not throw an error for a valid header", () => {
+      const validHeader = Buffer.from("DICM");
+      const buffer = Buffer.alloc(132);
+      validHeader.copy(buffer, 128);
+      expect(() => validateHeader(buffer)).not.toThrow();
+   });
 
-      expect(x).toStrictEqual(expectedOutput);
-      expect(Object.keys(x)).toHaveLength(115);
+   it("should throw a DicomError for an invalid header", () => {
+      const invalidHeader = Buffer.from("INVALID");
+      const buffer = Buffer.alloc(132);
+      invalidHeader.copy(buffer, 128);
+      expect(() => validateHeader(buffer)).toThrow(DicomError);
+   });
+});
+
+describe("newElement", () => {
+   it("should return an empty Element object", () => {
+      const element = newElement();
+      expect(element).toEqual({ vr: null, tag: null, value: null, name: null, length: null });
+   });
+});
+
+describe("valueIsTruncated", () => {
+   it("should return true when the value is truncated", () => {
+      const buffer = Buffer.alloc(10);
+      const cursor = { pos: 5 } as Cursor;
+      const elementLen = 10;
+      expect(valueIsTruncated(buffer, cursor, elementLen)).toBe(true);
+   });
+
+   it("should return false when the value is not truncated", () => {
+      const buffer = Buffer.alloc(20);
+      const cursor = { pos: 5 } as Cursor;
+      const elementLen = 10;
+      expect(valueIsTruncated(buffer, cursor, elementLen)).toBe(false);
    });
 });

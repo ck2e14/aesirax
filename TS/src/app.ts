@@ -1,26 +1,19 @@
+import { singleTheaded } from "./singlethreaded.js";
+import { multiThreaded } from "./multithreaded.js";
+import { readdirSync } from "node:fs";
 import { cfg, init } from "./init/init.js";
 import { write } from "./logging/logQ.js";
-import { multiThreaded } from "./multithreaded.js";
-import { singleTheaded } from "./singlethreaded.js";
-import { readdirSync } from "node:fs";
 
 const testDirs = {
-  // no nested SQs
-  noNestedSQ_multipleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems:
-    "../data/with_1-depthSQ_multiple_items_undefined_SQlen_undefinedItemLen", // 102 elements
-  noNestedSQ_singleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems:
-    "../data/with_1-depth_sequences_undefinedSQlen_undefinedItemlen", // 130 elements
+   undefinedLengthSQs: {
+      withNesting: ["../data/x", "../data/QUANTREDEUSIX"],
+      withoutNesting: ["../data/turkey", "../data/Aidence", "../data/CUMMINSMARJORIE"],
+   } as const,
 
-  // nested SQs
-  nestedSQ_singleItemsInsideSQ_definedLengthSQ_definedLengthItems: "../data/Pi",
-  nestedSQ_undefinedLens_multipleItems:
-    "/Users/chriskennedy/Desktop/SWE/aesirax/data/QUANTREDEUSIX", // 111
-  nestedSQ_undefinedLens_multipleItems2:
-    "/Users/chriskennedy/Desktop/SWE/aesirax/data/CUMMINSMARJORIE",
-
-  // other
-  x: "../data/x", // 115 elements
-  turkey: "../data/turkey", // 51 elements
+   definedLengthSQs: {
+      withNesting: ["../data/pi"],
+      withoutNesting: [""],
+   } as const,
 };
 
 /**
@@ -33,36 +26,45 @@ const testDirs = {
  * @returns void
  */
 async function main(cfg: Global.Cfg) {
-  if (cfg.verbose) {
-    write(`Starting up...`, "INFO");
-  }
+   if (cfg.verbose) {
+      write(`Starting up...`, "INFO");
+   }
 
-  await init();
+   await init();
 
-  cfg.targetDir = testDirs.noNestedSQ_multipleItemsInsideSQ_undefinedLengthSQ_undefinedLengthItems
-  // cfg.targetDir = testDirs.nestedSQ_undefinedLens_multipleItems2
+   cfg.targetDir = `../data/Pi`;
+   // FELIX images are breaking atm on pixel data. are they still? TODO
+   //ok so you fixed the bug where defined length sequences need to detect more than just the curretn sq end (because could be the end
+   //of traversing the stated length of bytes of the parent sqs.) However now the byte tracker seems to be cooked lols.
 
-  const fileCount = readdirSync(cfg.targetDir).length;
+   if (!cfg.targetDir || !cfg.targetDir.length) {
+      write(`No targetdir. Doing nothing.`, "INFO");
+      return;
+   }
 
-  if (fileCount === 0) {
-    write(`No files found in target directory. Exiting...`, "ERROR");
-    process.exit();
-  }
+   const fileCount = readdirSync(cfg.targetDir).filter(
+      filename => filename !== ".DS_Store"
+   )?.length;
 
-  if (fileCount > 1) {
-    await multiThreaded(cfg);
-  }
+   if (fileCount === 0) {
+      write(`No files found in target directory. Exiting...`, "ERROR");
+      process.exit();
+   }
 
-  if (fileCount === 1) {
-    await singleTheaded(cfg);
-  }
+   if (fileCount > 1) {
+      await multiThreaded(cfg);
+   }
 
-  setTimeout(() => {
-    if (cfg.verbose) {
-      write(`Completed work - shutting down.`, "INFO");
-    }
-    process.exit(); // make this robust but its basically always fine but better to check q length
-  }, 2_000); // Wait for logs to finish writing
+   if (fileCount === 1) {
+      await singleTheaded(cfg);
+   }
+
+   setTimeout(() => {
+      if (cfg.verbose) {
+         //write(`Completed current parsing work`, "INFO");
+      }
+      //process.exit(); // make this robust but its basically always fine but better to check q length
+   }, 100); // Wait for logs to finish writing
 }
 
 main(cfg);
