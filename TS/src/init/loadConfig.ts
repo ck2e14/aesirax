@@ -13,8 +13,20 @@ export function config(runtimeEndOverride?: { [key: string]: string | boolean })
       logName: env.LOG_NAME,
       writeDir: env.WRITE_DIR ?? "../data/dicomDumps",
       targetDir: null,
-      bufWatermark: parseInt(env.BUF_WATERMARK) || 1024,
+      bufWatermark: parseInt(env.BUF_WATERMARK) || 10_000,
    };
+
+   if (config.bufWatermark < 10_000) {
+      // less than 10kb causes a bunch of nasty and hard to debug issues
+      // and more importantly you'd never want to set it any lower anyways.
+      // Ideally you'd set it far higher than 10kb as well but the point
+      // of this learning project is to learn how to handle such low
+      // buffer sizes when stitching & parsing complex binary data structures,
+      // but you reach a point where it's just not worth it, and I was encountering
+      // real challenges with anything underneath 10kb while 10kb was making integration
+      // tests pass.
+      throw new Error("Buffer watermark must be at least 10kb.");
+   }
 
    if (runtimeEndOverride) {
       for (const [key, value] of Object.entries(runtimeEndOverride)) {

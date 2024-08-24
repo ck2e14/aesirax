@@ -1,7 +1,7 @@
 import { BufferBoundary, DicomError, Malformed, UndefinedLength } from "../error/errors.js";
 import { parseLength, decodeTag, parseValue, parseVR, TagStr } from "./parsers.js";
 import { ByteLen, DicomErrorType, TagDictByName, VR } from "../enums.js";
-import { getTagName, logElement, printSqCtx } from "../utils.js";
+import { cPos, getTagName, json, logElement, printSqCtx } from "../utils.js";
 import { newCursor, Cursor } from "./cursor.js";
 import { write } from "../logging/logQ.js";
 import { Ctx } from "../read/read.js";
@@ -21,7 +21,6 @@ export type Element = {
    fragments?: Fragments;
    devNote?: string;
 };
-
 export const MAX_UINT16 = 65_535;
 export const MAX_UINT32 = 4_294_967_295;
 export const PREAMBLE_LEN = 128;
@@ -50,22 +49,43 @@ export const SQ_END_TAG = TagDictByName.SequenceEnd.tag; //   (fffe,e0dd)
  * @returns PartialEl
  */
 export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
+   ctx.depth++;
    let cursor: Cursor;
    let lastTagStart: number;
 
    if (ctx.outerCursor == null) {
-      cursor = newCursor(0, buffer, true);
+      cursor = newCursor(0, ctx, buffer, true);
       ctx.outerCursor = cursor;
    } else {
-      cursor = newCursor(0);
+      cursor = newCursor(0, ctx);
    }
 
    while (cursor.pos < buffer.length) {
       const el = newElement();
       const sq = stacks(ctx).sq;
+
       lastTagStart = cursor.pos;
 
       try {
+         // ----- Defined len SQ basecase -----
+         if (detectDefLenSqEnd(ctx, el)) {
+            // Note that this *must* be the first action in the loop because when
+            // we return from nested recursion via parseSQ() below, we will 'continue'
+            // on to the next iteration of this loop because the end of an SQ = the start
+            // of the next element to decode. However, defined length SQs rely on tracking
+            // the number of traversed bytes compared to the stated length of the SQ before
+            // we began recursing (via stacks), so before we try to parse any next element's
+            // tag, we have to determine if the element should belong to the SQ or if we
+            // need to exit that recursive depth and pop from the sequences stack.
+            // In other words; this check handles instances where the end of one SQ's last
+            // element's value represents the end of 1 or more parent SQ's last element value,
+            // as well as instances where an SQ is not terminated by the termination of one
+            // of its children SQs. Mindbender.
+            cursor.disposedOf = true;
+            ctx.depth--;
+            return;
+         }
+
          // ------ Parse Tag (gggg,eeee) ------
          parseTag(buffer, cursor, el, ctx);
 
@@ -88,6 +108,8 @@ export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
             if (next === SQ_END_TAG) {
                write(`End of SQ ${sq.tag} ${sq.name}`, "DEBUG");
                stacks(ctx).sq.length = stacks(ctx).bytes;
+               cursor.disposedOf = true;
+               ctx.depth--;
                return; // basecase for undefined length SQs
             }
 
@@ -120,17 +142,25 @@ export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
 
          // ------ Parse other VR Values ------
          parseValue(buffer, cursor, el, ctx);
-
-         // ------- Persist to dataset --------
          saveElement(ctx, el, cursor, buffer);
-
-         // ----- Defined len SQ basecase -----
-         if (detectDefLenSqEnd(ctx, el)) {
-            return;
-         }
       } catch (error) {
+         console.log(`caught at depth: ${ctx.depth}`);
+         // Note that stitching works whilst detecting truncation errors
+         // because it is thrown by a child depth but caught at the depth
+         // above, where the 'lastTagStart' is the start of the SQ. So we
+         // return the bytes from the start of the SQ that had the truncated
+         // element, not from the truncated element inside the SQ.
+         cursor.disposedOf = true;
+         ctx.depth--;
          return handleParserErrors(error, buffer, lastTagStart, el.tag);
       }
+   }
+
+   cursor.disposedOf = true;
+   ctx.depth--;
+
+   if (ctx.depth > 0) {
+      return buffer.subarray(lastTagStart, buffer.length); // don't fucking remove this line.
    }
 }
 
@@ -141,7 +171,7 @@ export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
  * @returns
  */
 export function detectStartOfNewDefinedLengthSqItem(ctx: Ctx, el: Element) {
-   return inSQ(ctx) && el.length < MAX_UINT32 && el.tag === ITEM_START_TAG;
+   return el.length < MAX_UINT32 && el.tag === ITEM_START_TAG;
 }
 
 /**
@@ -161,7 +191,7 @@ export function detectEndOfUndefinedLengthSqItem(ctx: Ctx, el: Element) {
  * @param el
  */
 function saveElement(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer, print = true) {
-   if (print) logElement(el, cursor, buffer);
+   if (print) logElement(el, cursor, buffer, ctx);
    if (inSQ(ctx)) {
       const { lastSqItem } = stacks(ctx);
       lastSqItem[el.tag] = el;
@@ -182,31 +212,35 @@ function detectDefLenSqEnd(ctx: Ctx, el: Element) {
       len !== MAX_UINT32 &&
       len === bytes + 8; // +8 because we walked 8 bytes (see parentCursor.walk() in parseSQ())before pushing sq traversal onto the stack
 
-   if (isEnd) {
-      if (bytes > sq.length) {
-         throw new Malformed(
-            `Traversed more bytes than the defined length of the SQ. ` +
-               `This is a bug or malformed DICOM. ` +
-               `SQ: ${sq} - ` +
-               `Expected SQ length: ${sq}` +
-               `Traversed: ${bytes} - `
-         );
-      }
-      write(`End of defined length SQ: ${sq.name}. Final element decoded was ${el.tag}`, "DEBUG");
-      write(`outercursor: ${ctx.outerCursor.pos}`, "INFO");
+   if (ctx.depth === 0 && isEnd) {
+      throw new DicomError({
+         errorType: DicomErrorType.PARSING,
+         message:
+            `End of defined length SQ ${sq.tag} ${sq.name} detected but depth is 0. ` +
+            `Depth whilst inside and detecting the end of a SQ must always be 1 or greater.` +
+            `0 represents the outermost level of the DICOM file. ` +
+            `THIS IS A BUG! ` +
+            `Depth: ${ctx.depth}. ` +
+            `Stacks: ${printSqCtx(ctx)}. `,
+      });
    }
+
+   if (!isEnd) return false;
+
+   if (bytes > sq.length) {
+      throw new Malformed(
+         `Traversed more bytes than the defined length of the SQ. ` +
+            `This is a bug or malformed DICOM. ` +
+            `SQ: ${sq} - ` +
+            `Expected SQ length: ${sq}` +
+            `Traversed: ${bytes} - `
+      );
+   }
+
+   write(`End of defined length SQ: ${sq.name}.`, "DEBUG");
 
    return isEnd;
 }
-
-// /**
-//  * Determine if the current tag is the delimiter for the end of an item data set.
-//  * @param el
-//  * @returns boolean
-//  */
-// function isEndOfItem(ctx: Ctx, el: Element): boolean {
-//    return inSQ(ctx) && el.tag === ITEM_END_TAG;
-// }
 
 /**
  * Determine if the current tag is the start of an item data set in a sequence.
@@ -258,12 +292,7 @@ function tagAfterEndOfItem(ctx: Ctx, cursor: Cursor, buffer: Buffer): TagStr {
  * @throws Error
  * @returns PartialEl
  */
-function handleParserErrors(
-   error: any,
-   buffer: Buffer,
-   lastTagStart: number,
-   tag?: TagStr
-): PartialEl {
+function handleParserErrors(error: any, buffer: Buffer, lastTagStart: number, tag?: TagStr): PartialEl {
    const partialled = [BufferBoundary, RangeError];
    const isUndefinedLength = error instanceof UndefinedLength;
    const parsingError = partialled.every(ex => !(error instanceof ex)); // not a truncation error but some unanticipated parsing error
@@ -325,6 +354,9 @@ function isEmptyUndefinedLengthSQ(el: Element, tag: TagStr) {
  * until base case(s) are met (truncation or sequence end). Then
  * sync cursors and return control to the parse() frame that
  * detected the outermost SQ.
+ *
+ * TODO put in a check to see whether depth == cq stack .length otherwise
+ * shit has gone wrong
  * @param seqBuffer
  * @param ctx
  * @param seqTag
@@ -368,35 +400,17 @@ export function parseSQ(buffer: Buffer, ctx: Ctx, el: Element, parentCursor: Cur
    parentCursor.sync(ctx, buffer);
 
    // ---- Remove the sequence from the context stacks
+   // WARN atm we are popping from stack even when we return from parse() after not hitting
+   // a truncated element exception, e.g. if buffer perfectly aligns with end of an element,
+   // but that end of element is not the end of the sequence.
+   // So we have two options:
+   // 1) try to determine whether or not to actually pop from the stack
+   // 2) partialEl should only be updated inside parse() if, whilst inside a sequence, we
+   // encounter a new sequence. If at depth 0 though it can be whatever the last tag was.
+   // Right? This is less parser-efficient though if we keep truncating an element where
+   // previous elements in the same sequence would need to be re-read.
    removeSqFromStack(ctx);
-
-   // WARN the below while() loop attempted fix for exiting defined length sequences & keeping cursors properly synced while doing so doesn't
-   // appear to have worked properly. We are not syncing properly, not by enough bytes as far as i can tell.
-   // this is based on the realisation that PerformedProcessingParametersSequence was being reparsed, and resaved, after being read once.
-   // so there is something still fucked about exiting defined length sequnces where the end of one sq is the end of 1+ other, parent sqs.
-
-   // so i am reverting this logic for now because its cooked. this also might mean that the double byte access was correct and not a bug... may waish to
-   // reinstate that later but cba to try to determine if that is a reliable thing right now as well.
-
-   //while (detectDefLenSqEnd(ctx, el)) {
-   //parentCursor.sync(ctx,buffer)
-   //removeSqFromStack(ctx) // this is needed because we need to keep checking each LIFO'd defined length traversal after popping
-
-   //because otherwise there is no handling for when the end of a sequence is the end of multiple sequences. Undefined length SQs
-   // naturally handle this through 1:1 sq:delim tags but not defined length sqs.
-   //
-   // alright so i think the next issue is that while this loop correctly lines up our stacks to properly reflect the current nesting,
-   // our outer cursor isn't synced until much later - i think (not sure) not until we hit the outer datset again in parsing terms.
-   // i think this then has the effect where the bytetracker wrongly counts which bytes we've hit and accidentally marks bytes as revisited?
-   // honestly the byte tracker is fucking confusing at this point and its so hard to keep it in line with logical changes but whatever, i will
-   // still perservere with it i think. I've proven i can get it working, its just then when i hit edge cases or bugs in the parsing logic of nested
-   // sequences it seems to have knock on effects in challenging ways to the byte tracker. Let alone fixing it for stitching as well. super hard.
-   // might not really be worth it given that the outputs are correct?
-   //
-   // also this loop does not i dont think account for some weird case you could technically encounter where the parent sq is undefined length but
-   // the current is defined length. i highly doubt that would be encountered, certainly rarely if at all, and i can't be fucked to support such a
-   // poorly constructed dicom if that is the case anyway. pick a lane on def/undef sq.
-   //}
+   write(`__Current stacks: ${printSqCtx(ctx)}, Depth: ${ctx.depth}`, "DEBUG");
 
    // ---- Trigger buffer stitching
    if (partialEl?.length > 0) {
@@ -422,9 +436,7 @@ export function parseUndefLenOB(ctx: Ctx, el: Element, cursor: Cursor, buffer: B
    const itemTagBytes = buffer.subarray(cursor.pos, cursor.pos + ByteLen.TAG_NUM);
    const itemTag = decodeTag(itemTagBytes);
    if (itemTag !== ITEM_START_TAG) {
-      throw new Malformed(
-         `Expeted an item start tag in undefined len ${el.tag} but got ${itemTag}`
-      );
+      throw new Malformed(`Expeted an item start tag in undefined len ${el.tag} but got ${itemTag}`);
    } else {
       cursor.walk(ByteLen.TAG_NUM, ctx, buffer);
    }
@@ -483,10 +495,14 @@ export function parseUndefLenOB(ctx: Ctx, el: Element, cursor: Cursor, buffer: B
  * @param buffer
  */
 export function parseOW(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer) {
+   write(`parsing ow, using cursor: ${cursor.id}. All cursors: ${cPos(ctx)}`, "DEBUG");
+
    const isDefinedLength = el.length > 0 && el.length < MAX_UINT32;
    if (isDefinedLength) {
+      write(`OW element ${el.tag} has a defined length.`, "DEBUG");
       parseValue(buffer, cursor, el, ctx);
       saveElement(ctx, el, cursor, buffer);
+      write(`Finished parsing ow, using cursor: ${cursor.id}. All cursors: ${cPos(ctx, 1)}`, "DEBUG");
       return;
    }
 
@@ -559,7 +575,8 @@ export function parseOW(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer) {
       cursor.walk(ByteLen.TAG_NUM + ByteLen.LENGTH, ctx, buffer); // len always 0x00, can ignore
    }
 
-   logElement(el, cursor, buffer);
+   logElement(el, cursor, buffer, ctx);
+   write(`Finished parsing ow, using cursor: ${cursor.id}. All cursors: ${cPos(ctx)}`, "DEBUG");
 }
 
 export function inSQ(ctx: Ctx): boolean {
@@ -687,14 +704,8 @@ export function newElement(): Element {
 function logEntryToSQ(ctx: Ctx, el: Element, parentCursor: Cursor) {
    const printLen = el.length === MAX_UINT32 ? "undef len" : el.length;
    if (inSQ(ctx)) {
-      write(
-         `Parsing nested SQ ${el.tag}, ${el.name}, len: ${printLen}, parentCursor: ${parentCursor.pos}`,
-         "DEBUG"
-      );
+      write(`Parsing nested SQ ${el.tag}, ${el.name}, len: ${printLen}, parentCursor: ${parentCursor.pos}`, "DEBUG");
    } else {
-      write(
-         `Parsing SQ ${el.tag}, ${el.name}, len: ${printLen}, parentCursor: ${parentCursor.pos}`,
-         "DEBUG"
-      );
+      write(`Parsing SQ ${el.tag}, ${el.name}, len: ${printLen}, parentCursor: ${parentCursor.pos}`, "DEBUG");
    }
 }

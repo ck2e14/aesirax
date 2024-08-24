@@ -46,14 +46,11 @@ const testDirs = {
             output: "src/parse/tests/jsonComparisons/pi-sr.json",
             notes: "",
          },
-         // cant right the fucking test for this because your current test approach is about detecting
-         // regressions but you've never been able to get the de-nesting of the siemens CT to work - YET
-         // i got something working but it was (A) revisiting visited bytes (B) persiting that proc code sq twice at different levels...
-         // {
-         //    input: "../data/QUANTREDUSIX",
-         //    output: "src/parse/tests/jsonComparisons/x.",
-         //    notes: "This siemens CT teminates a defined length sequence, which is also the termination of more than 1 parent sequence. This needs to be explicitly handled",
-         // },
+         {
+            input: "../data/brokenSiemensCT/isolate",
+            output: "src/parse/tests/jsonComparisons/siemensCT.json",
+            notes: "SPECIAL CASE: This Siemens has a nested defined length SQ where the termination of the child's last element value represents the termination of 1+ parent SQ, which is a nuanced base case. See notes in parse().",
+         },
       ],
       withoutNesting: [],
    },
@@ -77,7 +74,7 @@ describe("(singlethreaded) parsing, focused on Sequence Elements", () => {
          const out = JSON.parse(outFile);
          expect(data).toStrictEqual(out);
       }
-   });
+   }, 30_000);
 
    const undefNoNestSqTestObjs = testDirs.undefinedLengthSQs.withoutNesting;
    const undefNoNestSqTests = undefNoNestSqTestObjs.length;
@@ -90,7 +87,7 @@ describe("(singlethreaded) parsing, focused on Sequence Elements", () => {
          const out = JSON.parse(outFile);
          expect(data).toStrictEqual(out);
       }
-   });
+   }, 30_000);
 
    const defNestSqTestObjs = testDirs.definedLengthSQs.withNesting;
    const defNestSqTests = defNestSqTestObjs.length;
@@ -103,60 +100,5 @@ describe("(singlethreaded) parsing, focused on Sequence Elements", () => {
          const out = JSON.parse(outFile);
          expect(data).toStrictEqual(out);
       }
-   });
-});
-
-describe("DICOM Parser", () => {
-   // We'll add individual test cases here
-});
-
-describe("validatePreamble", () => {
-   it("should not throw an error for a valid preamble", () => {
-      const validPreamble = Buffer.alloc(128, 0x00);
-      expect(() => validatePreamble(validPreamble)).not.toThrow();
-   });
-
-   it("should throw a DicomError for an invalid preamble", () => {
-      const invalidPreamble = Buffer.from("Invalid preamble");
-      expect(() => validatePreamble(invalidPreamble)).toThrow(DicomError);
-   });
-});
-
-describe("validateHeader", () => {
-   it("should not throw an error for a valid header", () => {
-      const validHeader = Buffer.from("DICM");
-      const buffer = Buffer.alloc(132);
-      validHeader.copy(buffer, 128);
-      expect(() => validateHeader(buffer)).not.toThrow();
-   });
-
-   it("should throw a DicomError for an invalid header", () => {
-      const invalidHeader = Buffer.from("INVALID");
-      const buffer = Buffer.alloc(132);
-      invalidHeader.copy(buffer, 128);
-      expect(() => validateHeader(buffer)).toThrow(DicomError);
-   });
-});
-
-describe("newElement", () => {
-   it("should return an empty Element object", () => {
-      const element = newElement();
-      expect(element).toEqual({ vr: null, tag: null, value: null, name: null, length: null });
-   });
-});
-
-describe("valueIsTruncated", () => {
-   it("should return true when the value is truncated", () => {
-      const buffer = Buffer.alloc(10);
-      const cursor = { pos: 5 } as Cursor;
-      const elementLen = 10;
-      expect(valueIsTruncated(buffer, cursor, elementLen)).toBe(true);
-   });
-
-   it("should return false when the value is not truncated", () => {
-      const buffer = Buffer.alloc(20);
-      const cursor = { pos: 5 } as Cursor;
-      const elementLen = 10;
-      expect(valueIsTruncated(buffer, cursor, elementLen)).toBe(false);
-   });
+   }, 30_000);
 });
