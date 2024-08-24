@@ -71,6 +71,24 @@ export function useLE(tsn: TransferSyntaxUid): boolean {
 }
 
 /**
+ * Debug object creation for cursor positions. Appends an underscore
+ * for cursors that have been marked as disposed. WARN manual marking
+ * of disposing needs to be carefully checked - basically all 'return'
+ * points from parse()
+ * @param ctx
+ * @param spacing
+ * @returns
+ */
+export function cPos(ctx: Ctx, spacing = undefined) {
+   const cpos = Object.entries(ctx.cursors).reduce((acc, [id, c]) => {
+      if (c.disposedOf) acc[id] = `_` + c.pos.toString();
+      else acc[id] = c.pos;
+      return acc;
+   }, {});
+   return JSON.stringify(cpos, null, spacing);
+}
+
+/**
  * Placeholder for implementation of future VR parsing.
  * @param vr
  * @returns string
@@ -87,7 +105,7 @@ export function UNIMPLEMENTED_VR_PARSING(vr: Global.VR): string {
  * Print an element to the console.
  * @param el
  */
-export function printElement(el: Element, cursor: Cursor, buffer: Buffer) {
+export function printElement(el: Element, cursor: Cursor, buffer: Buffer, ctx: Ctx) {
    const msg = {
       Tag: el.tag,
       Name: el.name,
@@ -96,6 +114,7 @@ export function printElement(el: Element, cursor: Cursor, buffer: Buffer) {
       Value: el.value,
       "Cursor After Parse": cursor.pos,
       CurrentBufferWindow: buffer.length,
+      Depth: ctx.depth,
    };
 
    if (el.devNote) {
@@ -113,7 +132,7 @@ export function printElement(el: Element, cursor: Cursor, buffer: Buffer) {
  * Print an element to the console minus exceptionally long values.
  * @param el
  */
-export function printMinusValue(el: Element, cursor: Cursor, buffer: Buffer) {
+export function printMinusValue(el: Element, cursor: Cursor, buffer: Buffer, ctx: Ctx) {
    const msg = {
       Tag: el.tag,
       Name: el.name,
@@ -121,6 +140,7 @@ export function printMinusValue(el: Element, cursor: Cursor, buffer: Buffer) {
       Length: el.length,
       "Cursor After Parse": cursor.pos,
       CurrentBufferWindow: buffer.length,
+      Depth: ctx.depth,
    };
 
    if (el.devNote) {
@@ -138,14 +158,14 @@ export function printMinusValue(el: Element, cursor: Cursor, buffer: Buffer) {
  * Print an element to the console.
  * @param Element
  */
-export function logElement(el: Element, cursor: Cursor, buffer: Buffer) {
+export function logElement(el: Element, cursor: Cursor, buffer: Buffer, ctx: Ctx) {
    const unfuckingSupported = [VR.OB, VR.UN, VR.OW];
 
    if (unfuckingSupported.includes(el.vr)) {
       el.devNote = UNIMPLEMENTED_VR_PARSING(el.vr);
-      printMinusValue(el, cursor, buffer);
+      printMinusValue(el, cursor, buffer, ctx);
    } else {
-      printElement(el, cursor, buffer);
+      printElement(el, cursor, buffer, ctx);
    }
 }
 

@@ -10,26 +10,19 @@ import { DataSet } from "./parse/parse.js";
  * @returns void
  */
 export async function singleTheaded(cfg: Global.Cfg, writeTo?: string) {
-   console.log('here');
    const start = performance.now();
    const paths = findDICOM(cfg.targetDir);
    const parsedFiles: DataSet[] = [];
-
-   if (!paths.length) {
-      return;
-   }
+   if (!paths.length) return;
 
    for (let i = 0; i < paths.length; i++) {
-      const debugLen = readFileSync(paths[i]);
       const elements = await streamParse(paths[i], cfg);
-      console.log(elements);
       parsedFiles.push(elements);
    }
 
    const end = performance.now();
    write(`Parsed ${parsedFiles.length} file(s)`, "INFO");
-
-   // writeFileSync("./check-fucked-up-output.json", JSON.stringify(parsedFiles[0], null, 3));
+   writeFileSync("./check-fucked-up-output.json", JSON.stringify(parsedFiles[0], null, 3));
 
    for (const imageData of parsedFiles) {
       const studyUid = imageData["(0020,000d)"].value ?? "UNKNOWN STUDY UID";
@@ -38,10 +31,7 @@ export async function singleTheaded(cfg: Global.Cfg, writeTo?: string) {
       writeFileSync(writePath, JSON.stringify(parsedFiles[0], null, 3));
    }
 
-   write(
-      `Time elapsed including finding images in dir, streaming, and parsing: ${end - start} ms`,
-      "INFO"
-   );
+   write(`Time elapsed including finding images in dir, streaming, and parsing: ${end - start} ms`, "INFO");
 
    return parsedFiles;
 }
