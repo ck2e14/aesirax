@@ -144,7 +144,6 @@ export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
          parseValue(buffer, cursor, el, ctx);
          saveElement(ctx, el, cursor, buffer);
       } catch (error) {
-         console.log(`caught at depth: ${ctx.depth}`);
          // Note that stitching works whilst detecting truncation errors
          // because it is thrown by a child depth but caught at the depth
          // above, where the 'lastTagStart' is the start of the SQ. So we
