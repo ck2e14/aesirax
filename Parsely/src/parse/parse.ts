@@ -73,7 +73,7 @@ export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
 
       try {
          // -- Def Len SQ basecase (must be first)
-         if (detectDefLenSqEnd(ctx, el)) {
+         if (isDefLenSqEnd(ctx, el)) {
             handleParseExit(ctx, cursor);
             return;
          }
@@ -82,7 +82,7 @@ export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
          parseTag(buffer, cursor, el, ctx);
 
          // -- Def-Len SQ Control Flow
-         if (detectStartOfNewDefinedLengthSqItem(ctx, el)) {
+         if (isNewDefLenSqItem(ctx, el)) {
             sq.items.push({});
             cursor.walk(Bytes.LENGTH, ctx, buffer);
             continue;
@@ -156,7 +156,7 @@ function handleParseExit(ctx: Ctx, cursor: Cursor) {
  * @param el
  * @returns
  */
-export function detectStartOfNewDefinedLengthSqItem(ctx: Ctx, el: Element) {
+export function isNewDefLenSqItem(ctx: Ctx, el: Element) {
    return el.length < MAX_UINT32 && el.tag === ITEM_START_TAG;
 }
 
@@ -204,7 +204,7 @@ function saveElement(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer, prin
  * of its children SQs. This caused a mindbending bug(!)
  * @param ctx
  */
-function detectDefLenSqEnd(ctx: Ctx, el: Element) {
+function isDefLenSqEnd(ctx: Ctx, el: Element) {
    const { sq, len, bytes } = stacks(ctx);
    const isEnd =
       sq && //
@@ -253,13 +253,13 @@ function detectDefLenSqEnd(ctx: Ctx, el: Element) {
 function nextUndefLenSqTag(ctx: Ctx, cursor: Cursor, buffer: Buffer): TagStr {
    const { sq } = stacks(ctx);
    write(`Handling end of a dataSet item in SQ ${sq.tag} ${sq.name}`, "DEBUG");
-   cursor.walk(Bytes.LENGTH, ctx, buffer); // ignore this length, its always 0x00000000 for item delims
+   cursor.walk(Bytes.LENGTH, ctx, buffer); // ignore this length, its always 0x0 for item delims
 
    const nextTagBytes = buffer.subarray(cursor.pos, cursor.pos + Bytes.TAG_NUM);
    const nextTag = decodeTag(nextTagBytes, ctx);
 
    cursor.walk(Bytes.TAG_NUM, ctx, buffer);
-   cursor.walk(Bytes.LENGTH, ctx, buffer); // walk past the SQ_END_TAG's length bytes (always 0x00) - ignore it
+   cursor.walk(Bytes.LENGTH, ctx, buffer); // ignore SQ_END_TAG's length bytes (always 0x0)
 
    return nextTag;
 }
@@ -457,8 +457,13 @@ export function parseUndefLenOB(ctx: Ctx, el: Element, cursor: Cursor, buffer: B
       }
 
       const fragLen = ctx.usingLE
-         ? buffer.subarray(cursor.pos, cursor.pos + Bytes.LENGTH).readUInt32LE(0)
-         : buffer.subarray(cursor.pos, cursor.pos + Bytes.LENGTH).readUInt32BE(0);
+         ? buffer //
+              .subarray(cursor.pos, cursor.pos + Bytes.LENGTH)
+              .readUInt32LE(0)
+         : buffer //
+              .subarray(cursor.pos, cursor.pos + Bytes.LENGTH)
+              .readUInt32BE(0);
+
       el.length += fragLen;
       cursor.walk(Bytes.LENGTH, ctx, buffer);
 
@@ -511,8 +516,12 @@ export function parseOW(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer) {
 
    // -- Parse offset table length
    const offSetTableLen = ctx.usingLE
-      ? buffer.subarray(cursor.pos, cursor.pos + Bytes.TAG_NUM).readUint32LE(0)
-      : buffer.subarray(cursor.pos, cursor.pos + Bytes.TAG_NUM).readUint32BE(0);
+      ? buffer //
+           .subarray(cursor.pos, cursor.pos + Bytes.TAG_NUM)
+           .readUint32LE(0)
+      : buffer //
+           .subarray(cursor.pos, cursor.pos + Bytes.TAG_NUM)
+           .readUint32BE(0);
 
    // -- If nonzero, walk the entire table, not supporting this atm
    if (offSetTableLen > 0) {
@@ -534,8 +543,12 @@ export function parseOW(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer) {
 
    // -- Parse the fragment length
    const fragLen = ctx.usingLE
-      ? buffer.subarray(cursor.pos, cursor.pos + Bytes.TAG_NUM).readUint32LE(0)
-      : buffer.subarray(cursor.pos, cursor.pos + Bytes.TAG_NUM).readUint32BE(0);
+      ? buffer //
+           .subarray(cursor.pos, cursor.pos + Bytes.TAG_NUM)
+           .readUint32LE(0)
+      : buffer //
+           .subarray(cursor.pos, cursor.pos + Bytes.TAG_NUM)
+           .readUint32BE(0);
 
    // -- Check for truncation, trigger stitching
    if (valueIsTruncated(buffer, cursor, fragLen)) {
