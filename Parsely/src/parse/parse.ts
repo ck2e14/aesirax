@@ -77,20 +77,17 @@ export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
 
          if (isItemEndUndefLenSq(ctx, el)) {
             const next = nextUndefLenSqTag(ctx, cursor, buffer);
-
             if (next === ITEM_START_TAG) {
                write(`Start of new item in SQ ${sq.tag} ${sq.name}`, "DEBUG");
                sq.items.push({});
                continue;
             }
-
             if (next === SQ_END_TAG) {
                write(`End of SQ ${sq.tag} ${sq.name}`, "DEBUG");
                stacks(ctx).sq.length = stacks(ctx).bytes;
                exitParse(ctx, cursor);
                return; // undef len sq basecase
             }
-
             throw new Malformed(`Got ${next}, expected ${ITEM_END_TAG}/${SQ_END_TAG}`);
          }
 
@@ -98,16 +95,16 @@ export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
          parseLength(el, cursor, buffer, ctx);
 
          switch (true) {
-            case el.vr === VR.OB && el.length === MAX_UINT32:
-               parseUndefLenOB(ctx, el, cursor, buffer);
+            case el.vr === VR.SQ:
+               parseSQ(buffer, ctx, el, cursor); // ctx-aware recurse
                continue;
 
             case el.vr === VR.OW:
                parseOW(ctx, el, cursor, buffer);
                continue;
 
-            case el.vr === VR.SQ:
-               parseSQ(buffer, ctx, el, cursor); // ctx-aware recurse
+            case el.vr === VR.OB && el.length === MAX_UINT32:
+               parseUndefLenOB(ctx, el, cursor, buffer);
                continue;
 
             default:
