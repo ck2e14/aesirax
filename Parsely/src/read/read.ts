@@ -89,6 +89,16 @@ export function parseFile(path: string, cfg = null, skipPixelData = true): DataS
  * parsing each buffered bytes of the file from disk, and
  * stitches truncated DICOM tags together for the next invocation
  * of the 'data' callback to work with.
+ *
+ * Note that sitching happens when elements are truncated. So,
+ * while a highwatermark is set, the actual max size of each buffer
+ * handled is not currently governed. This means that you're in
+ * effect governed by the largest element's size in bytes. So if
+ * you have an absolutely massive echo image for example where
+ * pixel data is colossal, you're going to see a pretty large
+ * amount of stitching if the watermark is very low, and a
+ * relatively large performance hit.
+ *
  * @param path
  * @returns Promise<Element[]>
  * @throws DicomError
@@ -114,8 +124,8 @@ export function streamParse(path: string, cfg: Global.Cfg = null, skipPixelData 
 
       stream.on("data", (currBytes: Buffer) => {
          write(`Streamed ${currBytes.length} bytes to memory from ${path}`, "DEBUG");
-         ctx.nByteArray = ctx.nByteArray + 1;
-         ctx.totalStreamedBytes = ctx.totalStreamedBytes + currBytes.length;
+         ctx.nByteArray++;
+         ctx.totalStreamedBytes += currBytes.length;
          ctx.truncatedBuffer = handleDicomBytes(ctx, currBytes);
       });
 
@@ -159,13 +169,7 @@ function detectMisalignment(ctx: Ctx) {
       write(`Cursors not disposed of: ${notDisposedOf.map(([id, _c]) => id).join(", ")}`, "WARN");
    }
 
-   // not 100% sure on cause atm but despite what seems perfect parsing and persisting etc, the outercursor
-   // isn't anywhere near the end of the file. So we have an issue around the re-entering of parse and the
-   // updating of the outerCursor but its too headfucky to handle right now so I'm gonna just disable this shit
-   // and rely on integration testing against outputs when process.env.BUF_WATERMARK is less than the total length
-   // of the file (ie stitching occured).
    if (ctx.nByteArray > 1) return;
-
    if (ctx.outerCursor.pos !== ctx.totalStreamedBytes - 132 /* minus preamble + header */) {
       write(
          `OuterCursor was expected to be at the end of the file (${fileLenMinusStr}) but is at position: ${ctx.outerCursor.pos}`,

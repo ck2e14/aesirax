@@ -36,8 +36,6 @@ export const ITEM_END_TAG = TagDictByName.ItemEnd.tag; //     (fffe,e00d)
 export const SQ_END_TAG = TagDictByName.SequenceEnd.tag; //   (fffe,e0dd)
 export const EOI_TAG = "(5e9f,d9ff)" as TagStr;
 
-let start: number;
-
 /**
  * Decode and serialise elements contained in a buffered subset
  * of a DICOM file.
@@ -48,23 +46,15 @@ let start: number;
  * must be for a new element starting at the first byte of the
  * tag number.
  *
- * This quite a long function but it handles iterative element
- * parsing of the entire buffer that it receives, and because it
- * relies on continue clauses to control that flow it's hard to
- * break it down much more than it is because those can't cross
- * function boundaries. It's about as declarative inside the
- * loop as it can get I think.
- *
  * @param buffer
  * @param ctx
  * @returns PartialEl
  */
 export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
+   ctx.depth++;
+
    let cursor: Cursor = newCursor(ctx);
    let lastTagStart: number;
-
-   ctx.depth++;
-   start ??= performance.now();
 
    while (cursor.pos < buffer.length) {
       lastTagStart = cursor.pos;
@@ -72,77 +62,64 @@ export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
       const sq = stacks(ctx).sq;
 
       try {
-         // -- Def Len SQ basecase (must be first)
          if (isDefLenSqEnd(ctx, el)) {
             handleParseExit(ctx, cursor);
-            return;
+            return; // def len sq basecase
          }
 
-         // -- Parse Tag
          parseTag(buffer, cursor, el, ctx);
 
-         // -- Def-Len SQ Control Flow
-         if (isNewDefLenSqItem(ctx, el)) {
+         if (isDefLenItemStartTag(ctx, el)) {
             sq.items.push({});
             cursor.walk(Bytes.LENGTH, ctx, buffer);
             continue;
          }
 
-         // -- Undef-Len SQ Control Flow
-         if (isUndefLenSqItemEnd(ctx, el)) {
-            const nextTag = nextUndefLenSqTag(ctx, cursor, buffer);
+         if (isItemEndUndefLenSq(ctx, el)) {
+            const next = nextUndefLenSqTag(ctx, cursor, buffer);
 
-            if (nextTag === ITEM_START_TAG) {
+            if (next === ITEM_START_TAG) {
+               write(`Start of new item in SQ ${sq.tag} ${sq.name}`, "DEBUG");
                sq.items.push({});
                continue;
             }
 
-            if (nextTag === SQ_END_TAG) {
+            if (next === SQ_END_TAG) {
                write(`End of SQ ${sq.tag} ${sq.name}`, "DEBUG");
                stacks(ctx).sq.length = stacks(ctx).bytes;
                handleParseExit(ctx, cursor);
-               return; // undef len SQ basecase
+               return; // undef len sq basecase
             }
 
-            throw new Malformed(`Got ${nextTag}, expected ${ITEM_END_TAG}/${SQ_END_TAG}`);
+            throw new Malformed(`Got ${next}, expected ${ITEM_END_TAG}/${SQ_END_TAG}`);
          }
 
-         // -- Parse VR & Length
          parseVR(buffer, cursor, el, ctx);
          parseLength(el, cursor, buffer, ctx);
 
-         // -- Parse OB
-         if (el.vr === VR.OB && el.length === MAX_UINT32) {
-            parseUndefLenOB(ctx, el, cursor, buffer);
-            continue;
+         switch (true) {
+            case el.vr === VR.OB && el.length === MAX_UINT32:
+               parseUndefLenOB(ctx, el, cursor, buffer);
+               continue;
+            case el.vr === VR.OW:
+               parseOW(ctx, el, cursor, buffer);
+               continue;
+            case el.vr === VR.SQ:
+               parseSQ(buffer, ctx, el, cursor); // ctx-aware recurse
+               continue;
+            default:
+               parseValue(buffer, cursor, el, ctx);
+               saveElement(ctx, el, cursor, buffer);
+               continue;
          }
-
-         // -- Parse OW
-         if (el.vr === VR.OW) {
-            parseOW(ctx, el, cursor, buffer);
-            continue;
-         }
-
-         // -- Parse SQ
-         if (el.vr === VR.SQ) {
-            parseSQ(buffer, ctx, el, cursor); // recurse with ctx flags
-            continue;
-         }
-
-         // -- Parse Other VRs
-         parseValue(buffer, cursor, el, ctx);
-         saveElement(ctx, el, cursor, buffer);
       } catch (error) {
          handleParseExit(ctx, cursor);
          return handleParserErrors(error, buffer, lastTagStart, el.tag);
       }
    }
 
-   const end = performance.now();
-   console.log(`Parse time: ${(end - start).toFixed(3)}ms`, "DEBUG");
-   console.log(`Parsed ${Object.values(ctx.dataSet).length} outer elements`, "DEBUG");
    handleParseExit(ctx, cursor);
-   return buffer.subarray(lastTagStart, buffer.length); // don't touch this line.
+   return buffer.subarray(lastTagStart, buffer.length);
 }
 
 function handleParseExit(ctx: Ctx, cursor: Cursor) {
@@ -156,7 +133,7 @@ function handleParseExit(ctx: Ctx, cursor: Cursor) {
  * @param el
  * @returns
  */
-export function isNewDefLenSqItem(ctx: Ctx, el: Element) {
+export function isDefLenItemStartTag(ctx: Ctx, el: Element) {
    return el.length < MAX_UINT32 && el.tag === ITEM_START_TAG;
 }
 
@@ -166,7 +143,7 @@ export function isNewDefLenSqItem(ctx: Ctx, el: Element) {
  * @param el
  * @returns
  */
-export function isUndefLenSqItemEnd(ctx: Ctx, el: Element) {
+export function isItemEndUndefLenSq(ctx: Ctx, el: Element) {
    write(`End of undefined length sequence item ${el.tag} ${el.name}`, "DEBUG");
    return inSQ(ctx) && el.tag === ITEM_END_TAG;
 }
@@ -190,14 +167,19 @@ function saveElement(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer, prin
 /**
  * Determine if the current tag is the delimiter for the end of a defined
  * length sequence. This is base case detection for use within parse().
- * Note that this *must* be the first action in the parse() loop because when
- * we return from nested recursion via parseSQ(), we will 'continue'
- * on to the next iteration of this loop because the end of an SQ = the start
- * of the next element to decode. However, defined length SQs rely on tracking
- * the number of traversed bytes compared to the stated length of the SQ before
- * we began recursing (via stacks), so before we try to parse any next element's
- * tag, we have to determine if the element should belong to the SQ or if we
- * need to exit that recursive depth and pop from the sequences stack.
+ *
+ * Note that this has to be the first action in each parse loop because this
+ * type of SQ doesn't have a delimiter tag to indicate the end of the sequence.
+ * It relies on tracking the number of walked bytes and comparing against the
+ * stated Uint32 length from the beginning of the sequence. This can only
+ * be reached after each loop iteration, i.e. after the decoding of the last
+ * sq element's value. It needs to go first, not after running the switch
+ * statement that parses values, because the recursive end of a child sq's
+ * last element value can also be the end of 1-n parent sqs. So if we return
+ * from parseSQ() recursion and hit the 'continue', the next action needs
+ * to be this detection. That way we can handle the termination of 1-n sequences
+ * where the last actual element value was deeply nested.
+ *
  * In other words; this check handles instances where the end of one SQ's last
  * element's value represents the end of 1 or more parent SQ's last element value,
  * as well as instances where an SQ is not terminated by the termination of one
@@ -205,11 +187,13 @@ function saveElement(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer, prin
  * @param ctx
  */
 function isDefLenSqEnd(ctx: Ctx, el: Element) {
+   if (!inSQ(ctx)) return false;
+
    const { sq, len, bytes } = stacks(ctx);
    const isEnd =
       sq && //
       len !== MAX_UINT32 &&
-      len === bytes + 8; // +8 because we walked 8 bytes (see parentCursor.walk() in parseSQ()) before pushing sq traversal onto the stack
+      len === bytes + 8; // +8 because we walked 8 bytes (parentCursor.walk() - parseSQ()) before pushing sq to stack
 
    if (ctx.depth === 0 && isEnd) {
       throw new DicomError({
