@@ -1,7 +1,7 @@
 {
 	"files": [
 		{
-			"path": "TS/src/app.ts",
+			"path": "Parsely/src/app.ts",
 			"bookmarks": [
 				{
 					"line": -1,
@@ -40,8 +40,98 @@
 					"column": 0
 				},
 				{
-					"line": 44,
+					"line": 47,
 					"column": 71
+				}
+			]
+		},
+		{
+			"path": "Parsely/src/parse/parsers.ts",
+			"bookmarks": [
+				{
+					"line": -1,
+					"column": 0
+				},
+				{
+					"line": -1,
+					"column": 0
+				},
+				{
+					"line": -1,
+					"column": 0
+				},
+				{
+					"line": -1,
+					"column": 0
+				},
+				{
+					"line": -1,
+					"column": 0
+				},
+				{
+					"line": -1,
+					"column": 0
+				},
+				{
+					"line": -1,
+					"column": 0
+				},
+				{
+					"line": -1,
+					"column": 0
+				},
+				{
+					"line": -1,
+					"column": 0
+				},
+				{
+					"line": 281,
+					"column": 39
+				}
+			]
+		},
+		{
+			"path": "Parsely/src/parse/parse.ts",
+			"bookmarks": [
+				{
+					"line": -1,
+					"column": 0
+				},
+				{
+					"line": 92,
+					"column": 48
+				},
+				{
+					"line": 567,
+					"column": 40
+				},
+				{
+					"line": -1,
+					"column": 0
+				},
+				{
+					"line": -1,
+					"column": 0
+				},
+				{
+					"line": -1,
+					"column": 0
+				},
+				{
+					"line": -1,
+					"column": 0
+				},
+				{
+					"line": -1,
+					"column": 0
+				},
+				{
+					"line": -1,
+					"column": 0
+				},
+				{
+					"line": -1,
+					"column": 0
 				}
 			]
 		}
