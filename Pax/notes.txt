@@ -134,13 +134,13 @@ Notes on what XXX developed, what I think falls short, why it falls short, and h
    So what lessons can we take from these 3 problems?
 
    Lesson 1: Comprehensive Implementation: 
-             Encompassing both state transitions and state-dependent behaviors.
+             Encompassing both state transitions and state-dependent behaviours.
 
    Lesson 2: Flexible Granularity: 
              Allow for workflow-specific configurations within a single account.
 
    Lesson 3: Consistent Design: 
-             Ensuring that state machine concepts are fully integrated with other system behaviors.
+             Ensuring that state machine concepts are fully integrated with other system behaviours.
 
    Lesson 4: Meaningful Abstractions 
              Ensuring that states genuinely represent what they claim to, both in terms of transitions and behaviour
