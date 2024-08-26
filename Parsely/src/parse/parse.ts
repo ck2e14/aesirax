@@ -63,7 +63,7 @@ export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
 
       try {
          if (isDefLenSqEnd(ctx, el)) {
-            handleParseExit(ctx, cursor);
+            exitParse(ctx, cursor);
             return; // def len sq basecase
          }
 
@@ -87,7 +87,7 @@ export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
             if (next === SQ_END_TAG) {
                write(`End of SQ ${sq.tag} ${sq.name}`, "DEBUG");
                stacks(ctx).sq.length = stacks(ctx).bytes;
-               handleParseExit(ctx, cursor);
+               exitParse(ctx, cursor);
                return; // undef len sq basecase
             }
 
@@ -101,28 +101,37 @@ export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
             case el.vr === VR.OB && el.length === MAX_UINT32:
                parseUndefLenOB(ctx, el, cursor, buffer);
                continue;
+
             case el.vr === VR.OW:
                parseOW(ctx, el, cursor, buffer);
                continue;
+
             case el.vr === VR.SQ:
                parseSQ(buffer, ctx, el, cursor); // ctx-aware recurse
                continue;
+
             default:
                parseValue(buffer, cursor, el, ctx);
                saveElement(ctx, el, cursor, buffer);
                continue;
          }
       } catch (error) {
-         handleParseExit(ctx, cursor);
-         return handleParserErrors(error, buffer, lastTagStart, el.tag);
+         exitParse(ctx, cursor);
+         return handleEx(error, buffer, lastTagStart, el.tag);
       }
    }
 
-   handleParseExit(ctx, cursor);
+   exitParse(ctx, cursor);
    return buffer.subarray(lastTagStart, buffer.length);
 }
 
-function handleParseExit(ctx: Ctx, cursor: Cursor) {
+/**
+ * Must be called in all return points from parse() to ensure
+ * that the cursor is disposed of and the depth is decremented.
+ * @param ctx
+ * @param cursor
+ */
+function exitParse(ctx: Ctx, cursor: Cursor) {
    ctx.depth--;
    cursor.dispose();
 }
@@ -267,7 +276,7 @@ function nextUndefLenSqTag(ctx: Ctx, cursor: Cursor, buffer: Buffer): TagStr {
  * @throws Error
  * @returns PartialEl
  */
-function handleParserErrors(error: any, buffer: Buffer, lastTagStart: number, tag?: TagStr): PartialEl {
+function handleEx(error: any, buffer: Buffer, lastTagStart: number, tag?: TagStr): PartialEl {
    const isUndefinedLength = error instanceof UndefinedLength;
    const parsingError = [BufferBoundary, RangeError].every(ex => !(error instanceof ex)); // i.e. not a buffer truncation error
 
