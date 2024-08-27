@@ -6,103 +6,103 @@ import { Cursor } from "./cursor.js";
 import { write } from "../logging/logQ.js";
 import { Ctx } from "../read/read.js";
 
-export type Decoder = (value: Buffer) => string;
+export type Decoder = (subarrayue: Buffer) => string;
 export type DecoderMap = Record<Global.VR | "default", Decoder>;
 export type TagStr = keyof typeof TagDictByHex; // 'keyof' gets the keys of an object type. So this is the union type of all the keys of TagDictByHex
 
 const decodersLE: Partial<DecoderMap> = {
    // partial because will add VRs incrementally.
    // currently only support numbers to base 10.
-   AE: (val: Buffer) => utf8Decoder(val),
-   AS: (val: Buffer) => utf8Decoder(val),
-   CS: (val: Buffer) => utf8Decoder(val),
-   DA: (val: Buffer) => utf8Decoder(val),
-   DS: (val: Buffer) => utf8Decoder(val),
-   DT: (val: Buffer) => utf8Decoder(val),
-   IS: (val: Buffer) => utf8Decoder(val),
-   LO: (val: Buffer) => utf8Decoder(val),
-   LT: (val: Buffer) => utf8Decoder(val),
-   PN: (val: Buffer) => utf8Decoder(val),
-   SH: (val: Buffer) => utf8Decoder(val),
-   ST: (val: Buffer) => utf8Decoder(val),
-   TM: (val: Buffer) => utf8Decoder(val),
-   UC: (val: Buffer) => utf8Decoder(val),
-   UI: (val: Buffer) => utf8Decoder(val),
-   UR: (val: Buffer) => utf8Decoder(val),
-   UT: (val: Buffer) => utf8Decoder(val),
-   FL: (val: Buffer) => val.readFloatLE(0).toString(10),
-   FD: (val: Buffer) => val.readDoubleLE(0).toString(10),
-   SL: (val: Buffer) => val.readInt32LE(0).toString(10),
-   SS: (val: Buffer) => val.readInt16LE(0).toString(10),
-   UL: (val: Buffer) => val.readUInt32LE(0).toString(10),
-   US: (val: Buffer) => val.readUInt16LE(0).toString(10),
-   default: (val: Buffer) => val.toString("hex"),
+   AE: (subarray: Buffer) => utf8Decoder(subarray),
+   AS: (subarray: Buffer) => utf8Decoder(subarray),
+   CS: (subarray: Buffer) => utf8Decoder(subarray),
+   DA: (subarray: Buffer) => utf8Decoder(subarray),
+   DS: (subarray: Buffer) => utf8Decoder(subarray),
+   DT: (subarray: Buffer) => utf8Decoder(subarray),
+   IS: (subarray: Buffer) => utf8Decoder(subarray),
+   LO: (subarray: Buffer) => utf8Decoder(subarray),
+   LT: (subarray: Buffer) => utf8Decoder(subarray),
+   PN: (subarray: Buffer) => utf8Decoder(subarray),
+   SH: (subarray: Buffer) => utf8Decoder(subarray),
+   ST: (subarray: Buffer) => utf8Decoder(subarray),
+   TM: (subarray: Buffer) => utf8Decoder(subarray),
+   UC: (subarray: Buffer) => utf8Decoder(subarray),
+   UI: (subarray: Buffer) => utf8Decoder(subarray),
+   UR: (subarray: Buffer) => utf8Decoder(subarray),
+   UT: (subarray: Buffer) => utf8Decoder(subarray),
+   FL: (subarray: Buffer) => subarray.readFloatLE(0).toString(10),
+   FD: (subarray: Buffer) => subarray.readDoubleLE(0).toString(10),
+   SL: (subarray: Buffer) => subarray.readInt32LE(0).toString(10),
+   SS: (subarray: Buffer) => subarray.readInt16LE(0).toString(10),
+   UL: (subarray: Buffer) => subarray.readUInt32LE(0).toString(10),
+   US: (subarray: Buffer) => subarray.readUInt16LE(0).toString(10),
+   default: (subarray: Buffer) => subarray.toString("hex"),
 } as const;
 
 const decodersBE: Partial<DecoderMap> = {
    // partial because will add VRs incrementally
    // currently only support numbers to base 10.
-   AE: (val: Buffer) => utf8Decoder(val),
-   AS: (val: Buffer) => utf8Decoder(val),
-   CS: (val: Buffer) => utf8Decoder(val),
-   DA: (val: Buffer) => utf8Decoder(val),
-   DS: (val: Buffer) => utf8Decoder(val),
-   DT: (val: Buffer) => utf8Decoder(val),
-   IS: (val: Buffer) => utf8Decoder(val),
-   LO: (val: Buffer) => utf8Decoder(val),
-   LT: (val: Buffer) => utf8Decoder(val),
-   PN: (val: Buffer) => utf8Decoder(val),
-   SH: (val: Buffer) => utf8Decoder(val),
-   ST: (val: Buffer) => utf8Decoder(val),
-   TM: (val: Buffer) => utf8Decoder(val),
-   UC: (val: Buffer) => utf8Decoder(val),
-   UI: (val: Buffer) => utf8Decoder(val),
-   UR: (val: Buffer) => utf8Decoder(val),
-   UT: (val: Buffer) => utf8Decoder(val),
-   FL: (val: Buffer) => val.readFloatBE(0).toString(10),
-   FD: (val: Buffer) => val.readDoubleBE(0).toString(10),
-   SL: (val: Buffer) => val.readInt32BE(0).toString(10),
-   SS: (val: Buffer) => val.readInt16BE(0).toString(10),
-   UL: (val: Buffer) => val.readUInt32BE(0).toString(10),
-   US: (val: Buffer) => val.readUInt16BE(0).toString(10),
-   default: (val: Buffer) => val.toString("hex"),
+   AE: (subarray: Buffer) => utf8Decoder(subarray),
+   AS: (subarray: Buffer) => utf8Decoder(subarray),
+   CS: (subarray: Buffer) => utf8Decoder(subarray),
+   DA: (subarray: Buffer) => utf8Decoder(subarray),
+   DS: (subarray: Buffer) => utf8Decoder(subarray),
+   DT: (subarray: Buffer) => utf8Decoder(subarray),
+   IS: (subarray: Buffer) => utf8Decoder(subarray),
+   LO: (subarray: Buffer) => utf8Decoder(subarray),
+   LT: (subarray: Buffer) => utf8Decoder(subarray),
+   PN: (subarray: Buffer) => utf8Decoder(subarray),
+   SH: (subarray: Buffer) => utf8Decoder(subarray),
+   ST: (subarray: Buffer) => utf8Decoder(subarray),
+   TM: (subarray: Buffer) => utf8Decoder(subarray),
+   UC: (subarray: Buffer) => utf8Decoder(subarray),
+   UI: (subarray: Buffer) => utf8Decoder(subarray),
+   UR: (subarray: Buffer) => utf8Decoder(subarray),
+   UT: (subarray: Buffer) => utf8Decoder(subarray),
+   FL: (subarray: Buffer) => subarray.readFloatBE(0).toString(10),
+   FD: (subarray: Buffer) => subarray.readDoubleBE(0).toString(10),
+   SL: (subarray: Buffer) => subarray.readInt32BE(0).toString(10),
+   SS: (subarray: Buffer) => subarray.readInt16BE(0).toString(10),
+   UL: (subarray: Buffer) => subarray.readUInt32BE(0).toString(10),
+   US: (subarray: Buffer) => subarray.readUInt16BE(0).toString(10),
+   default: (subarray: Buffer) => subarray.toString("hex"),
 } as const;
 
 /**
  * Pass in a DICOM tag's VR and a buffer containing the bytes
- * representing the tag's value and get back an appropriately
+ * representing the tag's subarrayue and get back an appropriately
  * decoded string. Nums will be coerced to strings, using base10
  * @param vr
- * @param value
+ * @param subarrayue
  * @returns string
  */
-export function decodeValueBytes(
+export function decodesubarrayueBytes(
    vr: string,
-   value: Buffer,
+   subarrayue: Buffer,
    Ctx: Ctx,
    checkNullPadding = false // debugging
 ): string {
    if (checkNullPadding) {
-      countNullBytes(value);
+      countNullBytes(subarrayue);
    }
 
    const decoders = Ctx.transferSyntaxUid === TransferSyntaxUid.ExplicitVRLittleEndian ? decodersLE : decodersBE;
 
    try {
       if (decoders.hasOwnProperty(vr)) {
-         return decoders[vr](value);
+         return decoders[vr](subarrayue);
       }
 
       if (vr === VR.OB || vr === VR.OW || vr === VR.OF) {
-         return `Binary data (${vr}): ${value.length} bytes`;
+         return `Binary data (${vr}): ${subarrayue.length} bytes`;
       }
 
-      if (value.length > 1024) {
+      if (subarrayue.length > 1024) {
          return "Assumed to be binary data, not supported for decoding/display";
       }
-      return value.toString();
+      return subarrayue.toString();
    } catch (error) {
-      return decoders.default(value);
+      return decoders.default(subarrayue);
    }
 }
 
@@ -142,42 +142,42 @@ export function throwUnrecognisedVr(vr: string, vrBuffer: Buffer): never {
 
 /**
  * Decode a buffer to UTF-8 string and remove any null byte padding
- * @param value
+ * @param subarrayue
  * @returns string
  */
-export function utf8Decoder(value: Buffer): string {
-   return value //
+export function utf8Decoder(subarrayue: Buffer): string {
+   return subarrayue //
       .toString("utf8")
       .replace(/\0+$/, "");
 }
 
 /**
  * Count the number of null bytes at the end of a buffer.
- * This is common in DICOM files where the actual value
+ * This is common in DICOM files where the actual subarrayue
  * is less than the fixed byte length required by the VR.
- * This is how we support variable length values, and when
- * handling the values we should trim these null bytes out.
- * @param value
+ * This is how we support variable length subarrayues, and when
+ * handling the subarrayues we should trim these null bytes out.
+ * @param subarrayue
  * @returns void
  * @throws DicomError
  */
-export function countNullBytes(value: Buffer): void {
+export function countNullBytes(subarrayue: Buffer): void {
    try {
-      const str = value.toString("utf8");
+      const str = subarrayue.toString("utf8");
       const nullBytesFromString = str.match(/\0+$/g)?.length;
 
       if (nullBytesFromString) {
-         write(`Counted ${nullBytesFromString} null bytes from value: ${str}`, "DEBUG");
+         write(`Counted ${nullBytesFromString} null bytes from subarrayue: ${str}`, "DEBUG");
       } else {
-         write(`There is no null byte padding on value: ${str}`, "DEBUG");
+         write(`There is no null byte padding on subarrayue: ${str}`, "DEBUG");
       }
    } catch (error) {
-      write(`Error counting null bytes from value: ${value}`, "ERROR");
+      write(`Error counting null bytes from subarrayue: ${subarrayue}`, "ERROR");
    }
 }
 
 /**
- * Decode the current element's value and move the cursor forwards.
+ * Decode the current element's subarrayue and move the cursor forwards.
  * @param buffer
  * @param cursor
  * @param el
@@ -190,9 +190,9 @@ export function parseValue(buffer: Buffer, cursor: Cursor, el: Element, ctx: Ctx
 
    const start = cursor.pos;
    const end = cursor.pos + el.length;
-   const valueBuffer = buffer.subarray(start, end);
+   const subarrayueBuffer = buffer.subarray(start, end);
 
-   el.value = decodeValueBytes(el.vr, valueBuffer, ctx);
+   el.value = decodesubarrayueBytes(el.vr, subarrayueBuffer, ctx);
    cursor.walk(el.length, ctx, buffer); // to get to the start of the next tag
 }
 
@@ -203,7 +203,7 @@ function detectRepeatsForRepeatableElements(el: Element, buffer: Buffer) {
    // reserved chars in that context. So I'm gonna say fuck it for now. This does unfortunately mean that
    // for literally anything that isn't a VR deocded into a utf8 string, we're going to only get the
    // first of the repeats, e.g. floats, but that's just how it is for now.
-   // this function should basically take in the element object and the buffer containing the value
+   // this function should basically take in the element object and the buffer containing the subarrayue
    // it should check to see whether its in a list of permissible repeated tags.
    // if so, read as a string, regardless of VR. Then seek backslashes.
    // if backslashes===1 then decode according to the VR, otherwise lets leave it as a string, even if
@@ -228,7 +228,7 @@ export function parseVR(buffer: Buffer, cursor: Cursor, el: Element, ctx: Ctx) {
 }
 
 /**
- * Decode the current element's value length, and move the cursor forward
+ * Decode the current element's subarrayue length, and move the cursor forward
  * by either the 2 or 4 decoded bytes depending on the VR type (std/ext).
  * It's used in the parse() function to decode the length of the current
  * but also to determine control flow (continue or not). This may be
@@ -253,7 +253,7 @@ export function parseLength(el: Element, cursor: Cursor, buffer: Buffer, ctx: Ct
 }
 
 /**
- * Helper function; decode the current element's value.
+ * Helper function; decode the current element's subarrayue.
  * @param el
  * @param buffer
  * @param cursor
