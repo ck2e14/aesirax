@@ -1,0 +1,20 @@
+This is a criminal over-simplification but to help make the enormous DICOM spec and all its phraseology more approachable, it's useful to have this rough idea in mind until a more refined understanding can be developed of the components comprising DICOM and it's rules and governance in the spec.
+
+Other files in this notes directory goes into greater (and important) details about all of these but before deep diving it's nice to have a zoomed-out perspective of these things' roles and how they relate to each other.
+
+One key thing to remember here about the sprawling complexity that emerges the closer you look through the DICOM specification is that what was originally aimed for by NEMA was a single specification for a single file format, flexible enough to accomodate the extraordinary range of modalities and '-ologies' that create and transmit medical images, alongside excellence in interoperability and standardisation. That is no mean feat. The DICOM specification's modularity plus its bespoke networking protocol that sits ontop of TCP/IP goes a pretty remarkable way in achieving this, albeit with arguably some short sightedness with respect to over flexibility (could be described as looseness) and lacking security requirements. The issue with that is that the healthcare sector by necessity places great importance on backwards compatability for a whole host of reasons, from clinical prior image comparison to fairness to less affluent healthcare contexts where tech replacement may be prohibitively expensive, to the complexity and risk of regressions of reimplementing significant changes to the spec in code. So to a large degree, what is added to the spec now is done so as opt-in, and the more questionable design decisions - or those that made sense given things like common storage constraints at the time the spec was first written - we're stuck with forever. If you thought balancing the combat triangle in MMOs was difficult, try balancing interop, flexibility, standardisation and backwards compatability. Good luck with that. They did/do a pretty good job, but it's fun to hate on some aspects of the spec, that's ok too:)
+
+- Composite Objects are .dcm files, which contain a data set (1 outer dataset, but 1-n nested via possible sequence elements)
+
+- Data Sets contain Data Elements (these are typically what people mean in conversation when they say 'tag'). Data sets may not repeat the same data element more than once. 
+
+- Data Elements are contiguous bytes that represent the encoding of 4 (3 if implicit VR) informational components:
+   - Tag
+   - VR
+   - Length
+   - Value
+
+- Which data elements are required in a given composite object is dictated by the SOP Class. The SOP Class is strictly governed by the DICOM spec, which is integral to the interoperability and standardisation that DICOM focuses so deeply on (obviously important as a global medical imaging standard). 
+
+- Transfer syntax UIDs equate to transfer syntaxes, which are DICOM-specific sets of rules that inform sending and receiving systems how to encode data in conformance to the DICOM spec, and how to interpret them. Includes things like endianness (byte ordering), compression, value representation, and other encoding rules. Images may only have ONE transfer syntax. Images may be transcoded to and from other syntaxes but depending on lossy/lossless direction, 1:1 reverse transcoding may not be acheivable.
+

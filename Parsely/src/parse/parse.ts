@@ -45,14 +45,12 @@ export const EOI_TAG = "(5e9f,d9ff)" as TagStr;
  * Each parse() call, and by extension each loop iteration,
  * must be for a new element starting at the first byte of the
  * tag number.
- *
  * @param buffer
  * @param ctx
  * @returns PartialEl
  */
 export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
    ctx.depth++;
-
    let cursor: Cursor = newCursor(ctx);
    let lastTagStart: number;
 
