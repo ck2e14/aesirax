@@ -43,7 +43,7 @@ export function newCursor(ctx: Ctx, pos = 0, buf?: Buffer): Cursor {
          }
 
          // if (!isSync) {
-         //    // disable this shit because causing so much complexity while discovering edge cases in the recursion of sqs.
+         //    // disable this shit for now because causing so much complexity while discovering edge cases in the recursion of sqs.
          //    // WARN doesn't support stitching byte access tracking atm. But it does support any depth of nested SQs
          //    // WARN however it seems to be broken on defined length nested SQs..? or did we just break it across the board?
 

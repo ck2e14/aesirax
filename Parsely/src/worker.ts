@@ -1,7 +1,7 @@
 import { parentPort } from "worker_threads";
 import { streamParse } from "./read/read.js";
 import { writeFileSync } from "fs";
-
+//
 parentPort.on("message", async (msg: { filepath: string; writeDir: string }) => {
    if (msg.filepath?.length) {
       const data = await streamParse(msg.filepath, null); // TODO get config from main thread
