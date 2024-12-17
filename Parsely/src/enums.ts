@@ -99434,6 +99434,7 @@ export enum Bytes {
 
 export enum VR {
   AE = "AE",
+  AT = "AT",
   AS = "AS",
   CS = "CS",
   DA = "DA",

@@ -8,15 +8,15 @@ import { write } from "./logging/logQ.js";
 // disposedOf - despite the parsing and persistence working?
 
 const testDirs = {
-   undefinedLengthSQs: {
-      withNesting: ["../data/x", "../data/QUANTREDEUSIX"],
-      withoutNesting: ["../data/turkey", "../data/Aidence", "../data/CUMMINSMARJORIE"],
-   } as const,
+  undefinedLengthSQs: {
+    withNesting: ["../data/x", "../data/QUANTREDEUSIX"],
+    withoutNesting: ["../data/turkey", "../data/Aidence", "../data/CUMMINSMARJORIE"],
+  } as const,
 
-   definedLengthSQs: {
-      withNesting: ["../data/pi"],
-      withoutNesting: [""],
-   } as const,
+  definedLengthSQs: {
+    withNesting: ["../data/pi"],
+    withoutNesting: [""],
+  } as const,
 };
 
 /**
@@ -29,34 +29,38 @@ const testDirs = {
  * @returns void
  */
 async function main(cfg: Global.Cfg) {
-   console.clear();
-   if (cfg.verbose) write(`Starting up...`, "INFO");
+  console.clear();
+  if (cfg.verbose) write(`Starting up...`, "INFO");
 
-   await init();
+  await init();
 
-   // cfg.targetDir = `../data/brokenSiemensCT/isolate`; // FELIX images are breaking atm on pixel data. are they still? TODO
-   // cfg.targetDir = `../data/QUANTREDEUSIX`; // FELIX images are breaking atm on pixel data. are they still? TODO
-   // cfg.targetDir = `../data/JonathanSnowMR/isolate`;
-   cfg.targetDir = `/Users/chriskennedy/Desktop/SWE/aesirax/data/STANWORTHLORNAMISS/SER00001`;
-   // cfg.targetDir = `../data/FELIX/isolate`;
+  // cfg.targetDir = `../data/brokenSiemensCT/isolate`; // FELIX images are breaking atm on pixel data. are they still? TODO
+  // cfg.targetDir = `../data/QUANTREDEUSIX`; // FELIX images are breaking atm on pixel data. are they still? TODO
+  // cfg.targetDir = `../data/JonathanSnowMR/isolate`;
+  // cfg.targetDir = `/Users/chriskennedy/Desktop/SWE/aesirax/data/STANWORTHLORNAMISS/SER00001`;
+  // cfg.targetDir = '/Users/chriskennedy/Documents/Cimar/CimarTemp/OREILLYPHILIPTHOMASMR (1)/SER00003/'
+  // cfg.targetDir = `../data/FELIX/isolate`;
+  // cfg.targetDir = `/Users/chriskennedy/Documents/Cimar/CimarTemp/WAGNERCYNTHIASENZENIMRS/1/`
+  // cfg.targetDir = `/Users/chriskennedy/Documents/Cimar/CimarTemp/XXX`
+  cfg.targetDir = `/Users/chriskennedy/Documents/Cimar/CimarTemp/BELLCAROLANNEMS (1)/SER00001`
 
-   if (!cfg.targetDir || !cfg.targetDir.length) {
-      write(`No targetdir. Doing nothing.`, "INFO");
-      return;
-   }
+  if (!cfg.targetDir || !cfg.targetDir.length) {
+    write(`No targetdir. Doing nothing.`, "INFO");
+    return;
+  }
 
-   const fileCount = readdirSync(cfg.targetDir).filter(filename => filename !== ".DS_Store")?.length;
-   if (fileCount > 1) await multiThreaded(cfg);
-   if (fileCount === 1) await singleTheaded(cfg);
-   if (fileCount === 0) {
-      write(`No files found in target directory. Exiting...`, "ERROR");
-      process.exit();
-   }
+  const fileCount = readdirSync(cfg.targetDir).filter(filename => filename !== ".DS_Store")?.length;
+  if (fileCount > 1) await multiThreaded(cfg);
+  if (fileCount === 1) await singleTheaded(cfg);
+  if (fileCount === 0) {
+    write(`No files found in target directory. Exiting...`, "ERROR");
+    process.exit();
+  }
 
-   setTimeout(() => {
-      if (cfg.verbose) write(`Completed current parsing work`, "INFO");
-      process.exit(); // make this robust but its basically always fine but better to check q length
-   }, 300); // Wait for logs to finish writing
+  setTimeout(() => {
+    if (cfg.verbose) write(`Completed current parsing work`, "INFO");
+    process.exit(); // make this robust but its basically always fine but better to check q length
+  }, 300); // Wait for logs to finish writing
 }
 
 main(cfg);
