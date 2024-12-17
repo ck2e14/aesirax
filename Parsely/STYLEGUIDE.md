@@ -64,4 +64,3 @@
 -  Group related functionality into modules.
 -  Use barrel files (index.ts) to simplify imports from complex module structures.
 
-Remember to keep this style guide updated as your project evolves and new conventions are agreed upon.
