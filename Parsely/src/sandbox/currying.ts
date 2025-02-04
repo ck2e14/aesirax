@@ -1,7 +1,7 @@
 /**
  * Currying example in a DICOM transformation context $ npm run curry-test
  *
- * My takeaway thoughts on currying...
+ * My takeaway thoughts on currying... (pun intended)
  *
  * Currying is best used for partial application in pipelines of actions
  * which can be advantageous for memoising and/or reducing recalculation

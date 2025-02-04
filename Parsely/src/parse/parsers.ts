@@ -35,7 +35,7 @@ const decodersLE: Partial<DecoderMap> = {
   SL: (subarray: Buffer) => subarray.readInt32LE(0).toString(10),
   AT: (subarray: Buffer) => subarray.readInt32LE(0).toString(10), // WARN check this is correct
   SS: (subarray: Buffer) => subarray.readInt16LE(0).toString(10),
-  UL: (subarray: Buffer) => subarray.readUInt32LE(0).toString(10),
+  UL: (subarray: Buffer) => BigInt(subarray.readUInt32LE(0)).toString(),
   US: (subarray: Buffer) => subarray.readUInt16LE(0).toString(10),
   default: (subarray: Buffer) => subarray.toString("hex"),
 } as const;
@@ -64,7 +64,7 @@ const decodersBE: Partial<DecoderMap> = {
   FD: (subarray: Buffer) => subarray.readDoubleBE(0).toString(10),
   SL: (subarray: Buffer) => subarray.readInt32BE(0).toString(10),
   SS: (subarray: Buffer) => subarray.readInt16BE(0).toString(10),
-  UL: (subarray: Buffer) => subarray.readUInt32BE(0).toString(10),
+  UL: (subarray: Buffer) => BigInt(subarray.readUInt32BE(0)).toString(),
   US: (subarray: Buffer) => subarray.readUInt16BE(0).toString(10),
   default: (subarray: Buffer) => subarray.toString("hex"),
 } as const;

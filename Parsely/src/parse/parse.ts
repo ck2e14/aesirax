@@ -6,6 +6,16 @@ import { newCursor, Cursor } from "./cursor.js";
 import { write } from "../logging/logQ.js";
 import { Ctx } from "../read/read.js";
 
+// This is a ts implementation but given the approach its arguably better 
+// to describe it as a TS wrapper to C++ methods;
+// i.e. - yes it written in TS but it's heavily using JS APIs that 
+// directly call on native C++ APIs within V8. So the core parsing TS logic 
+// here is more of a C++ marshaller than it is a itself doing operations.
+//  - V8’s highly optimized memory access patterns
+//  - Uses C++-backed Buffers instead of slow JS objects
+//  - Uses C++ V8 libuv for file streaming, avoiding blocking JS execution
+//  - No WASM marshalling or overhead (e.g. wrapped DCMTK WASM perf comparison)
+
 export type ParseResult = { truncated: true | null; buf: PartialEl };
 export type PartialEl = Buffer | null; // because streaming
 export type DataSet = Record<string, Element>;
@@ -24,8 +34,8 @@ export type Element = {
 
 export const MAX_UINT16 = 65_535;
 export const MAX_UINT32 = 4_294_967_295;
-export const PREAMBLE_LEN = 128;
 
+export const PREAMBLE_LEN = 128;
 export const PRFEFIX = "DICM";
 export const HEADER_START = PREAMBLE_LEN;
 export const PREFIX_END = PREAMBLE_LEN + PRFEFIX.length;
@@ -39,12 +49,18 @@ export const EOI_TAG = "(5e9f,d9ff)" as TagStr;
 /**
  * Decode and serialise elements contained in a buffered subset
  * of a DICOM file.
+ *
  * Return a buffer windowed from the start of the last started
  * element, if the end of the buffer truncates it, to support
  * stitching in consuming code (streams, network sockets etc).
+ *
  * Each parse() call, and by extension each loop iteration,
  * must be for a new element starting at the first byte of the
  * tag number.
+ *
+ * Granted this is a long function, im not changing it, no one is 
+ * paying me for this :) 
+ *
  * @param buffer
  * @param ctx
  * @returns PartialEl
@@ -202,10 +218,9 @@ function isDefLenSqEnd(ctx: Ctx, el: Element) {
   if (!inSQ(ctx)) return false;
 
   const { sq, len, bytes } = stacks(ctx);
-  const isEnd =
-    sq && //
-    len !== MAX_UINT32 &&
-    len === bytes + 8; // +8 because we walked 8 bytes (parentCursor.walk() - parseSQ()) before pushing sq to stack
+  const isEnd = sq
+    && len !== MAX_UINT32
+    && len === bytes + 8; // +8 because we walked 8 bytes (parentCursor.walk() - parseSQ()) before pushing sq to stack
 
   if (ctx.depth === 0 && isEnd) {
     throw new DicomError({
@@ -219,7 +234,7 @@ function isDefLenSqEnd(ctx: Ctx, el: Element) {
         `Stacks: ${printSqCtx(ctx)}. `,
     });
   }
-  if (!isEnd) return false;
+  if (!isEnd) return isEnd;
   if (bytes > sq.length) {
     throw new Malformed(
       `Traversed more bytes than the defined length of the SQ. ` +
@@ -453,12 +468,8 @@ export function parseUndefLenOB(ctx: Ctx, el: Element, cursor: Cursor, buffer: B
     }
 
     const fragLen = ctx.usingLE
-      ? buffer //
-        .subarray(cursor.pos, cursor.pos + Bytes.LENGTH)
-        .readUInt32LE(0)
-      : buffer //
-        .subarray(cursor.pos, cursor.pos + Bytes.LENGTH)
-        .readUInt32BE(0);
+      ? buffer.subarray(cursor.pos, cursor.pos + Bytes.LENGTH).readUInt32LE(0)
+      : buffer.subarray(cursor.pos, cursor.pos + Bytes.LENGTH).readUInt32BE(0);
 
     el.length += fragLen;
     cursor.walk(Bytes.LENGTH, ctx, buffer);
@@ -512,17 +523,13 @@ export function parseOW(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer) {
 
   // -- Parse offset table length
   const offSetTableLen = ctx.usingLE
-    ? buffer //
-      .subarray(cursor.pos, cursor.pos + Bytes.TAG_NUM)
-      .readUint32LE(0)
-    : buffer //
-      .subarray(cursor.pos, cursor.pos + Bytes.TAG_NUM)
-      .readUint32BE(0);
+    ? buffer.subarray(cursor.pos, cursor.pos + Bytes.TAG_NUM).readUint32LE(0)
+    : buffer.subarray(cursor.pos, cursor.pos + Bytes.TAG_NUM).readUint32BE(0);
 
   // -- If nonzero, walk the entire table, not supporting this atm
   if (offSetTableLen > 0) {
     cursor.walk(offSetTableLen, ctx, buffer);
-    const offset = ctx.usingLE //
+    const offset = ctx.usingLE
       ? buffer.readUInt32LE(cursor.pos)
       : buffer.readUInt32BE(cursor.pos);
     cursor.walk(Bytes.UINT_32 + offset, ctx, buffer); // is this correct?
@@ -539,12 +546,8 @@ export function parseOW(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer) {
 
   // -- Parse the fragment length
   const fragLen = ctx.usingLE
-    ? buffer //
-      .subarray(cursor.pos, cursor.pos + Bytes.TAG_NUM)
-      .readUint32LE(0)
-    : buffer //
-      .subarray(cursor.pos, cursor.pos + Bytes.TAG_NUM)
-      .readUint32BE(0);
+    ? buffer.subarray(cursor.pos, cursor.pos + Bytes.TAG_NUM).readUint32LE(0)
+    : buffer.subarray(cursor.pos, cursor.pos + Bytes.TAG_NUM).readUint32BE(0);
 
   // -- Check for truncation, trigger stitching
   if (valueIsTruncated(buffer, cursor, fragLen)) {

@@ -34,12 +34,12 @@ async function main(cfg: Global.Cfg) {
 
   await init();
 
-  // cfg.targetDir = `../data/brokenSiemensCT/isolate`; // FELIX images are breaking atm on pixel data. are they still? TODO
-  // cfg.targetDir = `../data/QUANTREDEUSIX`; // FELIX images are breaking atm on pixel data. are they still? TODO
+  // cfg.targetDir = `../data/brokenSiemensCT/isolate`; 
+  // cfg.targetDir = `../data/QUANTREDEUSIX`; 
   // cfg.targetDir = `../data/JonathanSnowMR/isolate`;
   // cfg.targetDir = `/Users/chriskennedy/Desktop/SWE/aesirax/data/STANWORTHLORNAMISS/SER00001`;
   // cfg.targetDir = '/Users/chriskennedy/Documents/Cimar/CimarTemp/OREILLYPHILIPTHOMASMR (1)/SER00003/'
-  // cfg.targetDir = `../data/FELIX/isolate`;
+  // cfg.targetDir = `../data/FELIX/isolate`;// FELIX images are breaking atm on pixel data. are they still? TODO
   // cfg.targetDir = `/Users/chriskennedy/Documents/Cimar/CimarTemp/WAGNERCYNTHIASENZENIMRS/1/`
   // cfg.targetDir = `/Users/chriskennedy/Documents/Cimar/CimarTemp/XXX`
   cfg.targetDir = `/Users/chriskennedy/Documents/Cimar/CimarTemp/BELLCAROLANNEMS (1)/SER00001`

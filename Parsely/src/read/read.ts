@@ -161,10 +161,8 @@ function detectMisalignment(ctx: Ctx) {
   const fileLenMinus = ctx.totalStreamedBytes - 132; // minus preamble + HEADER
   const fileLenMinusStr = fileLenMinus.toLocaleString();
   const outerCursorPosStr = ctx.outerCursor.pos.toLocaleString();
-  const notDisposedOf = Object.entries(ctx.cursors).filter(([id, cursor]) => {
-    if (!cursor.disposedOf) return [id, cursor];
-  });
 
+  const notDisposedOf = Object.entries(ctx.cursors).filter(([_, cursor]) => !cursor.disposedOf)
   if (notDisposedOf.length) {
     write(`Cursors not disposed of: ${notDisposedOf.map(([id, _c]) => id).join(", ")}`, "WARN");
   }

@@ -8,52 +8,52 @@ import { Cursor } from "./parse/cursor.js";
 import { Ctx } from "./read/read.js";
 
 export function mapToObj(map: Map<string, any>): any {
-   const obj = {};
-   map.forEach((value, key) => {
-      obj[key] = value;
-   });
-   return obj;
+  const obj = {};
+  map.forEach((value, key) => {
+    obj[key] = value;
+  });
+  return obj;
 }
 
 export function prettyPrintMap(map: Map<string, any>): string {
-   let str = ``;
+  let str = ``;
 
-   map.forEach((value, key) => {
-      str += ` > ${key}: ${JSON.stringify(value).slice(0, 350)}\n`;
-   });
+  map.forEach((value, key) => {
+    str += ` > ${key}: ${JSON.stringify(value).slice(0, 350)}\n`;
+  });
 
-   return str;
+  return str;
 }
 
 export function prettyPrintArray(arr: any[]): string {
-   let str = ``;
+  let str = ``;
 
-   arr.forEach((value, index) => {
-      str += ` > ${index}: ${JSON.stringify(value).slice(0, 350)}\n`;
-   });
+  arr.forEach((value, index) => {
+    str += ` > ${index}: ${JSON.stringify(value).slice(0, 350)}\n`;
+  });
 
-   return str;
+  return str;
 }
 
 export function findDICOM(folder = "./", fileList = []) {
-   readdirSync(folder).forEach(file => {
-      const filePath = path.join(folder, file);
+  readdirSync(folder).forEach(file => {
+    const filePath = path.join(folder, file);
 
-      if (statSync(filePath).isDirectory()) {
-         findDICOM(filePath, fileList);
-      }
+    if (statSync(filePath).isDirectory()) {
+      findDICOM(filePath, fileList);
+    }
 
-      if (file.endsWith(".dcm")) {
-         fileList.push(filePath);
-      }
-   });
-   return fileList;
+    if (file.endsWith(".dcm")) {
+      fileList.push(filePath);
+    }
+  });
+  return fileList;
 }
 
 export const json = (thing: any) => JSON.stringify(thing, null, 3);
 
 export function dataSetLength(dataSet: DataSet): number {
-   return Object.keys(dataSet).length;
+  return Object.keys(dataSet).length;
 }
 
 /**
@@ -62,12 +62,12 @@ export function dataSetLength(dataSet: DataSet): number {
  * @returns boolean
  */
 export function useLE(tsn: TransferSyntaxUid): boolean {
-   return [
-      TransferSyntaxUid.ExplicitVRLittleEndian,
-      TransferSyntaxUid.ImplicitVRLittleEndian,
-      TransferSyntaxUid.JPEG2000Lossless,
-      TransferSyntaxUid.DeflatedExplicitVRLittleEndian,
-   ].includes(tsn);
+  return [
+    TransferSyntaxUid.ExplicitVRLittleEndian,
+    TransferSyntaxUid.ImplicitVRLittleEndian,
+    TransferSyntaxUid.JPEG2000Lossless,
+    TransferSyntaxUid.DeflatedExplicitVRLittleEndian,
+  ].includes(tsn);
 }
 
 /**
@@ -80,12 +80,12 @@ export function useLE(tsn: TransferSyntaxUid): boolean {
  * @returns
  */
 export function cPos(ctx: Ctx, spacing = undefined) {
-   const cpos = Object.entries(ctx.cursors).reduce((acc, [id, c]) => {
-      if (c.disposedOf) acc[id] = `_` + c.pos.toString();
-      else acc[id] = c.pos;
-      return acc;
-   }, {});
-   return JSON.stringify(cpos, null, spacing);
+  const cpos = Object.entries(ctx.cursors).reduce((acc, [id, c]) => {
+    if (c.disposedOf) acc[id] = `_` + c.pos.toString();
+    else acc[id] = c.pos;
+    return acc;
+  }, {});
+  return JSON.stringify(cpos, null, spacing);
 }
 
 /**
@@ -94,11 +94,11 @@ export function cPos(ctx: Ctx, spacing = undefined) {
  * @returns string
  */
 export function UNIMPLEMENTED_VR_PARSING(vr: Global.VR): string {
-   if (vr === VR.UN) {
-      return `No support for VR: ${vr} but tried decoding to ascii`;
-   } else {
-      return `No support for VR: ${vr}`;
-   }
+  if (vr === VR.UN) {
+    return `No support for VR: ${vr} but tried decoding to ascii`;
+  } else {
+    return `No support for VR: ${vr}`;
+  }
 }
 
 /**
@@ -106,26 +106,26 @@ export function UNIMPLEMENTED_VR_PARSING(vr: Global.VR): string {
  * @param el
  */
 export function printElement(el: Element, cursor: Cursor, buffer: Buffer, ctx: Ctx) {
-   const msg = {
-      Tag: el.tag,
-      Name: el.name,
-      VR: el.vr,
-      Length: el.length,
-      Value: el.value,
-      "Cursor After Parse": cursor.pos,
-      CurrentBufferWindow: buffer.length,
-      Depth: ctx.depth,
-   };
+  const msg = {
+    Tag: el.tag,
+    Name: el.name,
+    VR: el.vr,
+    Length: el.length,
+    Value: el.value,
+    "Cursor After Parse": cursor.pos,
+    CurrentBufferWindow: buffer.length,
+    Depth: ctx.depth,
+  };
 
-   if (el.devNote) {
-      msg["DevNote"] = el.devNote;
-   }
+  if (el.devNote) {
+    msg["DevNote"] = el.devNote;
+  }
 
-   const msgStr = Object.entries(msg)
-      .map(([key, value]) => `${key}: ${value}`)
-      .join(", ");
+  const msgStr = Object.entries(msg)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join(", ");
 
-   write(msgStr, "DEBUG");
+  write(msgStr, "DEBUG");
 }
 
 /**
@@ -133,25 +133,25 @@ export function printElement(el: Element, cursor: Cursor, buffer: Buffer, ctx: C
  * @param el
  */
 export function printMinusValue(el: Element, cursor: Cursor, buffer: Buffer, ctx: Ctx) {
-   const msg = {
-      Tag: el.tag,
-      Name: el.name,
-      VR: el.vr,
-      Length: el.length,
-      "Cursor After Parse": cursor.pos,
-      CurrentBufferWindow: buffer.length,
-      Depth: ctx.depth,
-   };
+  const msg = {
+    Tag: el.tag,
+    Name: el.name,
+    VR: el.vr,
+    Length: el.length,
+    "Cursor After Parse": cursor.pos,
+    CurrentBufferWindow: buffer.length,
+    Depth: ctx.depth,
+  };
 
-   if (el.devNote) {
-      msg["DevNote"] = el.devNote;
-   }
+  if (el.devNote) {
+    msg["DevNote"] = el.devNote;
+  }
 
-   const msgStr = Object.entries(msg)
-      .map(([key, value]) => `${key}: ${value}`)
-      .join(", ");
+  const msgStr = Object.entries(msg)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join(", ");
 
-   write(msgStr, "DEBUG");
+  write(msgStr, "DEBUG");
 }
 
 /**
@@ -159,23 +159,23 @@ export function printMinusValue(el: Element, cursor: Cursor, buffer: Buffer, ctx
  * @param Element
  */
 export function logElement(el: Element, cursor: Cursor, buffer: Buffer, ctx: Ctx) {
-   const unfuckingSupported = [VR.OB, VR.UN, VR.OW];
+  const unfuckingSupported = [VR.OB, VR.UN, VR.OW];
 
-   if (unfuckingSupported.includes(el.vr)) {
-      el.devNote = UNIMPLEMENTED_VR_PARSING(el.vr);
-      printMinusValue(el, cursor, buffer, ctx);
-   } else {
-      printElement(el, cursor, buffer, ctx);
-   }
+  if (unfuckingSupported.includes(el.vr)) {
+    el.devNote = UNIMPLEMENTED_VR_PARSING(el.vr);
+    printMinusValue(el, cursor, buffer, ctx);
+  } else {
+    printElement(el, cursor, buffer, ctx);
+  }
 }
 
 export function printSqCtx(ctx: Ctx) {
-   const printObj = {
-      sqLens: ctx.sqLens,
-      sqStack: ctx.sqStack.map(sq => sq.name).join(" > "),
-      sqBytesStack: ctx.sqBytesStack,
-   };
-   return `SQ Context: ${json(printObj)}`;
+  const printObj = {
+    sqLens: ctx.sqLens,
+    sqStack: ctx.sqStack.map(sq => sq.name).join(" > "),
+    sqBytesStack: ctx.sqBytesStack,
+  };
+  return `SQ Context: ${json(printObj)}`;
 }
 
 /**
@@ -184,10 +184,10 @@ export function printSqCtx(ctx: Ctx) {
  * @returns string
  */
 export function getTagName(tag: string) {
-   return (
-      TagDictByHex[tag?.toUpperCase()]?.["name"] ?? //
-      "Private or Unrecognised Tag"
-   );
+  return (
+    TagDictByHex[tag?.toUpperCase()]?.["name"] ?? //
+    "Private or Unrecognised Tag"
+  );
 }
 
 /**
@@ -195,7 +195,7 @@ export function getTagName(tag: string) {
  * @param vr
  */
 export const isVr = (vr: string): vr is Global.VR => {
-   return vr in VR;
+  return vr in VR;
 };
 
 /**
@@ -206,6 +206,6 @@ export const isVr = (vr: string): vr is Global.VR => {
  * @returns boolean
  */
 export function isExtVr(vr: Global.VR): boolean {
-   const extVrPattern = /^UC|OB|OW|OF|SQ|UT|UN$/;
-   return extVrPattern.test(vr);
+  const extVrPattern = /^UC|OB|OW|OF|SQ|UT|UN$/;
+  return extVrPattern.test(vr);
 }
