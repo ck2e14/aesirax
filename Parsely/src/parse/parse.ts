@@ -11,10 +11,6 @@ import { Ctx } from "../read/read.js";
 // i.e. - yes it written in TS but it's heavily using JS APIs that 
 // directly call on native C++ APIs within V8. So the core parsing TS logic 
 // here is more of a C++ marshaller than it is a itself doing operations.
-//  - V8’s highly optimized memory access patterns
-//  - Uses C++-backed Buffers instead of slow JS objects
-//  - Uses C++ V8 libuv for file streaming, avoiding blocking JS execution
-//  - No WASM marshalling or overhead (e.g. wrapped DCMTK WASM perf comparison)
 
 export type ParseResult = { truncated: true | null; buf: PartialEl };
 export type PartialEl = Buffer | null; // because streaming
