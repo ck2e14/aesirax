@@ -1,8 +1,3 @@
-Aesirax is a zero-dependency DICOM parser. 
+Aesirax is a performant zero-dependency DICOM parser & JSON serialiser. 
 
-
-It's a personal/learning project. It has no business anywhere near production aside from shadow tests; it must not be relied upon. 
-
-Why? It works but there are myriad edge cases, data structures and interop/spec flexiblity concerns that are non-negotiable to be able to support in healthcare software, particularly DICOM, which kind of tries to be all thing to all people.
-
-So it works well on the majority subset of imaging I see day to day, because that's what it's been focused towards. But it would take about 5 minutes to find decoding that it _will_ trip up over on some DICOM it's not able to interpret properly. 
+It's a personal project. It has no business anywhere near production. 
