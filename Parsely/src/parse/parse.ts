@@ -63,6 +63,7 @@ export const EOI_TAG = "(5e9f,d9ff)" as TagStr;
  */
 export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
   ctx.depth++;
+  
   let cursor: Cursor = newCursor(ctx);
   let lastTagStart: number;
 
