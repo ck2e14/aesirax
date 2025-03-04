@@ -389,7 +389,7 @@ export function parseSQ(buffer: Buffer, ctx: Ctx, el: Element, parentCursor: Cur
   }
 
   // -- Stack SQ props
-  trackSQ(ctx, el, el);
+  trackSQ(ctx, el, el); // NB pretty sure there is tech debt here, trackSQ might not need to accept three args
 
   // -- Recurse to parse entire SQ, from the first item (is itself a dataset)
   const item1 = buffer.subarray(parentCursor.pos, buffer.length);
