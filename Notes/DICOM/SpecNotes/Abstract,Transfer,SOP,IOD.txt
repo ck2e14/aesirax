@@ -1,0 +1,46 @@
+Probably a useful thing to keep in mind when reading these notes is that DICOM is designed as a highly modular system. It's actually a system that depends on composing more complex structures and concepts from more finely defined and/or segregated structures and concepts, which is why it can be described as modular. So, in line with that, the DICOM spec governs what different compositions of these modules and concepts yield. 
+
+
+
+* Information Object Definition (IOD)
+...is a set of rules governing what, per IOD type, imaging instances ("SOP instances") must/may contain. 
+An IOD, in the DICOM spec, contains several sections:
+
+1) Description - of what 'Real-World Object' (this is DICOM phrasing) that the IOD represents
+   E.g. for CT: "an image that has been created by a computed tomography imaging device."
+   
+2) Entity-Relationship Model - this is best described as a flow diagram that shows the relationships between 'information entities' (which you could otherwise call classes tbh - like Patient, Series, Image, SR Document etc). It's best to just look at the diagram they use at https://dicom.nema.org/dicom/2013/output/chtml/part03/chapter_A.html#sect_A.1.2.
+
+   Note that the E-R model at that URL link above is a general and 'all possible inclusions' depiction. Which is why it says 0-n on required inclusion of each entity that a series can contain. In actuality, each Series must contain at least one Presentation State IE, SR Document IE or Image IE.
+
+   Note also that the spec tends to refer back to this general 'all possible inclusions' diagram in its IODs and simply specify which entities are not relevant to the IOD it's describing. 
+
+   For example the CT IOD links back to that diagram and also says: "The Overlay IE, Modality LUT IE, VOI LUT IE and Curve IE are not components of the CT Image IOD."
+
+3) Module Table: This is basically just a table of all the attributes that each information entity (Patient, Study, Frame of Reference, Equipment, Series, Image etc, there are a bunch more but these are the most common) must contain in order to satisfy the attribute requirements of the IOD. The table will list the required and/or optional modules (which are groups of attributes) required, and link to the list of attributes that the module contains. Each attribute has:
+   - Name (e.g. Other Patient IDs)
+   - Tag (the same tag used in the binary encoding of an attribute & its value into a Data Element)
+   - A type (https://dicom.nema.org/dicom/2013/output/chtml/part05/sect_7.4.html)
+      1  = Mandatory inclusion. Cannot be 0-length. 
+      1C = Conditionally mandatory inclusion. Cannot be 0-length. 
+      2  = Mandatory inclusion. Can be encoded with 0-length and contain no value.
+      2c = Conditionally mandatory inclusion. Can be encoded with 0-length and contain no value.
+      3  = Optional inclusion. May be encoded with 0-length and no value
+   - Description
+
+
+
+* Abstract syntax 
+...is a general compsci/telecomms term. It describes the 'what' in a communication, as opposed to the 'how'. So it's concerned with what data is being sent, how it's structured, and what operations are permitted to perform on it and with it. 
+
+The 'what' defintion is common in other standards that also separate data definition from data transport (like networking protocols HTTP or TCP etc.)
+
+In DICOM, abstract syntax == SOP Class. SOP Classes take an IOD, which depicts the actual content definition of a given type of imaging, e.g. CT Image Storage, and wraps it with rules governing what you can do with that data, be it storing, querying, retrieving, or viewing.
+
+
+
+* Transfer syntax
+...is likeise a general compsci/telecomms term, but in DICOM we do actually use this term specifically whereas we are more likely to use SOP Class over abstract syntax in general conversation. Transfer syntax specifies the 'how' in the communication. It describes how the data is encoded, the byte ordering, the value representation (implicit/explicit), and compression. In DICOM, for interoperability, there are a range of Tranfer Syntaxes that are identified by unique IDs and have granular rules for encoding and interpretation of data. This provides a clear way for communicating systems to be sure that they know how to intepret the incoming byte stream, and gives substance to the association negotiations that take place prior to the transmission of imaging data because DICOM applications will have been developed to support (or not support) various transfer syntaxes from the known list of possible syntaxes.
+Note that 100% of DICOM systems, according to specification stipulation, will support Implicit VR Little Endian - which is known as the default transfer syntax. Implicit VR is annoying to handle in many cases for interpreting applications. Back in the day storage volumes were far more limited whereas now we have absolutely limitless storage capacity to all intents and purposes. Saving a couple bytes per Data Element was relevant back in the day but obviously isn't now, so implicit VR is less common these days but legacy DICOM will commonly use it. It's a pain in the arse for developers and generally speaking there is no reason to ever encode DICOM as Implicit VR these days. 
+
+

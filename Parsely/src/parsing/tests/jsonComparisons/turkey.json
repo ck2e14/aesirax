@@ -1,0 +1,503 @@
+{
+   "(0002,0000)": {
+      "vr": "UL",
+      "tag": "(0002,0000)",
+      "value": "212",
+      "name": "FileMetaInformationGroupLength",
+      "length": 4
+   },
+   "(0002,0001)": {
+      "vr": "OB",
+      "tag": "(0002,0001)",
+      "value": "Binary data (OB): 2 bytes",
+      "name": "FileMetaInformationVersion",
+      "length": 2,
+      "devNote": "No support for VR: OB"
+   },
+   "(0002,0002)": {
+      "vr": "UI",
+      "tag": "(0002,0002)",
+      "value": "1.2.840.10008.5.1.4.1.1.7",
+      "name": "MediaStorageSOPClassUID",
+      "length": 26
+   },
+   "(0002,0003)": {
+      "vr": "UI",
+      "tag": "(0002,0003)",
+      "value": "1.3.6.1.4.1.25403.17168433367.2352.20130820060032.3",
+      "name": "MediaStorageSOPInstanceUID",
+      "length": 52
+   },
+   "(0002,0010)": {
+      "vr": "UI",
+      "tag": "(0002,0010)",
+      "value": "1.2.840.10008.1.2.1",
+      "name": "TransferSyntaxUID",
+      "length": 20
+   },
+   "(0002,0012)": {
+      "vr": "UI",
+      "tag": "(0002,0012)",
+      "value": "1.2.840.10008.052007.0.7.1.3",
+      "name": "ImplementationClassUID",
+      "length": 28
+   },
+   "(0002,0013)": {
+      "vr": "SH",
+      "tag": "(0002,0013)",
+      "value": "DGSTORESCPV3",
+      "name": "ImplementationVersionName",
+      "length": 12
+   },
+   "(0002,0016)": {
+      "vr": "AE",
+      "tag": "(0002,0016)",
+      "value": "CWK_ORTHANC ",
+      "name": "SourceApplicationEntityTitle",
+      "length": 12
+   },
+   "(0008,0005)": {
+      "vr": "CS",
+      "tag": "(0008,0005)",
+      "value": "ISO_IR 100",
+      "name": "SpecificCharacterSet",
+      "length": 10
+   },
+   "(0008,0016)": {
+      "vr": "UI",
+      "tag": "(0008,0016)",
+      "value": "1.2.840.10008.5.1.4.1.1.7",
+      "name": "SOPClassUID",
+      "length": 26
+   },
+   "(0008,0018)": {
+      "vr": "UI",
+      "tag": "(0008,0018)",
+      "value": "1.3.6.1.4.1.25403.17168433367.2352.20130820060032.3",
+      "name": "SOPInstanceUID",
+      "length": 52
+   },
+   "(0008,0020)": {
+      "vr": "DA",
+      "tag": "(0008,0020)",
+      "value": "20130820",
+      "name": "StudyDate",
+      "length": 8
+   },
+   "(0008,0030)": {
+      "vr": "TM",
+      "tag": "(0008,0030)",
+      "value": "",
+      "name": "StudyTime",
+      "length": 0
+   },
+   "(0008,0050)": {
+      "vr": "SH",
+      "tag": "(0008,0050)",
+      "value": "Turkey",
+      "name": "AccessionNumber",
+      "length": 6
+   },
+   "(0008,0060)": {
+      "vr": "CS",
+      "tag": "(0008,0060)",
+      "value": "CR",
+      "name": "Modality",
+      "length": 2
+   },
+   "(0008,0064)": {
+      "vr": "CS",
+      "tag": "(0008,0064)",
+      "value": "DRW ",
+      "name": "ConversionType",
+      "length": 4
+   },
+   "(0008,0070)": {
+      "vr": "LO",
+      "tag": "(0008,0070)",
+      "value": "RZ Software Services",
+      "name": "Manufacturer",
+      "length": 20
+   },
+   "(0008,0080)": {
+      "vr": "LO",
+      "tag": "(0008,0080)",
+      "value": "",
+      "name": "InstitutionName",
+      "length": 0
+   },
+   "(0008,0090)": {
+      "vr": "PN",
+      "tag": "(0008,0090)",
+      "value": "",
+      "name": "ReferringPhysicianName",
+      "length": 0
+   },
+   "(0008,1030)": {
+      "vr": "LO",
+      "tag": "(0008,1030)",
+      "value": "IMPORTED upload ",
+      "name": "StudyDescription",
+      "length": 16
+   },
+   "(0008,1032)": {
+      "vr": "SQ",
+      "tag": "(0008,1032)",
+      "name": "ProcedureCodeSequence",
+      "length": 78,
+      "items": [
+         {
+            "(0008,0100)": {
+               "vr": "SH",
+               "tag": "(0008,0100)",
+               "value": "1112515 ",
+               "name": "CodeValue",
+               "length": 8
+            },
+            "(0008,0102)": {
+               "vr": "SH",
+               "tag": "(0008,0102)",
+               "value": "GEIIS ",
+               "name": "CodingSchemeDesignator",
+               "length": 6
+            },
+            "(0008,0103)": {
+               "vr": "SH",
+               "tag": "(0008,0103)",
+               "value": "0 ",
+               "name": "CodingSchemeVersion",
+               "length": 2
+            },
+            "(0008,0104)": {
+               "vr": "LO",
+               "tag": "(0008,0104)",
+               "value": "CHEST 2 VIEWS ",
+               "name": "CodeMeaning",
+               "length": 14
+            }
+         }
+      ]
+   },
+   "(0008,103e)": {
+      "vr": "LO",
+      "tag": "(0008,103e)",
+      "value": "Chest 1 View Series Descriptor",
+      "name": "SeriesDescription",
+      "length": 30
+   },
+   "(0008,1090)": {
+      "vr": "LO",
+      "tag": "(0008,1090)",
+      "value": "RZ DICOMIZER",
+      "name": "ManufacturerModelName",
+      "length": 12
+   },
+   "(0010,0010)": {
+      "vr": "PN",
+      "tag": "(0010,0010)",
+      "value": "TURKEY^BUTTERBALL ",
+      "name": "PatientName",
+      "length": 18
+   },
+   "(0010,0020)": {
+      "vr": "LO",
+      "tag": "(0010,0020)",
+      "value": "",
+      "name": "PatientID",
+      "length": 0
+   },
+   "(0010,0021)": {
+      "vr": "LO",
+      "tag": "(0010,0021)",
+      "value": "001R47:20050607:053940393:012685",
+      "name": "IssuerOfPatientID",
+      "length": 32
+   },
+   "(0010,0030)": {
+      "vr": "DA",
+      "tag": "(0010,0030)",
+      "value": "20000101",
+      "name": "PatientBirthDate",
+      "length": 8
+   },
+   "(0010,0040)": {
+      "vr": "CS",
+      "tag": "(0010,0040)",
+      "value": "F ",
+      "name": "PatientSex",
+      "length": 2
+   },
+   "(0010,21b0)": {
+      "vr": "LT",
+      "tag": "(0010,21b0)",
+      "value": "",
+      "name": "AdditionalPatientHistory",
+      "length": 0
+   },
+   "(0018,1030)": {
+      "vr": "LO",
+      "tag": "(0018,1030)",
+      "value": "",
+      "name": "ProtocolName",
+      "length": 0
+   },
+   "(0020,000d)": {
+      "vr": "UI",
+      "tag": "(0020,000d)",
+      "value": "1.3.6.1.4.1.25403.17168433367.2352.20130820060032.1",
+      "name": "StudyInstanceUID",
+      "length": 52
+   },
+   "(0020,000e)": {
+      "vr": "UI",
+      "tag": "(0020,000e)",
+      "value": "1.3.6.1.4.1.25403.17168433367.2352.20130820060032.2",
+      "name": "SeriesInstanceUID",
+      "length": 52
+   },
+   "(0020,0010)": {
+      "vr": "SH",
+      "tag": "(0020,0010)",
+      "value": "",
+      "name": "StudyID",
+      "length": 0
+   },
+   "(0020,0011)": {
+      "vr": "IS",
+      "tag": "(0020,0011)",
+      "value": "1 ",
+      "name": "SeriesNumber",
+      "length": 2
+   },
+   "(0020,0013)": {
+      "vr": "IS",
+      "tag": "(0020,0013)",
+      "value": "1 ",
+      "name": "InstanceNumber",
+      "length": 2
+   },
+   "(0020,0020)": {
+      "vr": "CS",
+      "tag": "(0020,0020)",
+      "value": "",
+      "name": "PatientOrientation",
+      "length": 0
+   },
+   "(0028,0002)": {
+      "vr": "US",
+      "tag": "(0028,0002)",
+      "value": "3",
+      "name": "SamplesPerPixel",
+      "length": 2
+   },
+   "(0028,0004)": {
+      "vr": "CS",
+      "tag": "(0028,0004)",
+      "value": "RGB ",
+      "name": "PhotometricInterpretation",
+      "length": 4
+   },
+   "(0028,0006)": {
+      "vr": "US",
+      "tag": "(0028,0006)",
+      "value": "0",
+      "name": "PlanarConfiguration",
+      "length": 2
+   },
+   "(0028,0010)": {
+      "vr": "US",
+      "tag": "(0028,0010)",
+      "value": "640",
+      "name": "Rows",
+      "length": 2
+   },
+   "(0028,0011)": {
+      "vr": "US",
+      "tag": "(0028,0011)",
+      "value": "532",
+      "name": "Columns",
+      "length": 2
+   },
+   "(0028,0100)": {
+      "vr": "US",
+      "tag": "(0028,0100)",
+      "value": "8",
+      "name": "BitsAllocated",
+      "length": 2
+   },
+   "(0028,0101)": {
+      "vr": "US",
+      "tag": "(0028,0101)",
+      "value": "8",
+      "name": "BitsStored",
+      "length": 2
+   },
+   "(0028,0102)": {
+      "vr": "US",
+      "tag": "(0028,0102)",
+      "value": "7",
+      "name": "HighBit",
+      "length": 2
+   },
+   "(0028,0103)": {
+      "vr": "US",
+      "tag": "(0028,0103)",
+      "value": "0",
+      "name": "PixelRepresentation",
+      "length": 2
+   },
+   "(0032,000a)": {
+      "vr": "CS",
+      "tag": "(0032,000a)",
+      "value": "<none>",
+      "name": "RETIRED_StudyStatusID",
+      "length": 6
+   },
+   "(0032,1033)": {
+      "vr": "LO",
+      "tag": "(0032,1033)",
+      "value": "HH PAHH PREADMIT PAHH ",
+      "name": "RequestingService",
+      "length": 22
+   },
+   "(0038,0300)": {
+      "vr": "LO",
+      "tag": "(0038,0300)",
+      "value": "",
+      "name": "CurrentPatientLocation",
+      "length": 0
+   },
+   "(0040,2017)": {
+      "vr": "LO",
+      "tag": "(0040,2017)",
+      "value": "2992871686",
+      "name": "FillerOrderNumberImagingServiceRequest",
+      "length": 10
+   },
+   "(0088,0200)": {
+      "vr": "SQ",
+      "tag": "(0088,0200)",
+      "name": "IconImageSequence",
+      "length": 962,
+      "items": [
+         {
+            "(0028,0002)": {
+               "vr": "US",
+               "tag": "(0028,0002)",
+               "value": "1",
+               "name": "SamplesPerPixel",
+               "length": 2
+            },
+            "(0028,0004)": {
+               "vr": "CS",
+               "tag": "(0028,0004)",
+               "value": "PALETTE COLOR ",
+               "name": "PhotometricInterpretation",
+               "length": 14
+            },
+            "(0028,0010)": {
+               "vr": "US",
+               "tag": "(0028,0010)",
+               "value": "128",
+               "name": "Rows",
+               "length": 2
+            },
+            "(0028,0011)": {
+               "vr": "US",
+               "tag": "(0028,0011)",
+               "value": "106",
+               "name": "Columns",
+               "length": 2
+            },
+            "(0028,0100)": {
+               "vr": "US",
+               "tag": "(0028,0100)",
+               "value": "8",
+               "name": "BitsAllocated",
+               "length": 2
+            },
+            "(0028,0101)": {
+               "vr": "US",
+               "tag": "(0028,0101)",
+               "value": "8",
+               "name": "BitsStored",
+               "length": 2
+            },
+            "(0028,0102)": {
+               "vr": "US",
+               "tag": "(0028,0102)",
+               "value": "7",
+               "name": "HighBit",
+               "length": 2
+            },
+            "(0028,0103)": {
+               "vr": "US",
+               "tag": "(0028,0103)",
+               "value": "0",
+               "name": "PixelRepresentation",
+               "length": 2
+            },
+            "(0028,1101)": {
+               "vr": "US",
+               "tag": "(0028,1101)",
+               "value": "256",
+               "name": "RedPaletteColorLookupTableDescriptor",
+               "length": 6
+            },
+            "(0028,1102)": {
+               "vr": "US",
+               "tag": "(0028,1102)",
+               "value": "256",
+               "name": "GreenPaletteColorLookupTableDescriptor",
+               "length": 6
+            },
+            "(0028,1103)": {
+               "vr": "US",
+               "tag": "(0028,1103)",
+               "value": "256",
+               "name": "BluePaletteColorLookupTableDescriptor",
+               "length": 6
+            },
+            "(0028,1199)": {
+               "vr": "UI",
+               "tag": "(0028,1199)",
+               "value": "",
+               "name": "PaletteColorLookupTableUID",
+               "length": 0
+            },
+            "(0028,1201)": {
+               "vr": "OW",
+               "tag": "(0028,1201)",
+               "value": "Binary data (OW): 256 bytes",
+               "name": "RedPaletteColorLookupTableData",
+               "length": 256,
+               "devNote": "No support for VR: OW"
+            },
+            "(0028,1202)": {
+               "vr": "OW",
+               "tag": "(0028,1202)",
+               "value": "Binary data (OW): 256 bytes",
+               "name": "GreenPaletteColorLookupTableData",
+               "length": 256,
+               "devNote": "No support for VR: OW"
+            },
+            "(0028,1203)": {
+               "vr": "OW",
+               "tag": "(0028,1203)",
+               "value": "Binary data (OW): 256 bytes",
+               "name": "BluePaletteColorLookupTableData",
+               "length": 256,
+               "devNote": "No support for VR: OW"
+            }
+         }
+      ]
+   },
+   "(7fe0,0010)": {
+      "vr": "OW",
+      "tag": "(7fe0,0010)",
+      "value": "Binary data (OW): 1021440 bytes",
+      "name": "PixelData",
+      "length": 1021440,
+      "devNote": "No support for VR: OW"
+   }
+}

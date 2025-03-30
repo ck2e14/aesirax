@@ -1,0 +1,149 @@
+import { exitDefLenSqRecursion, inSQ, manageSqRecursion, stacks } from "./valueParsing/parseSQ.js";
+import { parseValue } from "./valueParsing/parseValue.js";
+import { newCursor, Cursor } from "./cursor.js";
+import { parseLength, TagStr } from "./decode.js";
+import { TagDictByName } from "../enums.js";
+import { logElement } from "../utils.js";
+import { parseTag } from "./parseTag.js";
+import { parseVR } from "./parseVR.js";
+import { handleEx } from "./validation.js";
+import { Ctx } from "../reading/ctx.js";
+import { VR } from "../enums.js";
+
+export type ParseResult = { truncated: true | null; buf: PartialEl };
+export type PartialEl = Buffer | null; // because streaming
+export type DataSet = Record<string, Element>;
+export type Item = DataSet; // items are simply dataset aliases for nested datasets in sequences
+export type Fragments = Record<number, { value: string; length: number }>;
+export type Element = {
+  tag: TagStr;
+  name: string;
+  vr: VR;
+  length: number;
+  items?: Item[];
+  value?: string | number | Buffer;
+  fragments?: Fragments;
+  devNote?: string;
+};
+
+export const MAX_UINT16 = 65_535;
+export const MAX_UINT32 = 4_294_967_295;
+
+export const PREAMBLE_LEN = 128;
+export const PREFIX = "DICM";
+export const HEADER_START = PREAMBLE_LEN;
+export const PREFIX_END = PREAMBLE_LEN + PREFIX.length;
+
+export const FRAG_START_TAG = TagDictByName.ItemStart.tag; // (fffe,e000)
+export const ITEM_START_TAG = TagDictByName.ItemStart.tag;
+export const ITEM_END_TAG = TagDictByName.ItemEnd.tag; //     (fffe,e00d)
+export const SQ_END_TAG = TagDictByName.SequenceEnd.tag; //   (fffe,e0dd)
+export const EOI_TAG = "(5e9f,d9ff)" as TagStr;
+
+/**
+ * parse() orchestrates the parsing logic; it decodes and serialises 
+ * elements contained in an arbitrary subset of a DICOM binary.
+ *
+ * Fundamentally it is an iterative TLV binary decoder but supports 
+ * recursive calls to handle nested datasets.
+ *
+ * Give it a buffer where buffer[0] is the exact first byte of a 
+ * dataset (i.e. after the DCM preamble), and it will parse as far
+ * as the buffer allows, returning a BufferBoundary error if the 
+ * current buffer doesn't reach the end of the file. 
+ *
+ * If parse() encounters nested datasets (via sequence elements),
+ * it will call itself at the correct byte position and reflect 
+ * the hierarchy in the overall DICOM serialisation. Context (Ctx)
+ * is maintained at the global scope, allowing recursion interrupted
+ * by the length of the buffer to pick up where it left off when the 
+ * next buffer is provided (e.g. via streamed file i/o: read.ts).
+ *
+ * Since it mutates a global context which stores the serialised 
+ * DICOM object, parse() only returns a value when a BufferBoundary
+ * error is thrown. In this case, read.ts streams need a ref to that 
+ * buffer so it can stitch it infront of the next streamed buffer.
+ *
+ * This is a typescript implementation but arguably better described 
+ * as a TS wrapper to C++ methods; it's heavily using efficient 
+ * low-level bufferAPIs that directly call on native C++ APIs within 
+ * V8. In some sense it's C++ performance with JS memory safety and 
+ * TypeScript compiler safety. 
+ *
+ * TLDR; the idea is to give this function the start of raw DICOM 
+ * dataset bytes, which in turn ensures that each new 'while' loop 
+ * iteration is the start of a new element's bytes.
+ *
+ * @param buffer
+ * @param ctx
+ * @returns PartialEl (e.g. if streaming & buffer < file size)
+ */
+export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
+  ctx.depth++;
+
+  let cursor: Cursor = newCursor(ctx);
+  let lastTagStart: number;
+
+  while (cursor.pos < buffer.length) {
+    lastTagStart = cursor.pos;
+
+    const el = newElement();
+    const sq = stacks(ctx).sq;
+
+    try {
+      if (exitDefLenSqRecursion(ctx, cursor)) return;
+      parseTag(buffer, cursor, el, ctx);
+
+      const cmd = manageSqRecursion(buffer, cursor, el, sq, ctx);
+      if (cmd === 'exit-recursion') return;
+      if (cmd === 'next-element') continue;
+
+      parseVR(buffer, cursor, el, ctx);
+      parseLength(buffer, cursor, el, ctx);
+      parseValue(buffer, cursor, el, ctx);
+
+      console.log({ el })
+    } catch (error) {
+      exitParse(ctx, cursor);
+      return handleEx(error, buffer, lastTagStart, el.tag);
+    }
+  }
+
+  exitParse(ctx, cursor);
+  return buffer.subarray(lastTagStart, buffer.length);
+}
+
+/**
+ * Return a new empty element object.
+ * @returns Element
+ */
+export function newElement(): Element {
+  return { vr: null, tag: null, value: null, name: null, length: null };
+}
+
+/**
+ * Save the current element to the appropriate dataset.
+ * @param ctx
+ * @param lastSqItem
+ * @param el
+ */
+export function saveElement(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer, print = true) {
+  if (print) logElement(el, cursor, buffer, ctx);
+  if (inSQ(ctx)) {
+    const { lastSqItem } = stacks(ctx);
+    lastSqItem[el.tag] = el;
+  } else {
+    ctx.dataSet[el.tag] = el;
+  }
+}
+
+/**
+ * Must be called in all return points from parse() to ensure
+ * that the cursor is disposed of and the depth is decremented.
+ * @param ctx
+ * @param cursor
+ */
+export function exitParse(ctx: Ctx, cursor: Cursor) {
+  ctx.depth--;
+  cursor.dispose();
+}

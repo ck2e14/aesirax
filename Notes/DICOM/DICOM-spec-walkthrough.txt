@@ -1,0 +1,75 @@
+Notes on DICOM
+
+-  Each file shall contain a single Data Set, representing a single SOP instance, related to a single SOP class
+
+-  The transfer syntax used to encode the Data Set, as specified in the File Meta Information, cannot be changed or re-specified within the subsequence Data Set
+
+-  Although a DICOM Element's structure contains 2 or 4 bytes, depending on Extended or Standard VR, indicating the subsequent value's length in bytes, there is nothing in the DICOM Data Set to say how many bytes the whole image is. This is simply best relied on being the end of the byte stream. Optionally there may be a Data Set Trailing Padding Data Element (FFFC,FFFC), if padding is desired. It also isn't intended to be considered part of the 'DICOM' per se; the spec suggests ignoring it completely when parsing out a Data Set. Some handling may be required when detecting it to skip past it because Data Sets may be nested in sequences and they are fair game to be at the end of these Data Sets not just a non-nested Data Set.
+
+-  Secure DICOM! Is a thing it seems. It specifies acceptable cyptographic standards to use and is intended to achieve one or more of:
+   -  Data Confidentiality (by means of encryption)
+   -  Data Origin Authentication (by means of certificates and digital signatures)
+   -  Data Integrity (by means of digital signatures)
+   -  In addition, a Secure DICOM File offers the possibility to communicate encryption keys and certificates to the intended recipients by means of key transport, key agreement or symmetric key-encryption key schemes. This would need a pretty heavy deep dive to learn more so we'll skip this for now. 
+
+
+SECURITY VULNERABILITIES IN DICOM
+ - The spec says that the preamble is a vulnerability in the sense that it's typically skipped by DICOM-reading applications. This means that it can be a place where malicious code can fly under the radar. This is why the spec draws attention to it with a specific section to say 'hey although this 128-byte preamble is basically dead weight in terms of parsing the content of a file, you can't ignore the chance that it contains something naughty.'
+ - Which is why it suggests validating that it's all zeroes - or literally deleting it entirely - or running some checks on it to see if it contains anything executable. Since other types of applications may use this, it creates a grey-area of threat vector that it's just safer to have a look at and sanitise if that's appropriate. So for our application that's exactly what we'll do. We'll keep things simple and say 'they must all be 0x00 and if they aren't, we're doing to delete or quarantine the entire file and notify someone about it/log the transgression'
+ - While obviously the rest of the binary could contain malicious code, the reason why the spec specifically draws attention to the preamble is because data protections are less likely to be applied here by DICOM reading applications because it bears basically zero signficance for the actual file content beyond it. 
+
+
+THE "DICOM FILE SERVICE"
+- This part of the spec is quite abstract. 
+- It's basically a set of guidelines - like the Pirate Code - for developers to interpret and implement their own particulars around the general concepts of file management. In a nutshell, it's documenting what a decent CRUD API should deliver for DICOM, without going so far as to tell you exactly how you should do it. This provides programming language flexibility as well as application focus flexibility.
+- In other words it specifies what should be possible - but not how to implement those features.
+- This aligns with the DICOM aim of interoperability, where different things should be able to interface DICOM with each other but leaves the design decisions up to the engineers and architects themselves. 
+- "compliance, not uniformity"
+- A core concept in the DICOM File Service specification is that of 'common namespacing' to group files in a 'File Set' together. There are some we're all familiar with like making sure that SOP instances respect the DICOM hierarchy by referencing their 'ancestor' in the hierarchy, by UID. But here is a more complete summary of what it means to associate imaging with each other by in a File Set via 'common namespacing': 'respect the dicom hierarchy, maintain UID prefixes among instances/series/studies, encapsulate descriptive/indexing data in a DICOMDIR file to aid this goal, don't duplicate/conflict UIDs (i.e. they are unique for a reason and must be respected as such)'
+
+
+
+DICOM BYTE PARSING & SERIALISATION NOTES:
+ * In DICOM we have two main types of VR:
+ *  1. Standard Format VR
+ *  2. Extended Format VR
+ *
+ * As the name suggests Extended Format VRs are for VRs that may store
+ * very large amounts of data, like OB VRs for pixel data.
+ *
+ * When parsing the byte streams of DICOM files' Tags, we need to parse
+ * the cursor forward a little differently based on whether its a standard
+ * or extended format VR.
+ *
+ * The byte stream structure for standard VR is like this:
+ *   - [2 x ASCII chars (2 bytes) e.g. SH]
+ *   - [2 x bytes indicating the subsequent value length]
+ *   - [The tag's actual value, of length 0x0000 - 0xFFFF]
+ *
+ * Given that standard VRs permit a 2-byte hex to specify the length,
+ * this means the decimal length of the value can be at most 65,535 (0xFFFF).
+ *
+ * That doesn't really cut it for the very large tags like pixel data.
+ * So the byte stream structure for those extended VRs is like this:
+ *   - [2 x ASCII chars (2 bytes) e.g. OB]
+ *   - [2 x reserved bytes, always 0x0000 0x0000]
+ *   - [The tag's actual value, of length 0x0000 - 0xFFFFFFFF]
+ *
+ * Given that the extended VRs permit a 4-byte hex to specify the length,
+ * which is represented as 0xFFFFFFFF. This means the decimal length of the
+ * value can be at most 4,294,967,295 (i.e. about 4GB). Note that in reality
+ * some applications are going tell you to GTFO if you pass 4GB in one single
+ * tag but it depends what you're dealing with. Ultrasounds are going to be
+ * very long in pixel data tags, for example.
+ *
+ * Note as well that for futureproofing the DICOM spec demands that there are
+ * 2 reserved bytes in the extended format VRs, which aren't yet implemented
+ * in the spec as anything, but are still always present (as 0x0000), so we need
+ * to know about these so we can parse the cursor forward by the right amount.
+ *
+ * Note that this function assumes you've chekced 0-128 bytes for the preamble,
+ * and 128-132 bytes for 'DICM' header.
+ *
+ * Note that SQ items may not have a length specified, and instead have a length
+ * of 0xFFFFFFFF. This is currently supported but not all SQs are supported yet.
+ * See notes in the function for more info.
