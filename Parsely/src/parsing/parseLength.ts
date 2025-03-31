@@ -1,6 +1,6 @@
 import { Bytes } from "../enums.js";
+import { Parse } from "../global.js";
 import { Ctx } from "../reading/ctx.js";
-import { Element } from "./parse.js";
 import { isExtVr } from "../utils.js";
 import { Cursor } from "./cursor.js";
 
@@ -15,7 +15,7 @@ import { Cursor } from "./cursor.js";
  * @param buffer
  * @returns Continue
  */
-export function parseLength(buffer: Buffer, cursor: Cursor, el: Element, ctx: Ctx) {
+export function parseLength(buffer: Buffer, cursor: Cursor, el: Parse.Element, ctx: Ctx) {
   // ----  Standard VR ----
   if (!isExtVr(el.vr)) {
     decodeLength(el, buffer, cursor, ctx);
@@ -36,7 +36,7 @@ export function parseLength(buffer: Buffer, cursor: Cursor, el: Element, ctx: Ct
  * @param cursor
  * @param ctx
  */
-export function decodeLength(el: Element, buffer: Buffer, cursor: Cursor, ctx: Ctx) {
+export function decodeLength(el: Parse.Element, buffer: Buffer, cursor: Cursor, ctx: Ctx) {
   if (isExtVr(el.vr)) {
     el.length = ctx.usingLE
       ? buffer.readUInt32LE(cursor.pos)

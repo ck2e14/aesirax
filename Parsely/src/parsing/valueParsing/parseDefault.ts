@@ -1,9 +1,9 @@
-import { Element } from "../parse.js";
 import { Cursor } from "../cursor.js";
 import { decodeValueBytes } from "../decode.js";
 import { valueIsTruncated } from "../validation.js";
 import { Ctx } from "../../reading/ctx.js";
 import { BufferBoundary } from "../../errors.js";
+import { Parse } from "../../global.js";
 
 /**
  * Handle parsing the current element's value by 
@@ -13,7 +13,7 @@ import { BufferBoundary } from "../../errors.js";
  * @param el
  * @param Ctx
  */
-export function parseValueDefault(buffer: Buffer, cursor: Cursor, el: Element, ctx: Ctx) {
+export function parseValueDefault(buffer: Buffer, cursor: Cursor, el: Parse.Element, ctx: Ctx) {
   if (valueIsTruncated(buffer, cursor, el.length)) {
     throw new BufferBoundary(`Tag ${el.tag} is split across buffer boundary`);
   }

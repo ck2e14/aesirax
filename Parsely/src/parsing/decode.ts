@@ -1,15 +1,11 @@
-import { Bytes, DicomErrorType, TagDictByHex, TransferSyntaxUid, VR } from "../enums.js";
+import { Bytes, DicomErrorType, TransferSyntaxUid, VR } from "../enums.js";
 import { isVr } from "../utils.js";
 import { write } from "../logging/logQ.js";
 import { Ctx } from "../reading/ctx.js";
-import { Element } from "./parse.js";
 import { BufferBoundary, DicomError } from "../errors.js";
+import { Parse } from "../global.js";
 
-export type Decoder = (value: Buffer) => string;
-export type DecoderMap = Record<Global.VR | "default", Decoder>;
-export type TagStr = keyof typeof TagDictByHex; // 'keyof' gets the keys of an object type. So this is the union type of all the keys of TagDictByHex
-
-const decodersLE: Partial<DecoderMap> = {
+const decodersLE: Partial<Parse.DecoderMap> = {
   // partial because will add VRs incrementally.
   // currently only support numbers to base 10.
   AE: (subarray: Buffer) => utf8Decoder(subarray),
@@ -39,7 +35,7 @@ const decodersLE: Partial<DecoderMap> = {
   default: (subarray: Buffer) => subarray.toString("hex"),
 } as const;
 
-const decodersBE: Partial<DecoderMap> = {
+const decodersBE: Partial<Parse.DecoderMap> = {
   // partial because will add VRs incrementally
   // currently only support numbers to base 10.
   AE: (subarray: Buffer) => utf8Decoder(subarray),
@@ -117,15 +113,17 @@ export function decodeValueBytes(
  * @returns Global.VR
  * @throws DicomError
  */
-export function decodeVrBytes(buf: Buffer): Global.VR {
+export function decodeVrBytes(buf: Buffer): VR {
   if (buf.length !== Bytes.VR) {
     throw new BufferBoundary(`decodeVrBytes() expected 2 bytes, got ${buf.length}`);
   }
+
   const decodedVr = buf.toString("ascii", 0, Bytes.VR);
   if (!isVr(decodedVr)) {
     throwUnrecognisedVr(decodedVr, buf);
   }
-  return decodedVr;
+
+  return decodedVr as VR
 }
 
 /**

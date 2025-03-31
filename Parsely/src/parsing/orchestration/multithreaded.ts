@@ -3,13 +3,14 @@ import { write } from "../../logging/logQ.js";
 import { findDICOM } from "../../utils.js";
 import { Worker } from "worker_threads";
 import { cpus } from "os";
+import { Cfg } from "../../global.js";
 
 /**
  * Parse DICOM files using multiple threads
  * @param cfg
  * @returns promised worker threads' completion (void)
  */
-export async function multiThreaded(cfg: Global.Cfg) {
+export async function multiThreaded(cfg: Cfg) {
   const start = performance.now();
   const dicomFiles = findDICOM(cfg.targetDir);
   const nWorkers = cpus().length > dicomFiles.length ? dicomFiles.length : cpus().length;
@@ -43,7 +44,7 @@ export async function multiThreaded(cfg: Global.Cfg) {
  * @param dicomFiles
  * @returns promised worker thread's completion (void)
  */
-function createWork(parsedFiles: any[], dicomFiles: string[], cfg: Global.Cfg) {
+function createWork(parsedFiles: any[], dicomFiles: string[], cfg: Cfg) {
   const worker = new Worker("./dist/worker.js");
 
   return new Promise<void>((resolve, reject) => {
@@ -70,7 +71,7 @@ function addEvents(
   dicomFiles: string[],
   resolve,
   reject,
-  cfg: Global.Cfg
+  cfg: Cfg
 ) {
   worker.on("message", (msg: any) => {
     parsedFiles.push(msg.data);

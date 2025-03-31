@@ -1,9 +1,9 @@
-import { HEADER_START, PartialEl, PREAMBLE_LEN, PREFIX, PREFIX_END } from "./parse.js";
+import { BufferBoundary, DicomError, UndefinedLength } from "../errors.js";
+import { HEADER_START, PREAMBLE_LEN, PREFIX, PREFIX_END } from './constants.js'
 import { DicomErrorType } from "../enums.js";
 import { write } from "../logging/logQ.js";
 import { Cursor } from "./cursor.js";
-import { TagStr } from "./decode.js";
-import { BufferBoundary, DicomError, UndefinedLength } from "../errors.js";
+import { Parse } from "../global.js";
 
 /**
  * Handle errors that occur during the parsing of a DICOM file. If
@@ -24,7 +24,13 @@ import { BufferBoundary, DicomError, UndefinedLength } from "../errors.js";
  * @throws Error
  * @returns PartialEl
  */
-export function handleEx(error: any, buffer: Buffer, lastTagStart: number, tag?: TagStr): PartialEl {
+export function handleEx(
+  error: any,
+  buffer: Buffer,
+  lastTagStart: number,
+  tag?: Parse.TagStr
+): Parse.PartialEl {
+
   const isUndefinedLength = error instanceof UndefinedLength;
   const parsingError = [BufferBoundary, RangeError].every(errType => !(error instanceof errType)); // i.e. not a buffer truncation error
 

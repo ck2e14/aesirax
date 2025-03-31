@@ -1,10 +1,9 @@
 import { Ctx } from "../reading/ctx.js";
 import { Cursor } from "./cursor.js";
-import { Element } from './parse.js'
 import { Bytes } from "../enums.js";
 import { getTagName } from "../utils.js";
 import { BufferBoundary, throwBadHexPattern } from "../errors.js";
-import { TagStr } from "./decode.js";
+import { Parse } from "../global.js";
 
 /**
  * Decode the current element's tag and
@@ -13,7 +12,7 @@ import { TagStr } from "./decode.js";
  * @param cursor
  * @param el
  */
-export function parseTag(buffer: Buffer, cursor: Cursor, el: Element, ctx: Ctx) {
+export function parseTag(buffer: Buffer, cursor: Cursor, el: Parse.Element, ctx: Ctx) {
   const start = cursor.pos;
   const end = cursor.pos + Bytes.TAG_NUM;
   const tagBuffer = buffer.subarray(start, end);
@@ -32,7 +31,7 @@ export function parseTag(buffer: Buffer, cursor: Cursor, el: Element, ctx: Ctx) 
  * @param buf
  * @returns string
  */
-export function decodeTag(buf: Buffer, ctx: Ctx): TagStr {
+export function decodeTag(buf: Buffer, ctx: Ctx): Parse.TagStr {
   if (buf.length !== 4) {
     throw new BufferBoundary(`decodeTag() expected 4 bytes, got ${buf.length}`);
   }
@@ -50,7 +49,7 @@ export function decodeTag(buf: Buffer, ctx: Ctx): TagStr {
     return throwBadHexPattern(buf, `(${grp},${el})`);
   }
 
-  return `(${grp},${el})` as TagStr;
+  return `(${grp},${el})` as Parse.TagStr;
 }
 
 

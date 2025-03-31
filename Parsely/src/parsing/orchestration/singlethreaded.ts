@@ -1,26 +1,26 @@
 import { writeFileSync } from "fs";
 import { findDICOM } from "../../utils.js";
-import { DataSet } from "../parse.js";
 import { streamParse } from "../../reading/stream.js";
 import { syncParse } from "./syncReadParse.js";
 import { write } from "../../logging/logQ.js";
+import { Cfg, Parse } from "../../global.js";
 
 /**
  * Parse DICOM files using a single thread
  * @param cfg
  * @returns void
  */
-export async function singleTheaded(cfg: Global.Cfg, writeTo?: string) {
+export async function singleTheaded(cfg: Cfg, writeTo?: string) {
   const start = performance.now();
   const paths = findDICOM(cfg.targetDir);
-  const parsedFiles: DataSet[] = [];
+  const parsedFiles: Parse.DataSet[] = [];
 
   if (!paths.length) {
     return;
   }
 
   for (let i = 0; i < paths.length; i++) {
-    let elements: DataSet
+    let elements: Parse.DataSet
     if (cfg.streamOrWhole === "whole") {
       elements = await syncParse(paths[i], cfg);
     } else {

@@ -122,7 +122,6 @@ export class Malformed extends Error {
   }
 }
 
-
 /**
  * Throw an error if the buffer did not decode to a 4 hex character string.
  * @param buf

@@ -1,10 +1,11 @@
 import * as dotenv from "dotenv";
+import { Cfg } from "../global.js";
 dotenv.config();
 
 // runtimeEndOverride is for optional deviating from the default/env config opts
-export function config(runtimeEndOverride?: { [key: string]: string | boolean }): Global.Cfg {
+export function config(runtimeEndOverride?: { [key: string]: string | boolean }): Cfg {
    const env = process.env;
-   const config: Global.Cfg = {
+   const config: Cfg = {
       verbose: env.VERBOSE === "1",
       printToStdOut: env.PRINT_TO_STDOUT === "1",
       debug: env.DEBUG === "1",

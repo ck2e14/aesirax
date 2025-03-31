@@ -1,10 +1,12 @@
-import { Fragments, ITEM_START_TAG, saveElement, Element, SQ_END_TAG } from "../parse.js";
+import { saveElement } from "../parse.js";
+import { ITEM_START_TAG, SQ_END_TAG } from "../constants.js";
 import { valueIsTruncated } from "../validation.js";
 import { Ctx } from "../../reading/ctx.js";
 import { Cursor } from "../cursor.js";
 import { Bytes } from "../../enums.js";
 import { BufferBoundary, Malformed } from "../../errors.js";
 import { decodeTag } from "../parseTag.js";
+import { Parse } from "../../global.js";
 
 /**
  * Handle the OB ('Other Byte') Pixel Data VR.
@@ -17,7 +19,7 @@ import { decodeTag } from "../parseTag.js";
  * @param cursor
  * @param buffer
  */
-export function parseUndefLenOB(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer) {
+export function parseUndefLenOB(ctx: Ctx, el: Parse.Element, cursor: Cursor, buffer: Buffer) {
   const itemTagBytes = buffer.subarray(cursor.pos, cursor.pos + Bytes.TAG_NUM);
   const itemTag = decodeTag(itemTagBytes, ctx);
   if (itemTag !== ITEM_START_TAG) {
@@ -36,7 +38,7 @@ export function parseUndefLenOB(ctx: Ctx, el: Element, cursor: Cursor, buffer: B
   cursor.walk(offsetLen, ctx, buffer);
 
   el.length = 24 + offsetLen; // I.e. all the fixed length bytes that we walked and then whatever was the size of the offset as well.
-  el.fragments = {} as Fragments;
+  el.fragments = {} as Parse.Fragments;
 
   let i = 0;
   while (true) {

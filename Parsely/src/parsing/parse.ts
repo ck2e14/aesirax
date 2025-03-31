@@ -1,89 +1,21 @@
-import { newCursor, Cursor } from "./cursor.js";
-import { VR } from "../enums.js";
-import { Ctx } from "../reading/ctx.js";
-import { handleEx } from "./validation.js";
 import { exitDefLenSqRecursion, inSQ, manageSqRecursion, stacks } from "./valueParsing/parseSQ.js";
+import { handleEx } from "./validation.js";
+import { Ctx } from "../reading/ctx.js";
 import { logElement } from "../utils.js";
-import { TagDictByName } from "../enums.js";
+import { newCursor, Cursor } from "./cursor.js";
+import { _exp_XSS_SHIELD } from "./plugins/plugins.js";
 import { parseVR } from "./parseVR.js";
 import { parseTag } from "./parseTag.js";
-import { TagStr } from "./decode.js";
-import { Worker } from "worker_threads";
 import { parseLength } from "./parseLength.js";
 import { parseValue } from "./parseValue.js";
-
-export type Fragments = Record<number, { value: string; length: number }>;
-export type ParseResult = { truncated: true | null; buf: PartialEl };
-export type PartialEl = Buffer | null; // because streaming
-export type DataSet = Record<string, Element>;
-export type Item = DataSet; // items are simply dataset aliases for nested datasets in sequences
-export type Element = {
-  tag: TagStr;
-  name: string;
-  vr: VR;
-  length: number;
-  items?: Item[];
-  value?: string | number | Buffer;
-  fragments?: Fragments;
-  devNote?: string;
-};
+import { Parse } from "../global.js";
 
 
-//// ------------------- < UNDER CONSTRUCTION >
-// TODO change Buffer to a wrapper class we use that creates a read only view into a SharedArrayBuffer?
-// Here's an example plugin to demonstrate the kind of flexibility this can offer. 
-
-type Plugin<R = unknown> = {
+export type Plugin<R = unknown> = {
   name: string,
   sync: 'async' | 'sync',
-  fn: (elementAsBytes: Buffer, el: Element) => R;
+  fn: (elementAsBytes: Buffer, el: Parse.Element) => R;
 }
-
-const demoPlugin: Plugin<null> = (() => {
-  // The plugin will do its work off the main thread to promote nonblocking of the parse loop. 
-  // To keep it simple in the example we'll use a single extra worker thread.
-
-  // All we'll ask of the main thread is that it passes messages and/or SharedArrayBuffers (inlcudign 
-  // window start/end ints) to our plugin logic, which is contained in /plugins/demoPlugin.ts.
-
-  const worker = new Worker('./plugins/demoPlugin.js')
-
-  worker.on('message', (msg: any) => {
-    console.log(`[PLUGIN:-DEMO]: THREAD MSG: (ID: ${worker.threadId}) -> ${JSON.stringify(msg, null, 3)}`)
-  })
-
-  worker.on('error', (err) => {
-    console.log(`[PLUGIN:-DEMO]: THREAD ERROR: (ID: ${worker.threadId})\n${err.name} -> ${err.message}`)
-  })
-
-  // return the plugin with some config & metadata for the parse() loop to execute appropriately.
-  return {
-    name: 'demo plugin',
-    sync: 'async',
-    fn: (elementAsBytes: Buffer, el: Element) => {
-      console.log('Running demo plugin which currently just simulates doing something useful.. like XSS screening')
-      console.log({ elementAsBytes, el })
-      worker.postMessage({ elementAsBytes, el })
-      return null
-    }
-  }
-})();
-// IIFE is to closure and privatise the worker pool for just this plugin.
-//// ------------------ </ UNDER CONSTRUCTION >
-
-export const MAX_UINT16 = 65_535;
-export const MAX_UINT32 = 4_294_967_295;
-
-export const PREAMBLE_LEN = 128;
-export const PREFIX = "DICM";
-export const HEADER_START = PREAMBLE_LEN;
-export const PREFIX_END = PREAMBLE_LEN + PREFIX.length;
-
-export const FRAG_START_TAG = TagDictByName.ItemStart.tag; // (fffe,e000)
-export const ITEM_START_TAG = TagDictByName.ItemStart.tag;
-export const ITEM_END_TAG = TagDictByName.ItemEnd.tag; //     (fffe,e00d)
-export const SQ_END_TAG = TagDictByName.SequenceEnd.tag; //   (fffe,e0dd)
-export const EOI_TAG = "(5e9f,d9ff)" as TagStr;
 
 /**
  * parse() orchestrates the parsing logic; it decodes and serialises 
@@ -128,19 +60,20 @@ export const EOI_TAG = "(5e9f,d9ff)" as TagStr;
 export async function parse(
   buffer: Buffer,
   ctx: Ctx,
-  plugin: Plugin = demoPlugin
-): Promise<PartialEl> {
+  plugin: Plugin = _exp_XSS_SHIELD /* defaulted while dev */
+): Promise<Parse.PartialEl> {
   ctx.depth++;
 
   let cursor: Cursor = newCursor(ctx);
   let lastTagStart: number;
 
-  // Tag > VR > Length > Value > Plugin
   while (cursor.pos < buffer.length) {
     lastTagStart = cursor.pos;
+
     const el = newElement();
     const sq = stacks(ctx).sq;
 
+    // Tag > VR > Length > Value > Plugin
     try {
       if (exitDefLenSqRecursion(ctx, cursor)) return;
       parseTag(buffer, cursor, el, ctx);
@@ -168,25 +101,11 @@ export async function parse(
   return buffer.subarray(lastTagStart, buffer.length);
 }
 
-async function wrapAndRunPlugin(
-  plugin: Plugin,
-  buffer: Buffer,
-  el: Element
-): Promise<ReturnType<typeof plugin["fn"]>> {
-  try {
-    console.log('Calling')
-    return await plugin.fn(buffer, el)
-  } catch (error) {
-    console.log(`Plugin failed. `)
-    return null
-  }
-}
-
 /**
  * Return a new empty element object.
  * @returns Element
  */
-export function newElement(): Element {
+export function newElement(): Parse.Element {
   return { vr: null, tag: null, value: null, name: null, length: null };
 }
 
@@ -196,13 +115,34 @@ export function newElement(): Element {
  * @param lastSqItem
  * @param el
  */
-export function saveElement(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer, print = true) {
-  if (print) logElement(el, cursor, buffer, ctx);
+export function saveElement(
+  ctx: Ctx,
+  el: Parse.Element,
+  cursor: Cursor,
+  buffer: Buffer,
+  print = true
+) {
+  if (print) {
+    logElement(el, cursor, buffer, ctx);
+  }
   if (inSQ(ctx)) {
     const { lastSqItem } = stacks(ctx);
     lastSqItem[el.tag] = el;
   } else {
     ctx.dataSet[el.tag] = el;
+  }
+}
+
+async function wrapAndRunPlugin(
+  plugin: Plugin,
+  buffer: Buffer,
+  el: Parse.Element
+): Promise<ReturnType<typeof plugin["fn"]>> {
+  try {
+    return await plugin.fn(buffer, el)
+  } catch (error) {
+    console.log(`Plugin failure: [${plugin.name}]`);
+    return null
   }
 }
 

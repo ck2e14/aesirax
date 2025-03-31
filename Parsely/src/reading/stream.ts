@@ -1,4 +1,3 @@
-import { DataSet, parse, PartialEl } from "../parsing/parse.js";
 import { DicomErrorType, TransferSyntaxUid } from "../enums.js";
 import { detectMisalignment, isSupportedTSN } from "./validation.js";
 import { validateHeader, validatePreamble } from "../parsing/validation.js";
@@ -6,8 +5,9 @@ import { createReadStream } from "fs";
 import { dataSetLength } from "../utils.js";
 import { Ctx, ctxFactory } from "./ctx.js";
 import { write } from "../logging/logQ.js";
-import { TagStr } from "../parsing/decode.js";
 import { DicomError, UnsupportedTSN } from "../errors.js";
+import { Cfg, Parse } from "../global.js";
+import { parse } from "../parsing/parse.js";
 
 export const SMALL_BUF_THRESHOLD = 1024;
 export const SMALL_BUF_ADVISORY = `PER_BUF_MAX is less than ${SMALL_BUF_THRESHOLD} bytes. This will work but isn't ideal for I/O efficiency`;
@@ -34,7 +34,11 @@ export const HEADER_END = 132;
  * @returns Promise<Element[]>
  * @throws DicomError
  */
-export function streamParse(path: string, cfg: Global.Cfg = null, skipPixelData = true): Promise<DataSet> {
+export function streamParse(
+  path: string,
+  cfg: Cfg = null,
+  skipPixelData = true
+): Promise<Parse.DataSet> {
   const ctx = ctxFactory(path, cfg, true, skipPixelData);
 
   if (ctx.bufWatermark < HEADER_END + 1) {
@@ -48,7 +52,7 @@ export function streamParse(path: string, cfg: Global.Cfg = null, skipPixelData 
     write(SMALL_BUF_ADVISORY, "WARN");
   }
 
-  return new Promise<DataSet>((resolve, reject) => {
+  return new Promise<Parse.DataSet>((resolve, reject) => {
     const stream = createReadStream(path, { highWaterMark: ctx.bufWatermark });
 
     stream.on("data", async (currBytes: Buffer) => {
@@ -80,7 +84,7 @@ export function streamParse(path: string, cfg: Global.Cfg = null, skipPixelData 
  * @param currBytes
  * @returns TruncatedBuffer (byte[])
  */
-export async function handleDicomBytes(ctx: Ctx, currBytes: Buffer): Promise<PartialEl> {
+export async function handleDicomBytes(ctx: Ctx, currBytes: Buffer): Promise<Parse.PartialEl> {
   write(`Reading buffer (#${ctx.nByteArray} - ${currBytes.length} bytes) (${ctx.path})`, "DEBUG");
   return ctx.first
     ? handleFirstBuffer(ctx, currBytes)
@@ -97,7 +101,7 @@ export async function handleDicomBytes(ctx: Ctx, currBytes: Buffer): Promise<Par
  * @throws DicomError
  * @returns TruncatedBuffer (byte[])
  */
-async function handleFirstBuffer(ctx: Ctx, buffer: Buffer): Promise<PartialEl> {
+async function handleFirstBuffer(ctx: Ctx, buffer: Buffer): Promise<Parse.PartialEl> {
   validatePreamble(buffer); // throws if not void
   validateHeader(buffer); // throws if not void
 
@@ -140,7 +144,7 @@ function stitchBytes(ctx: Ctx, currBytes: Buffer): Buffer {
  * @param elements
  * @returns T
  */
-function getElementValue<T = unknown>(tag: TagStr, elements: DataSet): T {
+function getElementValue<T = unknown>(tag: Parse.TagStr, elements: Parse.DataSet): T {
   return (elements[tag]?.value ?? "NOT FOUND") as T;
 }
 

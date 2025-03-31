@@ -1,12 +1,13 @@
 import { printSqCtx } from "../../utils.js";
-import { Bytes, DicomErrorType, VR } from "../../enums.js";
+import { saveElement, parse, exitParse } from "../parse.js";
 import { Cursor } from "../cursor.js";
 import { write } from "../../logging/logQ.js";
+import { Bytes, DicomErrorType, VR } from "../../enums.js";
 import { Ctx } from "../../reading/ctx.js";
-import { saveElement, Element, parse, ITEM_START_TAG, SQ_END_TAG, exitParse, ITEM_END_TAG, MAX_UINT32 } from "../parse.js";
-import { TagStr } from "../decode.js";
 import { decodeTag } from "../parseTag.js";
 import { BufferBoundary, DicomError, Malformed } from "../../errors.js";
+import { ITEM_END_TAG, ITEM_START_TAG, MAX_UINT32, SQ_END_TAG } from "../constants.js";
+import { Parse } from "../../global.js";
 
 /**
  * Manage parsing of sequence elements. Does so by recursively
@@ -22,7 +23,7 @@ import { BufferBoundary, DicomError, Malformed } from "../../errors.js";
  * @param ctx
  * @param seqTag
  */
-export async function parseSQ(buffer: Buffer, ctx: Ctx, el: Element, parentCursor: Cursor) {
+export async function parseSQ(buffer: Buffer, ctx: Ctx, el: Parse.Element, parentCursor: Cursor) {
   logEntryToSQ(ctx, el, parentCursor);
 
   // -- Convert & save SQ, and prepare to write all subsequent elements 
@@ -81,9 +82,9 @@ export async function parseSQ(buffer: Buffer, ctx: Ctx, el: Element, parentCurso
  * @param cursor
  * @param buffer
  * @param itemDataSet
- * @returns TagStr
+ * @returns Parse.TagStr
  */
-function nextUndefLenSqTag(ctx: Ctx, cursor: Cursor, buffer: Buffer): TagStr {
+function nextUndefLenSqTag(ctx: Ctx, cursor: Cursor, buffer: Buffer): Parse.TagStr {
   write(`Handling end of a dataSet item in SQ ${stacks(ctx).sq.tag} ${stacks(ctx).sq.name}`, "DEBUG");
   cursor.walk(Bytes.LENGTH, ctx, buffer); // ignore this length, its always 0x0 for item delims
 
@@ -102,7 +103,7 @@ function nextUndefLenSqTag(ctx: Ctx, cursor: Cursor, buffer: Buffer): TagStr {
  * decisions particularly within sequences. 
  *
  * Each iteration of the loop represents the start 
- * of a new DICOM Element parse (the cursor rests on the 
+ * of a new DICOM Parse.Element parse (the cursor rests on the 
  * start byte of the TLV element). 
  *
  * Some special detections have to take place specifically 
@@ -118,8 +119,8 @@ type ParseLoopFlowCommand = 'exit-recursion' | 'next-element' | void
 export function manageSqRecursion(
   buffer: Buffer,
   cursor: Cursor,
-  el: Element,
-  sq: Element,
+  el: Parse.Element,
+  sq: Parse.Element,
   ctx: Ctx,
 ): ParseLoopFlowCommand {
 
@@ -234,7 +235,7 @@ export function exitDefLenSqRecursion(ctx: Ctx, cursor: Cursor): boolean {
  * @param el
  * @returns
  */
-export function isDefLenItemStartTag(el: Element) {
+export function isDefLenItemStartTag(el: Parse.Element) {
   return el.length < MAX_UINT32 && el.tag === ITEM_START_TAG;
 }
 
@@ -244,7 +245,7 @@ export function isDefLenItemStartTag(el: Element) {
  * @param el
  * @returns
  */
-export function isUndefLenItemEndTag(ctx: Ctx, el: Element) {
+export function isUndefLenItemEndTag(ctx: Ctx, el: Parse.Element) {
   write(`End of undefined length sequence item ${el.tag} ${el.name}`, "DEBUG");
   return inSQ(ctx) && el.tag === ITEM_END_TAG;
 }
@@ -287,7 +288,7 @@ export function removeSqFromStack(ctx: Ctx) {
  * Convert an element to a sequence element with an empty items array.
  * @param el
  */
-function convertElToSq(el: Element): Element {
+function convertElToSq(el: Parse.Element): Parse.Element {
   const newSq = { ...el, items: [{}] };
   delete newSq.value;
   return newSq;
@@ -296,7 +297,7 @@ function convertElToSq(el: Element): Element {
 /**
  * QoL helper to guide control flow in parse()'s while loop.
  */
-function isEmptyDefLenSQ(el: Element) {
+function isEmptyDefLenSQ(el: Parse.Element) {
   return el.vr === VR.SQ && el.length === 0;
 }
 
@@ -310,7 +311,7 @@ function isEmptyDefLenSQ(el: Element) {
  * @param el
  * @returns boolean
  */
-function isEmptyUndefinedLengthSQ(el: Element, tag: TagStr) {
+function isEmptyUndefinedLengthSQ(el: Parse.Element, tag: Parse.TagStr) {
   return (
     el.vr === VR.SQ && //
     el.length === MAX_UINT32 &&
@@ -326,13 +327,13 @@ function isEmptyUndefinedLengthSQ(el: Element, tag: TagStr) {
  * @param el
  * @param newSq
  */
-function trackSQ(ctx: Ctx, el: Element) {
+function trackSQ(ctx: Ctx, el: Parse.Element) {
   ctx.sqLens.push(el.length);
   ctx.sqStack.push(el);
   ctx.sqBytesStack.push(0);
 }
 
-function logEntryToSQ(ctx: Ctx, el: Element, parentCursor: Cursor) {
+function logEntryToSQ(ctx: Ctx, el: Parse.Element, parentCursor: Cursor) {
   const printLen = el.length === MAX_UINT32 ? "undef len" : el.length;
   if (inSQ(ctx)) {
     write(`Parsing nested SQ ${el.tag}, ${el.name}, len: ${printLen}, parentCursor: ${parentCursor.pos}`, "DEBUG");

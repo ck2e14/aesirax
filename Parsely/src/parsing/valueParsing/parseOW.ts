@@ -1,14 +1,15 @@
+import { EOI_TAG, FRAG_START_TAG, ITEM_START_TAG, MAX_UINT32, SQ_END_TAG } from "../constants.js";
 import { Bytes } from "../../enums.js";
 import { BufferBoundary, Malformed } from "../../errors.js";
 import { write } from "../../logging/logQ.js";
 import { Ctx } from "../../reading/ctx.js";
 import { cPos, logElement } from "../../utils.js";
 import { Cursor } from "../cursor.js";
-import { saveElement, Element } from "../parse.js";
-import { EOI_TAG, FRAG_START_TAG, ITEM_START_TAG, MAX_UINT32, SQ_END_TAG } from "../parse.js";
+import { saveElement } from "../parse.js";
 import { decodeTag } from "../parseTag.js";
 import { valueIsTruncated } from "../validation.js";
 import { parseValueDefault } from "./parseDefault.js";
+import { Parse } from "../../global.js";
 
 /**
  * Handle the OW ('Other Word') Pixel Data VR.
@@ -19,7 +20,7 @@ import { parseValueDefault } from "./parseDefault.js";
  * @param cursor
  * @param buffer
  */
-export function parseOW(ctx: Ctx, el: Element, cursor: Cursor, buffer: Buffer) {
+export function parseOW(ctx: Ctx, el: Parse.Element, cursor: Cursor, buffer: Buffer) {
   write(`parsing ow, using cursor: ${cursor.id}. All cursors: ${cPos(ctx)}`, "DEBUG");
 
   const isDefinedLength = el.length > 0 && el.length < MAX_UINT32;

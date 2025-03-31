@@ -1,8 +1,8 @@
 import { Bytes } from "../enums.js";
 import { Cursor } from "./cursor.js";
-import { Element } from "./parse.js";
 import { Ctx } from "../reading/ctx.js";
 import { decodeVrBytes } from "./decode.js";
+import { Parse } from "../global.js";
 
 /**
  * Decode the current element's VR and walk the cursor
@@ -11,7 +11,7 @@ import { decodeVrBytes } from "./decode.js";
  * @param el
  * @throws DicomError
  */
-export function parseVR(buffer: Buffer, cursor: Cursor, el: Element, ctx: Ctx) {
+export function parseVR(buffer: Buffer, cursor: Cursor, el: Parse.Element, ctx: Ctx) {
   const start = cursor.pos;
   const end = cursor.pos + Bytes.VR;
   const vrBuffer = buffer.subarray(start, end);

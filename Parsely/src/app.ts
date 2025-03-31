@@ -3,6 +3,7 @@ import { readdirSync } from "node:fs";
 import { cfg, init } from "./init/init.js";
 import { singleTheaded } from "./parsing/orchestration/singlethreaded.js";
 import { multiThreaded } from "./parsing/orchestration/multithreaded.js";
+import { Cfg } from "./global.js";
 
 // WARN need to workout why, when stitching, last cursor isn't
 // disposedOf - despite the parsing and persistence working? 
@@ -31,7 +32,7 @@ const testDirs = {
  */
 console.clear();
 main(cfg);
-async function main(cfg: Global.Cfg) {
+async function main(cfg: Cfg) {
   if (cfg.verbose) {
     write(`Starting up...`, "INFO");
   }

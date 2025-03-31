@@ -1,6 +1,6 @@
 import { TransferSyntaxUid } from "../enums.js";
+import { Parse } from "../global.js";
 import { Cursor } from "../parsing/cursor.js";
-import { DataSet, Element } from "../parsing/parse.js";
 
 // Streaming means arbitrarily truncated buffers and by extension truncated DICOM elements. 
 // To support recursion which is an ideal fit for hierarchical parsing and serialisaiton, 
@@ -15,7 +15,7 @@ export type Ctx = {
   path: string;
   depth: number;
   start: number;
-  dataSet: DataSet;
+  dataSet:Parse.DataSet;
   truncatedBuffer: Buffer;
   bufWatermark: number;
   cursors: Record<ID, Cursor>;
@@ -27,7 +27,7 @@ export type Ctx = {
   outerCursor: Cursor;
   visitedBytes: Record<number, number>; // cursor-walk driven. Refers to bytes we actually interacted with. Doesn't necessarily mean read from, may have walked straight past some depending on what they were expected to have been e.g. null VR bytes
   // --- sq stacking
-  sqStack: Element[];
+  sqStack: Parse.Element[];
   sqLens: number[];
   sqBytesStack: number[];
 };

@@ -1,9 +1,9 @@
 import { TagDictByHex, TransferSyntaxUid, VR } from "./enums.js";
-import { DataSet, Element } from "./parsing/parse.js";
 import { readdirSync, statSync } from "fs";
 import { Cursor } from "./parsing/cursor.js";
 import { Ctx } from "./reading/ctx.js";
 import { write } from "./logging/logQ.js";
+import { Parse } from "./global.js";
 import * as path from "path";
 
 export function mapToObj(map: Map<string, any>): any {
@@ -51,7 +51,7 @@ export function findDICOM(folder = "./", fileList = []) {
 
 export const json = (thing: any) => JSON.stringify(thing, null, 3);
 
-export function dataSetLength(dataSet: DataSet): number {
+export function dataSetLength(dataSet: Parse.DataSet): number {
   return Object.keys(dataSet).length;
 }
 
@@ -92,7 +92,7 @@ export function cPos(ctx: Ctx, spacing = undefined) {
  * @param vr
  * @returns string
  */
-export function UNIMPLEMENTED_VR_PARSING(vr: Global.VR): string {
+export function UNIMPLEMENTED_VR_PARSING(vr: VR): string {
   if (vr === VR.UN) {
     return `No support for VR: ${vr} but tried decoding to ascii`;
   } else {
@@ -104,7 +104,12 @@ export function UNIMPLEMENTED_VR_PARSING(vr: Global.VR): string {
  * Print an element to the console.
  * @param el
  */
-export function printElement(el: Element, cursor: Cursor, buffer: Buffer, ctx: Ctx) {
+export function printElement(
+  el: Parse.Element,
+  cursor: Cursor,
+  buffer: Buffer,
+  ctx: Ctx
+) {
   const msg = {
     Tag: el.tag,
     Name: el.name,
@@ -131,7 +136,7 @@ export function printElement(el: Element, cursor: Cursor, buffer: Buffer, ctx: C
  * Print an element to the console minus exceptionally long values.
  * @param el
  */
-export function printMinusValue(el: Element, cursor: Cursor, buffer: Buffer, ctx: Ctx) {
+export function printMinusValue(el: Parse.Element, cursor: Cursor, buffer: Buffer, ctx: Ctx) {
   const msg = {
     Tag: el.tag,
     Name: el.name,
@@ -157,7 +162,7 @@ export function printMinusValue(el: Element, cursor: Cursor, buffer: Buffer, ctx
  * Print an element to the console.
  * @param Element
  */
-export function logElement(el: Element, cursor: Cursor, buffer: Buffer, ctx: Ctx) {
+export function logElement(el: Parse.Element, cursor: Cursor, buffer: Buffer, ctx: Ctx) {
   const unfuckingSupported = [VR.OB, VR.UN, VR.OW];
 
   if (unfuckingSupported.includes(el.vr)) {
@@ -193,7 +198,7 @@ export function getTagName(tag: string) {
  * Type guard for VRs
  * @param vr
  */
-export const isVr = (vr: string): vr is Global.VR => {
+export const isVr = (vr: string): vr is VR => {
   return vr in VR;
 };
 
@@ -204,7 +209,7 @@ export const isVr = (vr: string): vr is Global.VR => {
  * @param vr
  * @returns boolean
  */
-export function isExtVr(vr: Global.VR): boolean {
+export function isExtVr(vr: VR): boolean {
   const extVrPattern = /^UC|OB|OW|OF|SQ|UT|UN$/;
   return extVrPattern.test(vr);
 }
