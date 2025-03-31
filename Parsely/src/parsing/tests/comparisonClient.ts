@@ -51,7 +51,7 @@ async function spinUpThreads(args: { n: number }) {
         console.log(msg)
       })
 
-      worker.on('online', () => )
+      // worker.on('online', () => )
     })
   }
 

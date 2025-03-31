@@ -26,6 +26,22 @@ export type Element = {
   devNote?: string;
 };
 
+//// ------------------- < UNDER CONSTRUCTION >
+// TODO change Buffer to a wrapper class we use that creates a read only view into a SharedArrayBuffer?
+type Plugin<R = unknown> = {
+  name: string,
+  fn: (elementAsBytes: Buffer, el: Element) => R;
+}
+
+const demoPlugin: Plugin<null> = {
+  name: 'demo plugin',
+  fn: (elementAsBytes: Buffer, el: Element) => {
+    console.log('Running demoPlugin which currently just simulates doing something useful like XSS screening')
+    console.log({ elementAsBytes, el })
+    return null
+  }
+}//// ------------------ </ UNDER CONSTRUCTION >
+
 export const MAX_UINT16 = 65_535;
 export const MAX_UINT32 = 4_294_967_295;
 
@@ -43,15 +59,16 @@ export const EOI_TAG = "(5e9f,d9ff)" as TagStr;
 /**
  * parse() orchestrates the parsing logic; it decodes and serialises 
  * elements contained in an arbitrary subset of a DICOM binary as long 
- * as bytes[0] is the first element of any dataset. 
+ * as buffer[0] is the first element of any dataset. 
  *
- * Fundamentally it is an iterative TLV binary decoder but supports 
- * recursive calls to handle nested datasets.
+ * It's an iterative TLV binary decoder that supports recursive calls 
+ * to handle nested datasets (sequence elements' items).
  *
  * Give it a buffer where buffer[0] is the exact first byte of a 
- * dataset (i.e. after the DCM preamble), and it will parse as far
- * as the buffer allows, returning a BufferBoundary error if the 
- * current buffer doesn't reach the end of the file. 
+ * dataset (i.e. after the DCM preamble for the outermost dataset or 
+ * first byte of nested datasets), and it will parse as far as the 
+ * buffer allows, returning a BufferBoundary error if the current buffer 
+ * doesn't reach the end of the file. 
  *
  * If parse() encounters nested datasets (via sequence elements),
  * it will call itself at the correct byte position and reflect 
@@ -66,10 +83,10 @@ export const EOI_TAG = "(5e9f,d9ff)" as TagStr;
  * buffer so it can stitch it infront of the next streamed buffer.
  *
  * This is a typescript implementation but arguably better described 
- * as a TS wrapper to C++ methods; it's heavily using efficient 
- * low-level bufferAPIs that directly call on native C++ APIs within 
- * V8. In some sense it's C++ performance with JS memory safety and 
- * TypeScript compiler safety. 
+ * as a TS wrapper to C++ methods; it's heavily using efficient low-level 
+ * bufferAPIs that directly call on native C++ APIs within V8. In some 
+ * sense it's C++ performance with JS memory safety and TypeScript 
+ * compiler safety. 
  *
  * TLDR; the idea is to give this function the start of raw DICOM 
  * dataset bytes, which in turn ensures that each new 'while' loop 
@@ -79,15 +96,19 @@ export const EOI_TAG = "(5e9f,d9ff)" as TagStr;
  * @param ctx
  * @returns PartialEl (e.g. if streaming & buffer < file size)
  */
-export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
+export async function parse(
+  buffer: Buffer,
+  ctx: Ctx,
+  plugin: Plugin = demoPlugin
+): Promise<PartialEl> {
   ctx.depth++;
 
   let cursor: Cursor = newCursor(ctx);
   let lastTagStart: number;
 
+  // Tag > VR > Length > Value > Plugin
   while (cursor.pos < buffer.length) {
     lastTagStart = cursor.pos;
-
     const el = newElement();
     const sq = stacks(ctx).sq;
 
@@ -103,7 +124,7 @@ export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
       parseLength(buffer, cursor, el, ctx);
       parseValue(buffer, cursor, el, ctx);
 
-      console.log({ el })
+      await wrapAndRunPlugin(plugin, buffer, el)
     } catch (error) {
       exitParse(ctx, cursor);
       return handleEx(error, buffer, lastTagStart, el.tag);
@@ -112,6 +133,20 @@ export function parse(buffer: Buffer, ctx: Ctx): PartialEl {
 
   exitParse(ctx, cursor);
   return buffer.subarray(lastTagStart, buffer.length);
+}
+
+async function wrapAndRunPlugin(
+  plugin: Plugin,
+  buffer: Buffer,
+  el: Element
+): Promise<ReturnType<typeof plugin["fn"]>> {
+  try {
+    console.log('Calling')
+    return await plugin.fn(buffer, el)
+  } catch (error) {
+    console.log(`Plugin failed. `)
+    return null
+  }
 }
 
 /**

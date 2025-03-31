@@ -49,15 +49,13 @@ export function streamParse(path: string, cfg: Global.Cfg = null, skipPixelData 
   }
 
   return new Promise<DataSet>((resolve, reject) => {
-    const stream = createReadStream(path, {
-      highWaterMark: ctx.bufWatermark,
-    });
+    const stream = createReadStream(path, { highWaterMark: ctx.bufWatermark });
 
-    stream.on("data", (currBytes: Buffer) => {
+    stream.on("data", async (currBytes: Buffer) => {
       write(`Streamed ${currBytes.length} bytes to memory from ${path}`, "DEBUG");
       ctx.nByteArray++;
       ctx.totalStreamedBytes += currBytes.length;
-      ctx.truncatedBuffer = handleDicomBytes(ctx, currBytes);
+      ctx.truncatedBuffer = await handleDicomBytes(ctx, currBytes);
     });
 
     stream.on("end", () => {
@@ -82,11 +80,11 @@ export function streamParse(path: string, cfg: Global.Cfg = null, skipPixelData 
  * @param currBytes
  * @returns TruncatedBuffer (byte[])
  */
-export function handleDicomBytes(ctx: Ctx, currBytes: Buffer): PartialEl {
+export async function handleDicomBytes(ctx: Ctx, currBytes: Buffer): Promise<PartialEl> {
   write(`Reading buffer (#${ctx.nByteArray} - ${currBytes.length} bytes) (${ctx.path})`, "DEBUG");
-  return ctx.first 
+  return ctx.first
     ? handleFirstBuffer(ctx, currBytes)
-    : parse(stitchBytes(ctx, currBytes), ctx);
+    : await parse(stitchBytes(ctx, currBytes), ctx);
 }
 
 /**
@@ -99,11 +97,11 @@ export function handleDicomBytes(ctx: Ctx, currBytes: Buffer): PartialEl {
  * @throws DicomError
  * @returns TruncatedBuffer (byte[])
  */
-function handleFirstBuffer(ctx: Ctx, buffer: Buffer): PartialEl {
+async function handleFirstBuffer(ctx: Ctx, buffer: Buffer): Promise<PartialEl> {
   validatePreamble(buffer); // throws if not void
   validateHeader(buffer); // throws if not void
 
-  const parseResponse = parse(buffer.subarray(HEADER_END, buffer.length), ctx); // window the buffer beyond 'DICM' HEADER to start at File Meta Info section
+  const parseResponse = await parse(buffer.subarray(HEADER_END, buffer.length), ctx); // window the buffer beyond 'DICM' HEADER to start at File Meta Info section
   const tsn = getElementValue<string>("(0002,0010)", ctx.dataSet);
 
   if (tsn && !isSupportedTSN(tsn)) {
