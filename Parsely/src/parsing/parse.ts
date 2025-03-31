@@ -9,12 +9,13 @@ import { TagDictByName } from "../enums.js";
 import { parseVR } from "./parseVR.js";
 import { parseTag } from "./parseTag.js";
 import { parseLength, TagStr } from "./decode.js";
+import { Worker } from "worker_threads";
 
+export type Fragments = Record<number, { value: string; length: number }>;
 export type ParseResult = { truncated: true | null; buf: PartialEl };
 export type PartialEl = Buffer | null; // because streaming
 export type DataSet = Record<string, Element>;
 export type Item = DataSet; // items are simply dataset aliases for nested datasets in sequences
-export type Fragments = Record<number, { value: string; length: number }>;
 export type Element = {
   tag: TagStr;
   name: string;
@@ -26,21 +27,49 @@ export type Element = {
   devNote?: string;
 };
 
+
 //// ------------------- < UNDER CONSTRUCTION >
 // TODO change Buffer to a wrapper class we use that creates a read only view into a SharedArrayBuffer?
+// Here's an example plugin to demonstrate the kind of flexibility this can offer. 
+
 type Plugin<R = unknown> = {
   name: string,
+  sync: 'async' | 'sync',
   fn: (elementAsBytes: Buffer, el: Element) => R;
 }
 
-const demoPlugin: Plugin<null> = {
-  name: 'demo plugin',
-  fn: (elementAsBytes: Buffer, el: Element) => {
-    console.log('Running demoPlugin which currently just simulates doing something useful like XSS screening')
-    console.log({ elementAsBytes, el })
-    return null
+const demoPlugin: Plugin<null> = (() => {
+  // The plugin will do its work off the main thread to promote nonblocking of the parse loop. 
+
+  // All we'll ask of the main thread is that it passes messages and/or SharedArrayBuffers (inlcudign 
+  // window start/end ints) to our plugin logic, which is contained in /plugins/demoPlugin.ts.
+  const workers: Worker[] = []
+
+  for (let i = 0; i < workers.length; i++) {
+    workers[i] = new Worker('./plugins/demoPlugin.js')
+
+    workers[i].on('message', (msg: any) => {
+      console.log(`[PLUGIN:-DEMO]: THREAD MSG: (ID: ${workers[i].threadId}) -> ${JSON.stringify(msg, null, 3)}`)
+    })
+
+    workers[i].on('error', (err) => {
+      console.log(`[PLUGIN:-DEMO]: THREAD ERROR (ID: ${workers[i].threadId})\n${err.name} -> ${err.message}`)
+    })
   }
-}//// ------------------ </ UNDER CONSTRUCTION >
+
+  // return the plugin with some config & metadata for the parse() loop to execute appropriately.
+  return {
+    name: 'demo plugin',
+    sync: 'async',
+    fn: (elementAsBytes: Buffer, el: Element) => {
+      console.log('Running demo plugin which currently just simulates doing something useful.. like XSS screening')
+      console.log({ elementAsBytes, el })
+      return null
+    }
+  }
+})();
+// IIFE is to closure and privatise the worker pool for just this plugin.
+//// ------------------ </ UNDER CONSTRUCTION >
 
 export const MAX_UINT16 = 65_535;
 export const MAX_UINT32 = 4_294_967_295;
@@ -124,7 +153,11 @@ export async function parse(
       parseLength(buffer, cursor, el, ctx);
       parseValue(buffer, cursor, el, ctx);
 
-      await wrapAndRunPlugin(plugin, buffer, el)
+      if (plugin.sync) {
+        await wrapAndRunPlugin(plugin, buffer, el)
+      } else {
+        wrapAndRunPlugin(plugin, buffer, el)
+      }
     } catch (error) {
       exitParse(ctx, cursor);
       return handleEx(error, buffer, lastTagStart, el.tag);
