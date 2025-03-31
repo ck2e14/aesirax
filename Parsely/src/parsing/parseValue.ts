@@ -1,7 +1,7 @@
 
 import { parseUndefLenOB } from "./valueParsing/parseOB.js";
-import { parseValueDefault } from "./valueParsing/parseDefault.js";
 import { MAX_UINT32, saveElement, Element } from "./parse.js";
+import { parseValueDefault } from "./valueParsing/parseDefault.js";
 import { parseSQ } from "./valueParsing/parseSQ.js";
 import { parseOW } from "./valueParsing/parseOW.js";
 import { Cursor } from "./cursor.js";
@@ -13,10 +13,10 @@ import { Ctx } from "../reading/ctx.js";
  * based on the already determined VR of the currently 
  * parsing element.
  */
-export function parseValue(buffer: Buffer, cursor: Cursor, el: Element, ctx: Ctx) {
+export async function parseValue(buffer: Buffer, cursor: Cursor, el: Element, ctx: Ctx) {
   switch (true) {
     case el.vr === VR.SQ:
-      parseSQ(buffer, ctx, el, cursor); // ctx-aware recurse
+      await parseSQ(buffer, ctx, el, cursor); // ctx-aware recurse
       break;
 
     case el.vr === VR.OW:

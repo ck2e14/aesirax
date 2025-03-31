@@ -1,12 +1,12 @@
 import { Bytes } from "../../enums.js";
-import { BufferBoundary, Malformed } from "../../error/errors.js";
+import { BufferBoundary, Malformed } from "../../errors.js";
 import { write } from "../../logging/logQ.js";
 import { Ctx } from "../../reading/ctx.js";
 import { cPos, logElement } from "../../utils.js";
 import { Cursor } from "../cursor.js";
-import { decodeTag } from "../decode.js";
 import { saveElement, Element } from "../parse.js";
 import { EOI_TAG, FRAG_START_TAG, ITEM_START_TAG, MAX_UINT32, SQ_END_TAG } from "../parse.js";
+import { decodeTag } from "../parseTag.js";
 import { valueIsTruncated } from "../validation.js";
 import { parseValueDefault } from "./parseDefault.js";
 

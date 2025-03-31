@@ -1,16 +1,13 @@
 import { Bytes, DicomErrorType, TagDictByHex, TransferSyntaxUid, VR } from "../enums.js";
-import { BufferBoundary, DicomError } from "../error/errors.js";
-import { isExtVr, isVr } from "../utils.js";
-import { Cursor } from "./cursor.js";
+import { isVr } from "../utils.js";
 import { write } from "../logging/logQ.js";
-import { Element } from "./parse.js";
 import { Ctx } from "../reading/ctx.js";
+import { Element } from "./parse.js";
+import { BufferBoundary, DicomError } from "../errors.js";
 
 export type Decoder = (value: Buffer) => string;
 export type DecoderMap = Record<Global.VR | "default", Decoder>;
 export type TagStr = keyof typeof TagDictByHex; // 'keyof' gets the keys of an object type. So this is the union type of all the keys of TagDictByHex
-type _ParityCheck = Global.KeysParity<typeof decodersLE, typeof decodersBE>
-//                                              ^?
 
 const decodersLE: Partial<DecoderMap> = {
   // partial because will add VRs incrementally.
@@ -196,88 +193,3 @@ function detectRepeatsForRepeatableElements(el: Element, buffer: Buffer) {
   //
 }
 
-/**
- * Decode the current element's value length, and move the cursor forward
- * by either the 2 or 4 decoded bytes depending on the VR type (std/ext).
- * It's used in the parse() function to decode the length of the current
- * but also to determine control flow (continue or not). This may be
- * refactored for better SRP.
- * @param el
- * @param cursor
- * @param buffer
- * @returns Continue
- */
-export function parseLength(buffer: Buffer, cursor: Cursor, el: Element, ctx: Ctx) {
-  // ----  Standard VR ----
-  if (!isExtVr(el.vr)) {
-    decodeLength(el, buffer, cursor, ctx);
-    cursor.walk(Bytes.UINT_16, ctx, buffer);
-    return false;
-  }
-
-  // ----- Extended VR ------
-  cursor.walk(Bytes.EXT_VR_RESERVED, ctx, buffer); // 2 unused bytes on all ext VRs - can ignore
-  decodeLength(el, buffer, cursor, ctx); // lens < 4 bytes, (4,294,967,295)
-  cursor.walk(Bytes.UINT_32, ctx, buffer);
-}
-
-/**
- * Helper function; decode the current element's value.
- * @param el
- * @param buffer
- * @param cursor
- * @param ctx
- */
-export function decodeLength(el: Element, buffer: Buffer, cursor: Cursor, ctx: Ctx) {
-  if (isExtVr(el.vr)) {
-    el.length = ctx.usingLE
-      ? buffer.readUInt32LE(cursor.pos)
-      : buffer.readUInt32BE(cursor.pos); // len < 4 bytes, (4,294,967,295)
-  } else {
-    el.length = ctx.usingLE
-      ? buffer.readUInt16LE(cursor.pos)
-      : buffer.readUInt16BE(cursor.pos); // len < 2 bytes, (65,535)
-  }
-}
-
-/**
- * Pass in a 4 byte buffer and get back the tag as a string
- * else throw a DicomError if unrecognised. It's the caller's
- * responsibility to pass in the subarray that they determine
- * to be the 4 bytes representing the tag (via cursor walking).
- * @param buf
- * @returns string
- */
-export function decodeTag(buf: Buffer, ctx: Ctx): TagStr {
-  if (buf.length !== 4) {
-    throw new BufferBoundary(`decodeTag() expected 4 bytes, got ${buf.length}`);
-  }
-
-  const decode = (offset: number): string => {
-    return ctx.usingLE
-      ? buf.readUInt16LE(offset).toString(16).padStart(4, "0")
-      : buf.readUInt16BE(offset).toString(16).padStart(4, "0"); // hexes are base 16 so pass radix 16. pad with 0s to make it 4 chars long if not already.
-  };
-
-  const isHexStr = (str: string): boolean => /^[0-9a-fA-F]{4}$/.test(str); // DICOM tags are always 4 hex chars
-  const [grp, el] = [0, 2].map(decode); // group starts at byte offset 0, element at byte offset 2
-
-  if (!isHexStr(grp) || !isHexStr(el)) {
-    return throwBadHexPattern(buf, `(${grp},${el})`);
-  }
-
-  return `(${grp},${el})` as TagStr;
-}
-
-/**
- * Throw an error if the buffer did not decode to a 4 hex character string.
- * @param buf
- * @throws DicomError
- */
-function throwBadHexPattern(buf: Buffer, str: string): never {
-  throw new DicomError({
-    errorType: DicomErrorType.PARSING,
-    message: `decodeTag() decoded to an unexpected hexPattern: ${str}`,
-    buffer: buf,
-  });
-}

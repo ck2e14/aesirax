@@ -1,9 +1,9 @@
-import { BufferBoundary } from "../../error/errors.js";
 import { Element } from "../parse.js";
 import { Cursor } from "../cursor.js";
 import { decodeValueBytes } from "../decode.js";
 import { valueIsTruncated } from "../validation.js";
 import { Ctx } from "../../reading/ctx.js";
+import { BufferBoundary } from "../../errors.js";
 
 /**
  * Handle parsing the current element's value by 

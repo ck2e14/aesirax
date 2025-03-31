@@ -1,9 +1,9 @@
 import { HEADER_START, PartialEl, PREAMBLE_LEN, PREFIX, PREFIX_END } from "./parse.js";
-import { BufferBoundary, DicomError, UndefinedLength } from "../error/errors.js";
 import { DicomErrorType } from "../enums.js";
 import { write } from "../logging/logQ.js";
 import { Cursor } from "./cursor.js";
 import { TagStr } from "./decode.js";
+import { BufferBoundary, DicomError, UndefinedLength } from "../errors.js";
 
 /**
  * Handle errors that occur during the parsing of a DICOM file. If

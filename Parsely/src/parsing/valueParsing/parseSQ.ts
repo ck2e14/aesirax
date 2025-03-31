@@ -4,8 +4,9 @@ import { Cursor } from "../cursor.js";
 import { write } from "../../logging/logQ.js";
 import { Ctx } from "../../reading/ctx.js";
 import { saveElement, Element, parse, ITEM_START_TAG, SQ_END_TAG, exitParse, ITEM_END_TAG, MAX_UINT32 } from "../parse.js";
-import { decodeTag, TagStr } from "../decode.js";
-import { BufferBoundary, DicomError, Malformed } from "../../error/errors.js";
+import { TagStr } from "../decode.js";
+import { decodeTag } from "../parseTag.js";
+import { BufferBoundary, DicomError, Malformed } from "../../errors.js";
 
 /**
  * Manage parsing of sequence elements. Does so by recursively

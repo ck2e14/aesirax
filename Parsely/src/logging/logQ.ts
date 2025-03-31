@@ -1,7 +1,7 @@
-import { existsSync, mkdirSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync } from "fs";
 import { appendFile } from "fs/promises";
 import { cfg } from "../init/init.js";
-import { InitError } from "../error/errors.js";
+import { InitError } from "../errors.js";
 
 const q = [];
 

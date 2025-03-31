@@ -3,13 +3,14 @@ import { VR } from "../enums.js";
 import { Ctx } from "../reading/ctx.js";
 import { handleEx } from "./validation.js";
 import { exitDefLenSqRecursion, inSQ, manageSqRecursion, stacks } from "./valueParsing/parseSQ.js";
-import { parseValue } from "./valueParsing/parseValue.js";
 import { logElement } from "../utils.js";
 import { TagDictByName } from "../enums.js";
 import { parseVR } from "./parseVR.js";
 import { parseTag } from "./parseTag.js";
-import { parseLength, TagStr } from "./decode.js";
+import { TagStr } from "./decode.js";
 import { Worker } from "worker_threads";
+import { parseLength } from "./parseLength.js";
+import { parseValue } from "./parseValue.js";
 
 export type Fragments = Record<number, { value: string; length: number }>;
 export type ParseResult = { truncated: true | null; buf: PartialEl };

@@ -1,4 +1,4 @@
-import { BufferBoundary } from "../error/errors.js";
+import { BufferBoundary } from "../errors.js";
 import { write } from "../logging/logQ.js";
 import { Ctx } from "../reading/ctx.js";
 import { inSQ } from "./valueParsing/parseSQ.js";

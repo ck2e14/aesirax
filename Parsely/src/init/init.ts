@@ -1,7 +1,7 @@
 import { createLogFile, processQ, write } from "../logging/logQ.js";
 import { monitorDropbox } from "../dropbox/dropbox.js";
-import { InitError } from "../error/errors.js";
 import { config } from "./loadConfig.js";
+import { InitError } from "../errors.js";
 
 export const cfg = config();
 
