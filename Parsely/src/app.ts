@@ -23,9 +23,10 @@ const testDirs = {
 
 /**
  * Main entry point for the application.
+ *
  * Initialises the application, runs the
  * multi-threaded and/or single-threaded
- * DICOM parsing, and shuts down app.
+ * DICOM parsing, and shuts down.
  *
  * @param cfg
  * @returns void
@@ -72,6 +73,7 @@ async function main(cfg: Cfg) {
     write(`Completed current parsing work`, "INFO");
   }
 
+  write(`Manually exit when plugins are ready - this will be automated in future.`, "INFO")
   setInterval(() => { }, 5_000) // this is a hack to keep the process alive whilst i work out
   // a non-annoying or stupid way to make sure plugins are ready for the parent thread to exit 
   // which is required because plugins are likely to be using worker threads that don't stay alive 
