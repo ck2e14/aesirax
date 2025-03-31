@@ -9,13 +9,7 @@ import { parseTag } from "./parseTag.js";
 import { parseLength } from "./parseLength.js";
 import { parseValue } from "./parseValue.js";
 import { Parse } from "../global.js";
-
-
-export type Plugin<R = unknown> = {
-  name: string,
-  sync: 'async' | 'sync',
-  fn: (elementAsBytes: Buffer, el: Parse.Element) => R;
-}
+import { Plugin } from "./plugins/plugins.js";
 
 /**
  * parse() orchestrates the parsing logic; it decodes and serialises 
@@ -25,34 +19,7 @@ export type Plugin<R = unknown> = {
  * It's an iterative TLV binary decoder that supports recursive calls 
  * to handle nested datasets (sequence elements' items).
  *
- * Give it a buffer where buffer[0] is the exact first byte of a 
- * dataset (i.e. after the DCM preamble for the outermost dataset or 
- * first byte of nested datasets), and it will parse as far as the 
- * buffer allows, returning a BufferBoundary error if the current buffer 
- * doesn't reach the end of the file. 
- *
- * If parse() encounters nested datasets (via sequence elements),
- * it will call itself at the correct byte position and reflect 
- * the hierarchy in the overall DICOM serialisation. Context (Ctx)
- * is maintained at the global scope, allowing recursion interrupted
- * by the length of the buffer to pick up where it left off when the 
- * next buffer is provided (e.g. via streamed file i/o: read.ts).
- *
- * Since it mutates a global context which stores the serialised 
- * DICOM object, parse() only returns a value when a BufferBoundary
- * error is thrown. In this case, read.ts streams need a ref to that 
- * buffer so it can stitch it infront of the next streamed buffer.
- *
- * This is a typescript implementation but arguably better described 
- * as a TS wrapper to C++ methods; it's heavily using efficient low-level 
- * bufferAPIs that directly call on native C++ APIs within V8. In some 
- * sense it's C++ performance with JS memory safety and TypeScript 
- * compiler safety. 
- *
- * TLDR; the idea is to give this function the start of raw DICOM 
- * dataset bytes, which in turn ensures that each new 'while' loop 
- * iteration is the start of a new element's bytes.
- *
+ * See the comments at the end of this file for greater detail.
  * @param buffer
  * @param ctx
  * @returns PartialEl (e.g. if streaming & buffer < file size)
@@ -106,7 +73,13 @@ export async function parse(
  * @returns Element
  */
 export function newElement(): Parse.Element {
-  return { vr: null, tag: null, value: null, name: null, length: null };
+  return {
+    vr: null,
+    tag: null,
+    value: null,
+    name: null,
+    length: null
+  };
 }
 
 /**
@@ -156,3 +129,37 @@ export function exitParse(ctx: Ctx, cursor: Cursor) {
   ctx.depth--;
   cursor.dispose();
 }
+
+
+
+
+/**                         -- DETAIL --
+ *
+ * Give it a buffer where buffer[0] is the exact first byte of a 
+ * dataset (i.e. after the DCM preamble for the outermost dataset or 
+ * first byte of nested datasets), and it will parse as far as the 
+ * buffer allows, returning a BufferBoundary error if the current buffer 
+ * doesn't reach the end of the file. 
+ *
+ * If parse() encounters nested datasets (via sequence elements),
+ * it will call itself at the correct byte position and reflect 
+ * the hierarchy in the overall DICOM serialisation. Context (Ctx)
+ * is maintained at the global scope, allowing recursion interrupted
+ * by the length of the buffer to pick up where it left off when the 
+ * next buffer is provided (e.g. via streamed file i/o: read.ts).
+ *
+ * Since it mutates a global context which stores the serialised 
+ * DICOM object, parse() only returns a value when a BufferBoundary
+ * error is thrown. In this case, read.ts streams need a ref to that 
+ * buffer so it can stitch it infront of the next streamed buffer.
+ *
+ * This is a typescript implementation but arguably better described 
+ * as a TS wrapper to C++ methods; it's heavily using efficient low-level 
+ * bufferAPIs that directly call on native C++ APIs within V8. In some 
+ * sense it's C++ performance with JS memory safety and TypeScript 
+ * compiler safety. 
+ *
+ * TLDR; the idea is to give this function the start of raw DICOM 
+ * dataset bytes, which in turn ensures that each new 'while' loop 
+ * iteration is the start of a new element's bytes.
+ */
