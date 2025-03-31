@@ -1,14 +1,14 @@
+import { newCursor, Cursor } from "./cursor.js";
+import { VR } from "../enums.js";
+import { Ctx } from "../reading/ctx.js";
+import { handleEx } from "./validation.js";
 import { exitDefLenSqRecursion, inSQ, manageSqRecursion, stacks } from "./valueParsing/parseSQ.js";
 import { parseValue } from "./valueParsing/parseValue.js";
-import { newCursor, Cursor } from "./cursor.js";
-import { parseLength, TagStr } from "./decode.js";
-import { TagDictByName } from "../enums.js";
 import { logElement } from "../utils.js";
-import { parseTag } from "./parseTag.js";
+import { TagDictByName } from "../enums.js";
 import { parseVR } from "./parseVR.js";
-import { handleEx } from "./validation.js";
-import { Ctx } from "../reading/ctx.js";
-import { VR } from "../enums.js";
+import { parseTag } from "./parseTag.js";
+import { parseLength, TagStr } from "./decode.js";
 
 export type ParseResult = { truncated: true | null; buf: PartialEl };
 export type PartialEl = Buffer | null; // because streaming
@@ -42,7 +42,8 @@ export const EOI_TAG = "(5e9f,d9ff)" as TagStr;
 
 /**
  * parse() orchestrates the parsing logic; it decodes and serialises 
- * elements contained in an arbitrary subset of a DICOM binary.
+ * elements contained in an arbitrary subset of a DICOM binary as long 
+ * as bytes[0] is the first element of any dataset. 
  *
  * Fundamentally it is an iterative TLV binary decoder but supports 
  * recursive calls to handle nested datasets.
