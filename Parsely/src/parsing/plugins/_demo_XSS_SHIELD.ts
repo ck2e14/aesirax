@@ -10,6 +10,12 @@ import { Parse } from "../../global.js";
 // You don't need to do what's in this example other than export a Plugin<R> object and 
 // pass that to calls to parse().
 
+
+
+
+//   -- Main thread 
+// -----------------------------------------------------------------------------------------------
+
 // Step 1: Export a Plugin<R> object. In this case with a closured reference to a worker 
 // thread that'll be doing the work.
 export const exp_SHIELD: Plugin<null> = (() => {
@@ -40,11 +46,8 @@ export const exp_SHIELD: Plugin<null> = (() => {
 
 
 
-//   -- Main thread 
-// -----------------------------------------------------------------------------------------------
 //   -- Worker 
-
-
+// -----------------------------------------------------------------------------------------------
 
 !isMainThread && (() => {
   parentPort.on("message", async (msg: any) => {
