@@ -30,23 +30,21 @@ const testDirs = {
  * @param cfg
  * @returns void
  */
-console.clear();
 main(cfg);
 async function main(cfg: Cfg) {
+  console.clear();
+
   if (cfg.verbose) {
     write(`Starting up...`, "INFO");
   }
 
   await init();
+
   // cfg.targetDir = `../data/brokenSiemensCT/isolate`; 
   // cfg.targetDir = `../data/QUANTREDEUSIX`; 
-  // cfg.targetDir = `../data/JonathanSnowMR/isolate`;
+  cfg.targetDir = `../data/JonathanSnowMR/isolate`;
   // cfg.targetDir = `/Users/chriskennedy/Desktop/SWE/aesirax/data/STANWORTHLORNAMISS/SER00001`;
-  // cfg.targetDir = '/Users/chriskennedy/Documents/Cimar/CimarTemp/OREILLYPHILIPTHOMASMR (1)/SER00003/'
-  // cfg.targetDir = `../data/FELIX/isolate`;// FELIX images are breaking atm on pixel data. are they still? TODO
-  // cfg.targetDir = `/Users/chriskennedy/Documents/Cimar/CimarTemp/WAGNERCYNTHIASENZENIMRS/1/`
-  // cfg.targetDir = `/Users/chriskennedy/Documents/Cimar/CimarTemp/XXX`
-  cfg.targetDir = `/Users/chriskennedy/Documents/Cimar/CimarTemp/BELLCAROLANNEMS (1)/SER00001`
+  // cfg.targetDir = `../data/FELIX/isolate`;// FELIX images are breaking atm on pixel data, i think its expecting JPEG EOI for an img that doesn't use that
 
   if (!cfg.targetDir || !cfg.targetDir.length) {
     write(`No targetdir. Doing nothing.`, "INFO");

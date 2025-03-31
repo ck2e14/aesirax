@@ -3,13 +3,12 @@ import { handleEx } from "./validation.js";
 import { Ctx } from "../reading/ctx.js";
 import { logElement } from "../utils.js";
 import { newCursor, Cursor } from "./cursor.js";
-import { _exp_XSS_SHIELD } from "./plugins/plugins.js";
 import { parseVR } from "./parseVR.js";
 import { parseTag } from "./parseTag.js";
 import { parseLength } from "./parseLength.js";
 import { parseValue } from "./parseValue.js";
 import { Parse } from "../global.js";
-import { Plugin } from "./plugins/plugins.js";
+import { exp_SHIELD, Plugin } from "./plugins/plugins.js";
 
 /**
  * parse() orchestrates the parsing logic; it decodes and serialises 
@@ -27,20 +26,19 @@ import { Plugin } from "./plugins/plugins.js";
 export async function parse(
   buffer: Buffer,
   ctx: Ctx,
-  plugin: Plugin = _exp_XSS_SHIELD /* defaulted while dev */
+  plugin: Plugin = exp_SHIELD /* defaulted to experimental plugin while dev */
 ): Promise<Parse.PartialEl> {
   ctx.depth++;
 
   let cursor: Cursor = newCursor(ctx);
   let lastTagStart: number;
 
+  // Tag > VR > Length > Value > Plugin
   while (cursor.pos < buffer.length) {
     lastTagStart = cursor.pos;
-
     const el = newElement();
     const sq = stacks(ctx).sq;
 
-    // Tag > VR > Length > Value > Plugin
     try {
       if (exitDefLenSqRecursion(ctx, cursor)) return;
       parseTag(buffer, cursor, el, ctx);
@@ -129,9 +127,6 @@ export function exitParse(ctx: Ctx, cursor: Cursor) {
   ctx.depth--;
   cursor.dispose();
 }
-
-
-
 
 /**                         -- DETAIL --
  *
