@@ -21,7 +21,7 @@ import { BufferBoundary, DicomError, Malformed } from "../../error/errors.js";
  * @param ctx
  * @param seqTag
  */
-export function parseSQ(buffer: Buffer, ctx: Ctx, el: Element, parentCursor: Cursor) {
+export async function parseSQ(buffer: Buffer, ctx: Ctx, el: Element, parentCursor: Cursor) {
   logEntryToSQ(ctx, el, parentCursor);
 
   // -- Convert & save SQ, and prepare to write all subsequent elements 
@@ -57,7 +57,7 @@ export function parseSQ(buffer: Buffer, ctx: Ctx, el: Element, parentCursor: Cur
   // -- Recurse to parse entire SQ, from the first item, which itself is a dataset.
   //    All new datasets always require a new call to parse().
   const firstItem = buffer.subarray(parentCursor.pos, buffer.length);
-  const partial = parse(firstItem, ctx); // parse returns 0 length buffer if no elem was truncated
+  const partial = await parse(firstItem, ctx); // parse returns 0 length buffer if no elem was truncated
 
   // -- Add traversed bytes & LIFO pop
   parentCursor.sync(ctx, buffer);

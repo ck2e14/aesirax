@@ -40,22 +40,20 @@ type Plugin<R = unknown> = {
 
 const demoPlugin: Plugin<null> = (() => {
   // The plugin will do its work off the main thread to promote nonblocking of the parse loop. 
+  // To keep it simple in the example we'll use a single extra worker thread.
 
   // All we'll ask of the main thread is that it passes messages and/or SharedArrayBuffers (inlcudign 
   // window start/end ints) to our plugin logic, which is contained in /plugins/demoPlugin.ts.
-  const workers: Worker[] = []
 
-  for (let i = 0; i < workers.length; i++) {
-    workers[i] = new Worker('./plugins/demoPlugin.js')
+  const worker = new Worker('./plugins/demoPlugin.js')
 
-    workers[i].on('message', (msg: any) => {
-      console.log(`[PLUGIN:-DEMO]: THREAD MSG: (ID: ${workers[i].threadId}) -> ${JSON.stringify(msg, null, 3)}`)
-    })
+  worker.on('message', (msg: any) => {
+    console.log(`[PLUGIN:-DEMO]: THREAD MSG: (ID: ${worker.threadId}) -> ${JSON.stringify(msg, null, 3)}`)
+  })
 
-    workers[i].on('error', (err) => {
-      console.log(`[PLUGIN:-DEMO]: THREAD ERROR (ID: ${workers[i].threadId})\n${err.name} -> ${err.message}`)
-    })
-  }
+  worker.on('error', (err) => {
+    console.log(`[PLUGIN:-DEMO]: THREAD ERROR: (ID: ${worker.threadId})\n${err.name} -> ${err.message}`)
+  })
 
   // return the plugin with some config & metadata for the parse() loop to execute appropriately.
   return {
@@ -64,6 +62,7 @@ const demoPlugin: Plugin<null> = (() => {
     fn: (elementAsBytes: Buffer, el: Element) => {
       console.log('Running demo plugin which currently just simulates doing something useful.. like XSS screening')
       console.log({ elementAsBytes, el })
+      worker.postMessage({ elementAsBytes, el })
       return null
     }
   }
@@ -151,7 +150,7 @@ export async function parse(
 
       parseVR(buffer, cursor, el, ctx);
       parseLength(buffer, cursor, el, ctx);
-      parseValue(buffer, cursor, el, ctx);
+      await parseValue(buffer, cursor, el, ctx); // async/await bleed because recurses with parse()
 
       if (plugin.sync) {
         await wrapAndRunPlugin(plugin, buffer, el)
