@@ -1,0 +1,5404 @@
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UL",
+   "tag": "(0002,0000)",
+   "value": "216",
+   "name": "FileMetaInformationGroupLength",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 216
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "OB",
+   "tag": "(0002,0001)",
+   "value": "Binary data (OB): 2 bytes",
+   "name": "FileMetaInformationVersion",
+   "length": 2,
+   "devNote": "No support for VR: OB"
+}
+[PLUGIN:-DEMO]: screening value: Binary data (OB): 2 bytes
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0002,0002)",
+   "value": "1.2.840.10008.5.1.4.1.1.4",
+   "name": "MediaStorageSOPClassUID",
+   "length": 26
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.10008.5.1.4.1.1.4
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0002,0003)",
+   "value": "1.2.840.113619.2.322.2807.4229815.15755.1536388619.454",
+   "name": "MediaStorageSOPInstanceUID",
+   "length": 54
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.113619.2.322.2807.4229815.15755.1536388619.454
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0002,0010)",
+   "value": "1.2.840.10008.1.2.1",
+   "name": "TransferSyntaxUID",
+   "length": 20
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.10008.1.2.1
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0002,0012)",
+   "value": "1.2.826.0.1.3680043.1.2.100.6.40.0.128",
+   "name": "ImplementationClassUID",
+   "length": 38
+}
+[PLUGIN:-DEMO]: screening value: 1.2.826.0.1.3680043.1.2.100.6.40.0.128
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0002,0013)",
+   "value": "DicomObjects.NET",
+   "name": "ImplementationVersionName",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: DicomObjects.NET
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "AE",
+   "tag": "(0002,0016)",
+   "value": "",
+   "name": "SourceApplicationEntityTitle",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0008,0005)",
+   "value": "ISO_IR 100",
+   "name": "SpecificCharacterSet",
+   "length": 10
+}
+[PLUGIN:-DEMO]: screening value: ISO_IR 100
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0008,0008)",
+   "value": "ORIGINAL\\PRIMARY\\OTHER",
+   "name": "ImageType",
+   "length": 22
+}
+[PLUGIN:-DEMO]: screening value: ORIGINAL\PRIMARY\OTHER
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0008,0016)",
+   "value": "1.2.840.10008.5.1.4.1.1.4",
+   "name": "SOPClassUID",
+   "length": 26
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.10008.5.1.4.1.1.4
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0008,0018)",
+   "value": "1.2.840.113619.2.322.2807.4229815.15755.1536388619.454",
+   "name": "SOPInstanceUID",
+   "length": 54
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.113619.2.322.2807.4229815.15755.1536388619.454
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DA",
+   "tag": "(0008,0020)",
+   "value": "20180910",
+   "name": "StudyDate",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 20180910
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DA",
+   "tag": "(0008,0021)",
+   "value": "20180910",
+   "name": "SeriesDate",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 20180910
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DA",
+   "tag": "(0008,0022)",
+   "value": "20180910",
+   "name": "AcquisitionDate",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 20180910
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DA",
+   "tag": "(0008,0023)",
+   "value": "20180910",
+   "name": "ContentDate",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 20180910
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "TM",
+   "tag": "(0008,0030)",
+   "value": "",
+   "name": "StudyTime",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "TM",
+   "tag": "(0008,0031)",
+   "value": "121145",
+   "name": "SeriesTime",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: 121145
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "TM",
+   "tag": "(0008,0032)",
+   "value": "121145",
+   "name": "AcquisitionTime",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: 121145
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "TM",
+   "tag": "(0008,0033)",
+   "value": "121145",
+   "name": "ContentTime",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: 121145
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0008,0050)",
+   "value": "X54891",
+   "name": "AccessionNumber",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: X54891
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0008,0060)",
+   "value": "MR",
+   "name": "Modality",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: MR
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0008,0070)",
+   "value": "GE MEDICAL SYSTEMS",
+   "name": "Manufacturer",
+   "length": 18
+}
+[PLUGIN:-DEMO]: screening value: GE MEDICAL SYSTEMS
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0008,0080)",
+   "value": "",
+   "name": "InstitutionName",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "PN",
+   "tag": "(0008,0090)",
+   "value": "Dr Carolyn Fay",
+   "name": "ReferringPhysicianName",
+   "length": 14
+}
+[PLUGIN:-DEMO]: screening value: Dr Carolyn Fay
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0008,1010)",
+   "value": "hdx ",
+   "name": "StationName",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: hdx 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0008,1030)",
+   "value": "MRI Spine lumbar",
+   "name": "StudyDescription",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: MRI Spine lumbar
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0008,103e)",
+   "value": "Sag T2  ",
+   "name": "SeriesDescription",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: Sag T2  
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0008,1040)",
+   "value": "LIC ",
+   "name": "InstitutionalDepartmentName",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: LIC 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0008,1090)",
+   "value": "Signa HDxt",
+   "name": "ManufacturerModelName",
+   "length": 10
+}
+[PLUGIN:-DEMO]: screening value: Signa HDxt
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0008,1150)",
+   "value": "1.2.840.10008.3.1.2.3.3",
+   "name": "ReferencedSOPClassUID",
+   "length": 24
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.10008.3.1.2.3.3
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0008,1155)",
+   "value": "1.2.840.113619.6.322.156408440672647270317625317477919978714",
+   "name": "ReferencedSOPInstanceUID",
+   "length": 60
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.113619.6.322.156408440672647270317625317477919978714
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SQ",
+   "tag": "(0008,1111)",
+   "value": null,
+   "name": "ReferencedPerformedProcedureStepSequence",
+   "length": 4294967295
+}
+[PLUGIN:-DEMO]: ooh an SQ. i don't know how to xss screen that yet - wait!
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0008,1150)",
+   "value": "1.2.840.10008.5.1.4.1.1.4",
+   "name": "ReferencedSOPClassUID",
+   "length": 26
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.10008.5.1.4.1.1.4
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0008,1155)",
+   "value": "1.2.840.113619.2.322.2807.4229815.15755.1536388619.94",
+   "name": "ReferencedSOPInstanceUID",
+   "length": 54
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.113619.2.322.2807.4229815.15755.1536388619.94
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0008,1150)",
+   "value": "1.2.840.10008.5.1.4.1.1.4",
+   "name": "ReferencedSOPClassUID",
+   "length": 26
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.10008.5.1.4.1.1.4
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0008,1155)",
+   "value": "1.2.840.113619.2.322.2807.4229815.15755.1536388619.86",
+   "name": "ReferencedSOPInstanceUID",
+   "length": 54
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.113619.2.322.2807.4229815.15755.1536388619.86
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SQ",
+   "tag": "(0008,1140)",
+   "value": null,
+   "name": "ReferencedImageSequence",
+   "length": 4294967295
+}
+[PLUGIN:-DEMO]: ooh an SQ. i don't know how to xss screen that yet - wait!
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0009,0010)",
+   "value": "GEMS_IDEN_01",
+   "name": "Private or Unrecognised Tag",
+   "length": 12
+}
+[PLUGIN:-DEMO]: screening value: GEMS_IDEN_01
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0009,1002)",
+   "value": "GE",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: GE
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0009,1004)",
+   "value": "SIGNA ",
+   "name": "Private or Unrecognised Tag",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: SIGNA 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0009,1027)",
+   "value": "1536581505",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 1536581505
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0009,1030)",
+   "value": "10530MRS01      ",
+   "name": "Private or Unrecognised Tag",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: 10530MRS01      
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0009,1031)",
+   "value": "9999",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 9999
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0009,10e3)",
+   "value": "1.2.840.113619.1.322.5.2807.4229815",
+   "name": "Private or Unrecognised Tag",
+   "length": 36
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.113619.1.322.5.2807.4229815
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0009,10e9)",
+   "value": "1536581505",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 1536581505
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "PN",
+   "tag": "(0010,0010)",
+   "value": "Jonathan Snow ",
+   "name": "PatientName",
+   "length": 14
+}
+[PLUGIN:-DEMO]: screening value: Jonathan Snow 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0010,0020)",
+   "value": "12345 ",
+   "name": "PatientID",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: 12345 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DA",
+   "tag": "(0010,0030)",
+   "value": "19870216",
+   "name": "PatientBirthDate",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 19870216
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0010,0040)",
+   "value": "M ",
+   "name": "PatientSex",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: M 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "AS",
+   "tag": "(0010,1010)",
+   "value": "031Y",
+   "name": "PatientAge",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 031Y
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0010,1030)",
+   "value": "75",
+   "name": "PatientWeight",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 75
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LT",
+   "tag": "(0010,21b0)",
+   "value": "",
+   "name": "AdditionalPatientHistory",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0018,0020)",
+   "value": "SE",
+   "name": "ScanningSequence",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: SE
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0018,0021)",
+   "value": "SK\\OSP",
+   "name": "SequenceVariant",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: SK\OSP
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0018,0022)",
+   "value": "FAST_GEMS\\FC_FREQ_AX_GEMS\\FC\\SAT_GEMS\\NPW\\EDR_GEMS\\TRF_GEMS\\FILTERED_GEMS\\SP",
+   "name": "ScanOptions",
+   "length": 76
+}
+[PLUGIN:-DEMO]: screening value: FAST_GEMS\FC_FREQ_AX_GEMS\FC\SAT_GEMS\NPW\EDR_GEMS\TRF_GEMS\FILTERED_GEMS\SP
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0018,0023)",
+   "value": "2D",
+   "name": "MRAcquisitionType",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 2D
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0018,0025)",
+   "value": "N ",
+   "name": "AngioFlag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: N 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,0050)",
+   "value": "4.5 ",
+   "name": "SliceThickness",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 4.5 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,0080)",
+   "value": "3761",
+   "name": "RepetitionTime",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 3761
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,0081)",
+   "value": "103.68",
+   "name": "EchoTime",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: 103.68
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,0083)",
+   "value": "1.5 ",
+   "name": "NumberOfAverages",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 1.5 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,0084)",
+   "value": "63.863155 ",
+   "name": "ImagingFrequency",
+   "length": 10
+}
+[PLUGIN:-DEMO]: screening value: 63.863155 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0018,0085)",
+   "value": "1H",
+   "name": "ImagedNucleus",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1H
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0018,0086)",
+   "value": "1 ",
+   "name": "EchoNumbers",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,0087)",
+   "value": "1.5 ",
+   "name": "MagneticFieldStrength",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 1.5 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,0088)",
+   "value": "5.5 ",
+   "name": "SpacingBetweenSlices",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 5.5 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0018,0091)",
+   "value": "19",
+   "name": "EchoTrainLength",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 19
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,0093)",
+   "value": "100 ",
+   "name": "PercentSampling",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 100 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,0094)",
+   "value": "100 ",
+   "name": "PercentPhaseFieldOfView",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 100 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,0095)",
+   "value": "108.516 ",
+   "name": "PixelBandwidth",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 108.516 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0018,1000)",
+   "value": "00000010530MRS01",
+   "name": "DeviceSerialNumber",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: 00000010530MRS01
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0018,1020)",
+   "value": "23\\LX\\MR Software release:HD23.0_V02_1406.a ",
+   "name": "SoftwareVersions",
+   "length": 44
+}
+[PLUGIN:-DEMO]: screening value: 23\LX\MR Software release:HD23.0_V02_1406.a 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0018,1030)",
+   "value": "12 Lumbar Spine ",
+   "name": "ProtocolName",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: 12 Lumbar Spine 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0018,1088)",
+   "value": "0 ",
+   "name": "HeartRate",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0018,1090)",
+   "value": "0 ",
+   "name": "CardiacNumberOfImages",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0018,1094)",
+   "value": "0 ",
+   "name": "TriggerWindow",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,1100)",
+   "value": "340 ",
+   "name": "ReconstructionDiameter",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 340 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0018,1250)",
+   "value": "HNS CTL456",
+   "name": "ReceiveCoilName",
+   "length": 10
+}
+[PLUGIN:-DEMO]: screening value: HNS CTL456
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "US",
+   "tag": "(0018,1310)",
+   "value": "448",
+   "name": "AcquisitionMatrix",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 448
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0018,1312)",
+   "value": "COL ",
+   "name": "InPlanePhaseEncodingDirection",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: COL 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,1314)",
+   "value": "160 ",
+   "name": "FlipAngle",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 160 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0018,1315)",
+   "value": "N ",
+   "name": "VariableFlipAngleFlag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: N 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,1316)",
+   "value": "1.0134",
+   "name": "SAR",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: 1.0134
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0018,5100)",
+   "value": "FFS ",
+   "name": "PatientPosition",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: FFS 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0019,0010)",
+   "value": "GEMS_ACQU_01",
+   "name": "Private or Unrecognised Tag",
+   "length": 12
+}
+[PLUGIN:-DEMO]: screening value: GEMS_ACQU_01
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,100f)",
+   "value": "1088.400024 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 12
+}
+[PLUGIN:-DEMO]: screening value: 1088.400024 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,1011)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,1012)",
+   "value": "56",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 56
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,1017)",
+   "value": "16",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 16
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0019,1018)",
+   "value": "R ",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: R 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,1019)",
+   "value": "33.2253 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 33.2253 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0019,101a)",
+   "value": "L ",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: L 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,101b)",
+   "value": "-32.769 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: -32.769 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,101e)",
+   "value": "340.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 10
+}
+[PLUGIN:-DEMO]: screening value: 340.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "FL",
+   "tag": "(0019,105a)",
+   "value": "165684000",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 165684000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,107d)",
+   "value": "0 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,107e)",
+   "value": "1",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,107f)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,1081)",
+   "value": "1",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,1084)",
+   "value": "2.026809",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 2.026809
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,1087)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,1088)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,108a)",
+   "value": "13",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 13
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,108b)",
+   "value": "29",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 29
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,108d)",
+   "value": "0 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,108f)",
+   "value": "1",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,1090)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,1091)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0019,1092)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,1093)",
+   "value": "638631550 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 10
+}
+[PLUGIN:-DEMO]: screening value: 638631550 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,1094)",
+   "value": "179",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 179
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,1095)",
+   "value": "13",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 13
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,1096)",
+   "value": "29",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 29
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0019,1097)",
+   "value": "2113984",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 2113984
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,109b)",
+   "value": "1",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0019,109c)",
+   "value": "frfseopt",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: frfseopt
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DT",
+   "tag": "(0019,109d)",
+   "value": "20140204020607",
+   "name": "Private or Unrecognised Tag",
+   "length": 14
+}
+[PLUGIN:-DEMO]: screening value: 20140204020607
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0019,109e)",
+   "value": "FSE ",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: FSE 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,109f)",
+   "value": "3",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 3
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10a0)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10a1)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0019,10a2)",
+   "value": "59905",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 59905
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UL",
+   "tag": "(0019,10a3)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10a4)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10a7)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10a8)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10a9)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10aa)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10ab)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10ac)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10ad)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10ae)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10af)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10b0)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10b1)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10b2)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10b3)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10b4)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10b5)",
+   "value": "1.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 1.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10b6)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10b7)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10b8)",
+   "value": "1.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 1.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10b9)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10ba)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10bb)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10bc)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10bd)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10be)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10c0)",
+   "value": "1027",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1027
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10c2)",
+   "value": "9990",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 9990
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10c3)",
+   "value": "9990",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 9990
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10c4)",
+   "value": "543",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 543
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10c5)",
+   "value": "9990",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 9990
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10c6)",
+   "value": "9990",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 9990
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10c7)",
+   "value": "9990",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 9990
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10c8)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10c9)",
+   "value": "400",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 400
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10ca)",
+   "value": "400",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 400
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10cb)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10cc)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10cd)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10ce)",
+   "value": "2",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 2
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10cf)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10d2)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0019,10d3)",
+   "value": "",
+   "name": "Private or Unrecognised Tag",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10d5)",
+   "value": "2",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 2
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10d7)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10d8)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10d9)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10df)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10e0)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10e2)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10f2)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10f9)",
+   "value": "179 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 179 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0020,000d)",
+   "value": "1.2.826.0.1.3680043.6.40545.69421.20180910115748.4408.24.22",
+   "name": "StudyInstanceUID",
+   "length": 60
+}
+[PLUGIN:-DEMO]: screening value: 1.2.826.0.1.3680043.6.40545.69421.20180910115748.4408.24.22
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0020,000e)",
+   "value": "1.2.840.113619.2.322.2807.4229815.20811.1536388525.566",
+   "name": "SeriesInstanceUID",
+   "length": 54
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.113619.2.322.2807.4229815.20811.1536388525.566
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0020,0010)",
+   "value": "17051 ",
+   "name": "StudyID",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: 17051 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0020,0011)",
+   "value": "3 ",
+   "name": "SeriesNumber",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 3 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0020,0012)",
+   "value": "1 ",
+   "name": "AcquisitionNumber",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0020,0013)",
+   "value": "2 ",
+   "name": "InstanceNumber",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 2 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0020,0032)",
+   "value": "-24.5524\\-159.334\\219.857 ",
+   "name": "ImagePositionPatient",
+   "length": 26
+}
+[PLUGIN:-DEMO]: screening value: -24.5524\-159.334\219.857 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0020,0037)",
+   "value": "-0.0091884\\0.999958\\-0.000104568\\-0.009515\\-0.000191991\\-0.999955 ",
+   "name": "ImageOrientationPatient",
+   "length": 66
+}
+[PLUGIN:-DEMO]: screening value: -0.0091884\0.999958\-0.000104568\-0.009515\-0.000191991\-0.999955 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0020,0052)",
+   "value": "1.2.840.113619.2.322.2807.4229815.20811.1536388525.564",
+   "name": "FrameOfReferenceUID",
+   "length": 54
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.113619.2.322.2807.4229815.20811.1536388525.564
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0020,0060)",
+   "value": "",
+   "name": "Laterality",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0020,1002)",
+   "value": "13",
+   "name": "ImagesInAcquisition",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 13
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0020,1040)",
+   "value": "",
+   "name": "PositionReferenceIndicator",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0020,1041)",
+   "value": "27.72575188 ",
+   "name": "SliceLocation",
+   "length": 12
+}
+[PLUGIN:-DEMO]: screening value: 27.72575188 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0020,9056)",
+   "value": "1 ",
+   "name": "StackID",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UL",
+   "tag": "(0020,9057)",
+   "value": "2",
+   "name": "InStackPositionNumber",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 2
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0021,0010)",
+   "value": "GEMS_RELA_01",
+   "name": "Private or Unrecognised Tag",
+   "length": 12
+}
+[PLUGIN:-DEMO]: screening value: GEMS_RELA_01
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0021,1035)",
+   "value": "1",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0021,1036)",
+   "value": "9",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 9
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0021,1037)",
+   "value": "16",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 16
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0021,104f)",
+   "value": "13",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 13
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0021,1050)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,1051)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,1052)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,1053)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0021,1056)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0021,1057)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0021,1058)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0021,1059)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0021,105a)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,105b)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,105c)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,105d)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,105e)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,105f)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,1081)",
+   "value": "0 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,1082)",
+   "value": "0 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,1083)",
+   "value": "0 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,1084)",
+   "value": "0 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0023,0010)",
+   "value": "GEMS_STDY_01",
+   "name": "Private or Unrecognised Tag",
+   "length": 12
+}
+[PLUGIN:-DEMO]: screening value: GEMS_STDY_01
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "FD",
+   "tag": "(0023,1070)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0023,1074)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0023,107d)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0040,0255)",
+   "value": "",
+   "name": "PerformedProcedureTypeDescription",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SQ",
+   "tag": "(0023,1080)",
+   "value": null,
+   "name": "Private or Unrecognised Tag",
+   "length": 4294967295
+}
+[PLUGIN:-DEMO]: ooh an SQ. i don't know how to xss screen that yet - wait!
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0025,0010)",
+   "value": "GEMS_SERS_01",
+   "name": "Private or Unrecognised Tag",
+   "length": 12
+}
+[PLUGIN:-DEMO]: screening value: GEMS_SERS_01
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0025,1006)",
+   "value": "56",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 56
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0025,1007)",
+   "value": "13",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 13
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0025,1010)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0025,1011)",
+   "value": "1",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0025,1014)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0025,1017)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0025,1018)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0025,1019)",
+   "value": "13",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 13
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0025,101a)",
+   "value": "GEHDX ",
+   "name": "Private or Unrecognised Tag",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: GEHDX 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "OB",
+   "tag": "(0025,101b)",
+   "value": "Binary data (OB): 940 bytes",
+   "name": "Private or Unrecognised Tag",
+   "length": 940,
+   "devNote": "No support for VR: OB"
+}
+[PLUGIN:-DEMO]: screening value: Binary data (OB): 940 bytes
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0027,0010)",
+   "value": "GEMS_IMAG_01",
+   "name": "Private or Unrecognised Tag",
+   "length": 12
+}
+[PLUGIN:-DEMO]: screening value: GEMS_IMAG_01
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0027,1006)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0027,1010)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0027,1030)",
+   "value": "",
+   "name": "Private or Unrecognised Tag",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0027,1031)",
+   "value": "1",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0027,1032)",
+   "value": "56",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 56
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UL",
+   "tag": "(0027,1033)",
+   "value": "1224738984",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 1224738984
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0027,1035)",
+   "value": "16",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 16
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0027,1040)",
+   "value": "R ",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: R 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "FL",
+   "tag": "(0027,1041)",
+   "value": "27.725751876831055",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 27.725751876831055
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "FL",
+   "tag": "(0027,1060)",
+   "value": "448",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 448
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "FL",
+   "tag": "(0027,1061)",
+   "value": "256",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 256
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "FL",
+   "tag": "(0027,1062)",
+   "value": "3",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 3
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "US",
+   "tag": "(0028,0002)",
+   "value": "1",
+   "name": "SamplesPerPixel",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0028,0004)",
+   "value": "MONOCHROME2 ",
+   "name": "PhotometricInterpretation",
+   "length": 12
+}
+[PLUGIN:-DEMO]: screening value: MONOCHROME2 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "US",
+   "tag": "(0028,0010)",
+   "value": "512",
+   "name": "Rows",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 512
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "US",
+   "tag": "(0028,0011)",
+   "value": "512",
+   "name": "Columns",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 512
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0028,0030)",
+   "value": "0.6641\\0.6641 ",
+   "name": "PixelSpacing",
+   "length": 14
+}
+[PLUGIN:-DEMO]: screening value: 0.6641\0.6641 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "US",
+   "tag": "(0028,0100)",
+   "value": "16",
+   "name": "BitsAllocated",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 16
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "US",
+   "tag": "(0028,0101)",
+   "value": "16",
+   "name": "BitsStored",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 16
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "US",
+   "tag": "(0028,0102)",
+   "value": "15",
+   "name": "HighBit",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 15
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "US",
+   "tag": "(0028,0103)",
+   "value": "1",
+   "name": "PixelRepresentation",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0028,0106)",
+   "value": "0",
+   "name": "SmallestImagePixelValue",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0028,0107)",
+   "value": "431",
+   "name": "LargestImagePixelValue",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 431
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0028,1050)",
+   "value": "215 ",
+   "name": "WindowCenter",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 215 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0028,1051)",
+   "value": "431 ",
+   "name": "WindowWidth",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 431 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0029,0010)",
+   "value": "GEMS_IMPS_01",
+   "name": "Private or Unrecognised Tag",
+   "length": 12
+}
+[PLUGIN:-DEMO]: screening value: GEMS_IMPS_01
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0029,1015)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0029,1016)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0029,1017)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0029,1018)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0029,1026)",
+   "value": "2",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 2
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0029,1034)",
+   "value": "16384",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 16384
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0029,1035)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0038,0300)",
+   "value": "",
+   "name": "CurrentPatientLocation",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0040,0242)",
+   "value": "hdx ",
+   "name": "PerformedStationName",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: hdx 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0040,0243)",
+   "value": "GE",
+   "name": "PerformedLocation",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: GE
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DA",
+   "tag": "(0040,0244)",
+   "value": "20180910",
+   "name": "PerformedProcedureStepStartDate",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 20180910
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "TM",
+   "tag": "(0040,0245)",
+   "value": "110623",
+   "name": "PerformedProcedureStepStartTime",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: 110623
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0040,0253)",
+   "value": "3225.1536577582 ",
+   "name": "PerformedProcedureStepID",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: 3225.1536577582 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0040,0254)",
+   "value": "MRI Spine lumbar",
+   "name": "PerformedProcedureStepDescription",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: MRI Spine lumbar
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0032,1060)",
+   "value": "MRI Spine lumbar",
+   "name": "RequestedProcedureDescription",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: MRI Spine lumbar
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "PN",
+   "tag": "(0040,0006)",
+   "value": "Fay^Carolyn^^^",
+   "name": "ScheduledPerformingPhysicianName",
+   "length": 14
+}
+[PLUGIN:-DEMO]: screening value: Fay^Carolyn^^^
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0040,0007)",
+   "value": "MRI Spine lumbar",
+   "name": "ScheduledProcedureStepDescription",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: MRI Spine lumbar
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0040,0009)",
+   "value": "LCA1809100142995",
+   "name": "ScheduledProcedureStepID",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: LCA1809100142995
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0040,1001)",
+   "value": "LCA1809100142995",
+   "name": "RequestedProcedureID",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: LCA1809100142995
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SQ",
+   "tag": "(0040,0275)",
+   "value": null,
+   "name": "RequestAttributesSequence",
+   "length": 4294967295
+}
+[PLUGIN:-DEMO]: ooh an SQ. i don't know how to xss screen that yet - wait!
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0043,0010)",
+   "value": "GEMS_PARM_01",
+   "name": "Private or Unrecognised Tag",
+   "length": 12
+}
+[PLUGIN:-DEMO]: screening value: GEMS_PARM_01
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,1001)",
+   "value": "4",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 4
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,1002)",
+   "value": "-4",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: -4
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,1003)",
+   "value": "-2",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: -2
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,1004)",
+   "value": "2",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 2
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,1006)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,1007)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,1008)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,1009)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,100a)",
+   "value": "1",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0043,100b)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0043,100c)",
+   "value": "80.000000 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 10
+}
+[PLUGIN:-DEMO]: screening value: 80.000000 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0043,100d)",
+   "value": "77.689766 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 10
+}
+[PLUGIN:-DEMO]: screening value: 77.689766 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0043,100e)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "US",
+   "tag": "(0043,1010)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,101c)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,101d)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "OB",
+   "tag": "(0043,1028)",
+   "value": "Binary data (OB): 80 bytes",
+   "name": "Private or Unrecognised Tag",
+   "length": 80,
+   "devNote": "No support for VR: OB"
+}
+[PLUGIN:-DEMO]: screening value: Binary data (OB): 80 bytes
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "OB",
+   "tag": "(0043,1029)",
+   "value": "Binary data (OB): 2068 bytes",
+   "name": "Private or Unrecognised Tag",
+   "length": 2068,
+   "devNote": "No support for VR: OB"
+}
+[PLUGIN:-DEMO]: screening value: Binary data (OB): 2068 bytes
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "OB",
+   "tag": "(0043,102a)",
+   "value": "Binary data (OB): 5648 bytes",
+   "name": "Private or Unrecognised Tag",
+   "length": 5648,
+   "devNote": "No support for VR: OB"
+}
+[PLUGIN:-DEMO]: screening value: Binary data (OB): 5648 bytes
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,102c)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0043,102d)",
+   "value": "p+",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: p+
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0043,102e)",
+   "value": "",
+   "name": "Private or Unrecognised Tag",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,102f)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,1030)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,1032)",
+   "value": "2",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 2
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "FL",
+   "tag": "(0043,1033)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0043,1034)",
+   "value": "0 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UL",
+   "tag": "(0043,1035)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UL",
+   "tag": "(0043,1036)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UL",
+   "tag": "(0043,1037)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "FL",
+   "tag": "(0043,1038)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 96
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0043,1039)",
+   "value": "0\\2097152\\0\\0 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 14
+}
+[PLUGIN:-DEMO]: screening value: 0\2097152\0\0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0043,1060)",
+   "value": "0\\0\\0\\0\\0\\0\\0\\0 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: 0\0\0\0\0\0\0\0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0043,1061)",
+   "value": "1.2.826.0.1.3680043.6.40545.69421.20180910115748.4408.24.22",
+   "name": "Private or Unrecognised Tag",
+   "length": 60
+}
+[PLUGIN:-DEMO]: screening value: 1.2.826.0.1.3680043.6.40545.69421.20180910115748.4408.24.22
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0043,1062)",
+   "value": "17051 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: 17051 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0043,106f)",
+   "value": "0\\0\\0\\0 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0\0\0\0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "US",
+   "tag": "(0043,107d)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0043,1080)",
+   "value": "iMNS:0\\C:0\\A:\\USAIIWJ452FtuvpmbwhYJzIlwgsSqCpF\\26000000149dc90f\\B:0 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 68
+}
+[PLUGIN:-DEMO]: screening value: iMNS:0\C:0\A:\USAIIWJ452FtuvpmbwhYJzIlwgsSqCpF\26000000149dc90f\B:0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0043,1081)",
+   "value": "C-GE_HNS CTL456 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: C-GE_HNS CTL456 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0043,1082)",
+   "value": "SRMode=120\\GCoilType=2\\gradientAmp=8916\\lineFreq=50\\RFampType=10\\DerateGrad=Yes ",
+   "name": "Private or Unrecognised Tag",
+   "length": 80
+}
+[PLUGIN:-DEMO]: screening value: SRMode=120\GCoilType=2\gradientAmp=8916\lineFreq=50\RFampType=10\DerateGrad=Yes 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0043,1083)",
+   "value": "1\\1 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 1\1 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0043,1084)",
+   "value": "10000\\0\\-1\\0\\\\NO\\ ",
+   "name": "Private or Unrecognised Tag",
+   "length": 18
+}
+[PLUGIN:-DEMO]: screening value: 10000\0\-1\0\\NO\ 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0043,1088)",
+   "value": "1.2.840.113619.2.322.2807.4229815.20811.1536388525.565",
+   "name": "Private or Unrecognised Tag",
+   "length": 54
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.113619.2.322.2807.4229815.20811.1536388525.565
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0043,1089)",
+   "value": "IEC\\IEC_NORMAL\\IEC_NORMAL ",
+   "name": "Private or Unrecognised Tag",
+   "length": 26
+}
+[PLUGIN:-DEMO]: screening value: IEC\IEC_NORMAL\IEC_NORMAL 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0043,108a)",
+   "value": "COL ",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: COL 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0043,1090)",
+   "value": "WHOLE_BODY_6_MIN\\LOCAL_PEAK_6_MIN\\PARTIAL_BODY_6MIN ",
+   "name": "Private or Unrecognised Tag",
+   "length": 52
+}
+[PLUGIN:-DEMO]: screening value: WHOLE_BODY_6_MIN\LOCAL_PEAK_6_MIN\PARTIAL_BODY_6MIN 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0043,1091)",
+   "value": "1.013\\2.02681\\1.0134",
+   "name": "Private or Unrecognised Tag",
+   "length": 20
+}
+[PLUGIN:-DEMO]: screening value: 1.013\2.02681\1.0134
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0043,1095)",
+   "value": "TG/s1,CF/s2,AS/s2 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 18
+}
+[PLUGIN:-DEMO]: screening value: TG/s1,CF/s2,AS/s2 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0043,1096)",
+   "value": "PRODUCT ",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: PRODUCT 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0043,1097)",
+   "value": "2\\1\\1.5 0.2 0.2 5 32 0.4 1.13\\1.5 0.2 0.2 5 64 0.4 1.13\\1.5 0.2 0.2 5 32 0.4 1.13\\100\\0\\0\\rev=1;a=75;b=2;c=32;d=8;e=3;f=2;g=1;h=40",
+   "name": "Private or Unrecognised Tag",
+   "length": 130
+}
+[PLUGIN:-DEMO]: screening value: 2\1\1.5 0.2 0.2 5 32 0.4 1.13\1.5 0.2 0.2 5 64 0.4 1.13\1.5 0.2 0.2 5 32 0.4 1.13\100\0\0\rev=1;a=75;b=2;c=32;d=8;e=3;f=2;g=1;h=40
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0043,109a)",
+   "value": "1 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0008,1040)",
+   "value": "",
+   "name": "InstitutionalDepartmentName",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SQ",
+   "tag": "(0400,0550)",
+   "value": null,
+   "name": "ModifiedAttributesSequence",
+   "length": 4294967295
+}
+[PLUGIN:-DEMO]: ooh an SQ. i don't know how to xss screen that yet - wait!
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DT",
+   "tag": "(0400,0562)",
+   "value": "20180910122931",
+   "name": "AttributeModificationDateTime",
+   "length": 14
+}
+[PLUGIN:-DEMO]: screening value: 20180910122931
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0400,0563)",
+   "value": "Mach7 Technologies",
+   "name": "ModifyingSystem",
+   "length": 18
+}
+[PLUGIN:-DEMO]: screening value: Mach7 Technologies
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0400,0564)",
+   "value": "",
+   "name": "SourceOfPreviousValues",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0400,0565)",
+   "value": "COERCE",
+   "name": "ReasonForTheAttributeModification",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: COERCE
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SQ",
+   "tag": "(0400,0561)",
+   "value": null,
+   "name": "OriginalAttributesSequence",
+   "length": 4294967295
+}
+[PLUGIN:-DEMO]: ooh an SQ. i don't know how to xss screen that yet - wait!
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "OW",
+   "tag": "(7fe0,0010)",
+   "value": "Binary data (OW): 524288 bytes",
+   "name": "PixelData",
+   "length": 524288,
+   "devNote": "No support for VR: OW"
+}
+[PLUGIN:-DEMO]: screening value: Binary data (OW): 524288 bytes
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UL",
+   "tag": "(0002,0000)",
+   "value": "216",
+   "name": "FileMetaInformationGroupLength",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 216
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "OB",
+   "tag": "(0002,0001)",
+   "value": "Binary data (OB): 2 bytes",
+   "name": "FileMetaInformationVersion",
+   "length": 2,
+   "devNote": "No support for VR: OB"
+}
+[PLUGIN:-DEMO]: screening value: Binary data (OB): 2 bytes
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0002,0002)",
+   "value": "1.2.840.10008.5.1.4.1.1.4",
+   "name": "MediaStorageSOPClassUID",
+   "length": 26
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.10008.5.1.4.1.1.4
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0002,0003)",
+   "value": "1.2.840.113619.2.322.2807.4229815.15755.1536388619.454",
+   "name": "MediaStorageSOPInstanceUID",
+   "length": 54
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.113619.2.322.2807.4229815.15755.1536388619.454
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0002,0010)",
+   "value": "1.2.840.10008.1.2.1",
+   "name": "TransferSyntaxUID",
+   "length": 20
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.10008.1.2.1
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0002,0012)",
+   "value": "1.2.826.0.1.3680043.1.2.100.6.40.0.128",
+   "name": "ImplementationClassUID",
+   "length": 38
+}
+[PLUGIN:-DEMO]: screening value: 1.2.826.0.1.3680043.1.2.100.6.40.0.128
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0002,0013)",
+   "value": "DicomObjects.NET",
+   "name": "ImplementationVersionName",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: DicomObjects.NET
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "AE",
+   "tag": "(0002,0016)",
+   "value": "",
+   "name": "SourceApplicationEntityTitle",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0008,0005)",
+   "value": "ISO_IR 100",
+   "name": "SpecificCharacterSet",
+   "length": 10
+}
+[PLUGIN:-DEMO]: screening value: ISO_IR 100
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0008,0008)",
+   "value": "ORIGINAL\\PRIMARY\\OTHER",
+   "name": "ImageType",
+   "length": 22
+}
+[PLUGIN:-DEMO]: screening value: ORIGINAL\PRIMARY\OTHER
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0008,0016)",
+   "value": "1.2.840.10008.5.1.4.1.1.4",
+   "name": "SOPClassUID",
+   "length": 26
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.10008.5.1.4.1.1.4
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0008,0018)",
+   "value": "1.2.840.113619.2.322.2807.4229815.15755.1536388619.454",
+   "name": "SOPInstanceUID",
+   "length": 54
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.113619.2.322.2807.4229815.15755.1536388619.454
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DA",
+   "tag": "(0008,0020)",
+   "value": "20180910",
+   "name": "StudyDate",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 20180910
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DA",
+   "tag": "(0008,0021)",
+   "value": "20180910",
+   "name": "SeriesDate",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 20180910
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DA",
+   "tag": "(0008,0022)",
+   "value": "20180910",
+   "name": "AcquisitionDate",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 20180910
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DA",
+   "tag": "(0008,0023)",
+   "value": "20180910",
+   "name": "ContentDate",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 20180910
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "TM",
+   "tag": "(0008,0030)",
+   "value": "",
+   "name": "StudyTime",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "TM",
+   "tag": "(0008,0031)",
+   "value": "121145",
+   "name": "SeriesTime",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: 121145
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "TM",
+   "tag": "(0008,0032)",
+   "value": "121145",
+   "name": "AcquisitionTime",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: 121145
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "TM",
+   "tag": "(0008,0033)",
+   "value": "121145",
+   "name": "ContentTime",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: 121145
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0008,0050)",
+   "value": "X54891",
+   "name": "AccessionNumber",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: X54891
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0008,0060)",
+   "value": "MR",
+   "name": "Modality",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: MR
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0008,0070)",
+   "value": "GE MEDICAL SYSTEMS",
+   "name": "Manufacturer",
+   "length": 18
+}
+[PLUGIN:-DEMO]: screening value: GE MEDICAL SYSTEMS
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0008,0080)",
+   "value": "",
+   "name": "InstitutionName",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "PN",
+   "tag": "(0008,0090)",
+   "value": "Dr Carolyn Fay",
+   "name": "ReferringPhysicianName",
+   "length": 14
+}
+[PLUGIN:-DEMO]: screening value: Dr Carolyn Fay
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0008,1010)",
+   "value": "hdx ",
+   "name": "StationName",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: hdx 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0008,1030)",
+   "value": "MRI Spine lumbar",
+   "name": "StudyDescription",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: MRI Spine lumbar
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0008,103e)",
+   "value": "Sag T2  ",
+   "name": "SeriesDescription",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: Sag T2  
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0008,1040)",
+   "value": "LIC ",
+   "name": "InstitutionalDepartmentName",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: LIC 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0008,1090)",
+   "value": "Signa HDxt",
+   "name": "ManufacturerModelName",
+   "length": 10
+}
+[PLUGIN:-DEMO]: screening value: Signa HDxt
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0008,1150)",
+   "value": "1.2.840.10008.3.1.2.3.3",
+   "name": "ReferencedSOPClassUID",
+   "length": 24
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.10008.3.1.2.3.3
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0008,1155)",
+   "value": "1.2.840.113619.6.322.156408440672647270317625317477919978714",
+   "name": "ReferencedSOPInstanceUID",
+   "length": 60
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.113619.6.322.156408440672647270317625317477919978714
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SQ",
+   "tag": "(0008,1111)",
+   "value": null,
+   "name": "ReferencedPerformedProcedureStepSequence",
+   "length": 4294967295
+}
+[PLUGIN:-DEMO]: ooh an SQ. i don't know how to xss screen that yet - wait!
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0008,1150)",
+   "value": "1.2.840.10008.5.1.4.1.1.4",
+   "name": "ReferencedSOPClassUID",
+   "length": 26
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.10008.5.1.4.1.1.4
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0008,1155)",
+   "value": "1.2.840.113619.2.322.2807.4229815.15755.1536388619.94",
+   "name": "ReferencedSOPInstanceUID",
+   "length": 54
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.113619.2.322.2807.4229815.15755.1536388619.94
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0008,1150)",
+   "value": "1.2.840.10008.5.1.4.1.1.4",
+   "name": "ReferencedSOPClassUID",
+   "length": 26
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.10008.5.1.4.1.1.4
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0008,1155)",
+   "value": "1.2.840.113619.2.322.2807.4229815.15755.1536388619.86",
+   "name": "ReferencedSOPInstanceUID",
+   "length": 54
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.113619.2.322.2807.4229815.15755.1536388619.86
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SQ",
+   "tag": "(0008,1140)",
+   "value": null,
+   "name": "ReferencedImageSequence",
+   "length": 4294967295
+}
+[PLUGIN:-DEMO]: ooh an SQ. i don't know how to xss screen that yet - wait!
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0009,0010)",
+   "value": "GEMS_IDEN_01",
+   "name": "Private or Unrecognised Tag",
+   "length": 12
+}
+[PLUGIN:-DEMO]: screening value: GEMS_IDEN_01
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0009,1002)",
+   "value": "GE",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: GE
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0009,1004)",
+   "value": "SIGNA ",
+   "name": "Private or Unrecognised Tag",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: SIGNA 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0009,1027)",
+   "value": "1536581505",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 1536581505
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0009,1030)",
+   "value": "10530MRS01      ",
+   "name": "Private or Unrecognised Tag",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: 10530MRS01      
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0009,1031)",
+   "value": "9999",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 9999
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0009,10e3)",
+   "value": "1.2.840.113619.1.322.5.2807.4229815",
+   "name": "Private or Unrecognised Tag",
+   "length": 36
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.113619.1.322.5.2807.4229815
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0009,10e9)",
+   "value": "1536581505",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 1536581505
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "PN",
+   "tag": "(0010,0010)",
+   "value": "Jonathan Snow ",
+   "name": "PatientName",
+   "length": 14
+}
+[PLUGIN:-DEMO]: screening value: Jonathan Snow 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0010,0020)",
+   "value": "12345 ",
+   "name": "PatientID",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: 12345 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DA",
+   "tag": "(0010,0030)",
+   "value": "19870216",
+   "name": "PatientBirthDate",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 19870216
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0010,0040)",
+   "value": "M ",
+   "name": "PatientSex",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: M 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "AS",
+   "tag": "(0010,1010)",
+   "value": "031Y",
+   "name": "PatientAge",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 031Y
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0010,1030)",
+   "value": "75",
+   "name": "PatientWeight",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 75
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LT",
+   "tag": "(0010,21b0)",
+   "value": "",
+   "name": "AdditionalPatientHistory",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0018,0020)",
+   "value": "SE",
+   "name": "ScanningSequence",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: SE
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0018,0021)",
+   "value": "SK\\OSP",
+   "name": "SequenceVariant",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: SK\OSP
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0018,0022)",
+   "value": "FAST_GEMS\\FC_FREQ_AX_GEMS\\FC\\SAT_GEMS\\NPW\\EDR_GEMS\\TRF_GEMS\\FILTERED_GEMS\\SP",
+   "name": "ScanOptions",
+   "length": 76
+}
+[PLUGIN:-DEMO]: screening value: FAST_GEMS\FC_FREQ_AX_GEMS\FC\SAT_GEMS\NPW\EDR_GEMS\TRF_GEMS\FILTERED_GEMS\SP
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0018,0023)",
+   "value": "2D",
+   "name": "MRAcquisitionType",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 2D
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0018,0025)",
+   "value": "N ",
+   "name": "AngioFlag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: N 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,0050)",
+   "value": "4.5 ",
+   "name": "SliceThickness",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 4.5 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,0080)",
+   "value": "3761",
+   "name": "RepetitionTime",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 3761
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,0081)",
+   "value": "103.68",
+   "name": "EchoTime",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: 103.68
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,0083)",
+   "value": "1.5 ",
+   "name": "NumberOfAverages",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 1.5 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,0084)",
+   "value": "63.863155 ",
+   "name": "ImagingFrequency",
+   "length": 10
+}
+[PLUGIN:-DEMO]: screening value: 63.863155 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0018,0085)",
+   "value": "1H",
+   "name": "ImagedNucleus",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1H
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0018,0086)",
+   "value": "1 ",
+   "name": "EchoNumbers",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,0087)",
+   "value": "1.5 ",
+   "name": "MagneticFieldStrength",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 1.5 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,0088)",
+   "value": "5.5 ",
+   "name": "SpacingBetweenSlices",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 5.5 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0018,0091)",
+   "value": "19",
+   "name": "EchoTrainLength",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 19
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,0093)",
+   "value": "100 ",
+   "name": "PercentSampling",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 100 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,0094)",
+   "value": "100 ",
+   "name": "PercentPhaseFieldOfView",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 100 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,0095)",
+   "value": "108.516 ",
+   "name": "PixelBandwidth",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 108.516 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0018,1000)",
+   "value": "00000010530MRS01",
+   "name": "DeviceSerialNumber",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: 00000010530MRS01
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0018,1020)",
+   "value": "23\\LX\\MR Software release:HD23.0_V02_1406.a ",
+   "name": "SoftwareVersions",
+   "length": 44
+}
+[PLUGIN:-DEMO]: screening value: 23\LX\MR Software release:HD23.0_V02_1406.a 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0018,1030)",
+   "value": "12 Lumbar Spine ",
+   "name": "ProtocolName",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: 12 Lumbar Spine 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0018,1088)",
+   "value": "0 ",
+   "name": "HeartRate",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0018,1090)",
+   "value": "0 ",
+   "name": "CardiacNumberOfImages",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0018,1094)",
+   "value": "0 ",
+   "name": "TriggerWindow",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,1100)",
+   "value": "340 ",
+   "name": "ReconstructionDiameter",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 340 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0018,1250)",
+   "value": "HNS CTL456",
+   "name": "ReceiveCoilName",
+   "length": 10
+}
+[PLUGIN:-DEMO]: screening value: HNS CTL456
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "US",
+   "tag": "(0018,1310)",
+   "value": "448",
+   "name": "AcquisitionMatrix",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 448
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0018,1312)",
+   "value": "COL ",
+   "name": "InPlanePhaseEncodingDirection",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: COL 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,1314)",
+   "value": "160 ",
+   "name": "FlipAngle",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 160 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0018,1315)",
+   "value": "N ",
+   "name": "VariableFlipAngleFlag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: N 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0018,1316)",
+   "value": "1.0134",
+   "name": "SAR",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: 1.0134
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0018,5100)",
+   "value": "FFS ",
+   "name": "PatientPosition",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: FFS 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0019,0010)",
+   "value": "GEMS_ACQU_01",
+   "name": "Private or Unrecognised Tag",
+   "length": 12
+}
+[PLUGIN:-DEMO]: screening value: GEMS_ACQU_01
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,100f)",
+   "value": "1088.400024 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 12
+}
+[PLUGIN:-DEMO]: screening value: 1088.400024 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,1011)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,1012)",
+   "value": "56",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 56
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,1017)",
+   "value": "16",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 16
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0019,1018)",
+   "value": "R ",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: R 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,1019)",
+   "value": "33.2253 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 33.2253 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0019,101a)",
+   "value": "L ",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: L 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,101b)",
+   "value": "-32.769 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: -32.769 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,101e)",
+   "value": "340.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 10
+}
+[PLUGIN:-DEMO]: screening value: 340.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "FL",
+   "tag": "(0019,105a)",
+   "value": "165684000",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 165684000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,107d)",
+   "value": "0 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,107e)",
+   "value": "1",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,107f)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,1081)",
+   "value": "1",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,1084)",
+   "value": "2.026809",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 2.026809
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,1087)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,1088)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,108a)",
+   "value": "13",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 13
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,108b)",
+   "value": "29",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 29
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,108d)",
+   "value": "0 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,108f)",
+   "value": "1",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,1090)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,1091)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0019,1092)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,1093)",
+   "value": "638631550 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 10
+}
+[PLUGIN:-DEMO]: screening value: 638631550 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,1094)",
+   "value": "179",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 179
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,1095)",
+   "value": "13",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 13
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,1096)",
+   "value": "29",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 29
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0019,1097)",
+   "value": "2113984",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 2113984
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,109b)",
+   "value": "1",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0019,109c)",
+   "value": "frfseopt",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: frfseopt
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DT",
+   "tag": "(0019,109d)",
+   "value": "20140204020607",
+   "name": "Private or Unrecognised Tag",
+   "length": 14
+}
+[PLUGIN:-DEMO]: screening value: 20140204020607
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0019,109e)",
+   "value": "FSE ",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: FSE 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,109f)",
+   "value": "3",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 3
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10a0)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10a1)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0019,10a2)",
+   "value": "59905",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 59905
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UL",
+   "tag": "(0019,10a3)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10a4)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10a7)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10a8)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10a9)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10aa)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10ab)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10ac)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10ad)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10ae)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10af)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10b0)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10b1)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10b2)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10b3)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10b4)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10b5)",
+   "value": "1.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 1.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10b6)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10b7)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10b8)",
+   "value": "1.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 1.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10b9)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10ba)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10bb)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10bc)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10bd)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10be)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10c0)",
+   "value": "1027",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1027
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10c2)",
+   "value": "9990",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 9990
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10c3)",
+   "value": "9990",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 9990
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10c4)",
+   "value": "543",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 543
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10c5)",
+   "value": "9990",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 9990
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10c6)",
+   "value": "9990",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 9990
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10c7)",
+   "value": "9990",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 9990
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10c8)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10c9)",
+   "value": "400",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 400
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10ca)",
+   "value": "400",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 400
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10cb)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10cc)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10cd)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10ce)",
+   "value": "2",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 2
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10cf)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10d2)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0019,10d3)",
+   "value": "",
+   "name": "Private or Unrecognised Tag",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10d5)",
+   "value": "2",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 2
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10d7)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10d8)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10d9)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10df)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10e0)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10e2)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0019,10f2)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0019,10f9)",
+   "value": "179 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 179 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0020,000d)",
+   "value": "1.2.826.0.1.3680043.6.40545.69421.20180910115748.4408.24.22",
+   "name": "StudyInstanceUID",
+   "length": 60
+}
+[PLUGIN:-DEMO]: screening value: 1.2.826.0.1.3680043.6.40545.69421.20180910115748.4408.24.22
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0020,000e)",
+   "value": "1.2.840.113619.2.322.2807.4229815.20811.1536388525.566",
+   "name": "SeriesInstanceUID",
+   "length": 54
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.113619.2.322.2807.4229815.20811.1536388525.566
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0020,0010)",
+   "value": "17051 ",
+   "name": "StudyID",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: 17051 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0020,0011)",
+   "value": "3 ",
+   "name": "SeriesNumber",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 3 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0020,0012)",
+   "value": "1 ",
+   "name": "AcquisitionNumber",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0020,0013)",
+   "value": "2 ",
+   "name": "InstanceNumber",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 2 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0020,0032)",
+   "value": "-24.5524\\-159.334\\219.857 ",
+   "name": "ImagePositionPatient",
+   "length": 26
+}
+[PLUGIN:-DEMO]: screening value: -24.5524\-159.334\219.857 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0020,0037)",
+   "value": "-0.0091884\\0.999958\\-0.000104568\\-0.009515\\-0.000191991\\-0.999955 ",
+   "name": "ImageOrientationPatient",
+   "length": 66
+}
+[PLUGIN:-DEMO]: screening value: -0.0091884\0.999958\-0.000104568\-0.009515\-0.000191991\-0.999955 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0020,0052)",
+   "value": "1.2.840.113619.2.322.2807.4229815.20811.1536388525.564",
+   "name": "FrameOfReferenceUID",
+   "length": 54
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.113619.2.322.2807.4229815.20811.1536388525.564
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0020,0060)",
+   "value": "",
+   "name": "Laterality",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0020,1002)",
+   "value": "13",
+   "name": "ImagesInAcquisition",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 13
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0020,1040)",
+   "value": "",
+   "name": "PositionReferenceIndicator",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0020,1041)",
+   "value": "27.72575188 ",
+   "name": "SliceLocation",
+   "length": 12
+}
+[PLUGIN:-DEMO]: screening value: 27.72575188 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0020,9056)",
+   "value": "1 ",
+   "name": "StackID",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UL",
+   "tag": "(0020,9057)",
+   "value": "2",
+   "name": "InStackPositionNumber",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 2
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0021,0010)",
+   "value": "GEMS_RELA_01",
+   "name": "Private or Unrecognised Tag",
+   "length": 12
+}
+[PLUGIN:-DEMO]: screening value: GEMS_RELA_01
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0021,1035)",
+   "value": "1",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0021,1036)",
+   "value": "9",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 9
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0021,1037)",
+   "value": "16",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 16
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0021,104f)",
+   "value": "13",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 13
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0021,1050)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,1051)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,1052)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,1053)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0021,1056)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0021,1057)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0021,1058)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0021,1059)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0021,105a)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,105b)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,105c)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,105d)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,105e)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,105f)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,1081)",
+   "value": "0 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,1082)",
+   "value": "0 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,1083)",
+   "value": "0 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0021,1084)",
+   "value": "0 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0023,0010)",
+   "value": "GEMS_STDY_01",
+   "name": "Private or Unrecognised Tag",
+   "length": 12
+}
+[PLUGIN:-DEMO]: screening value: GEMS_STDY_01
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "FD",
+   "tag": "(0023,1070)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0023,1074)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0023,107d)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0040,0255)",
+   "value": "",
+   "name": "PerformedProcedureTypeDescription",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SQ",
+   "tag": "(0023,1080)",
+   "value": null,
+   "name": "Private or Unrecognised Tag",
+   "length": 4294967295
+}
+[PLUGIN:-DEMO]: ooh an SQ. i don't know how to xss screen that yet - wait!
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0025,0010)",
+   "value": "GEMS_SERS_01",
+   "name": "Private or Unrecognised Tag",
+   "length": 12
+}
+[PLUGIN:-DEMO]: screening value: GEMS_SERS_01
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0025,1006)",
+   "value": "56",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 56
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0025,1007)",
+   "value": "13",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 13
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0025,1010)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0025,1011)",
+   "value": "1",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0025,1014)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0025,1017)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0025,1018)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0025,1019)",
+   "value": "13",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 13
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0025,101a)",
+   "value": "GEHDX ",
+   "name": "Private or Unrecognised Tag",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: GEHDX 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "OB",
+   "tag": "(0025,101b)",
+   "value": "Binary data (OB): 940 bytes",
+   "name": "Private or Unrecognised Tag",
+   "length": 940,
+   "devNote": "No support for VR: OB"
+}
+[PLUGIN:-DEMO]: screening value: Binary data (OB): 940 bytes
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0027,0010)",
+   "value": "GEMS_IMAG_01",
+   "name": "Private or Unrecognised Tag",
+   "length": 12
+}
+[PLUGIN:-DEMO]: screening value: GEMS_IMAG_01
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0027,1006)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0027,1010)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0027,1030)",
+   "value": "",
+   "name": "Private or Unrecognised Tag",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0027,1031)",
+   "value": "1",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0027,1032)",
+   "value": "56",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 56
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UL",
+   "tag": "(0027,1033)",
+   "value": "1224738984",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 1224738984
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0027,1035)",
+   "value": "16",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 16
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0027,1040)",
+   "value": "R ",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: R 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "FL",
+   "tag": "(0027,1041)",
+   "value": "27.725751876831055",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 27.725751876831055
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "FL",
+   "tag": "(0027,1060)",
+   "value": "448",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 448
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "FL",
+   "tag": "(0027,1061)",
+   "value": "256",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 256
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "FL",
+   "tag": "(0027,1062)",
+   "value": "3",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 3
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "US",
+   "tag": "(0028,0002)",
+   "value": "1",
+   "name": "SamplesPerPixel",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0028,0004)",
+   "value": "MONOCHROME2 ",
+   "name": "PhotometricInterpretation",
+   "length": 12
+}
+[PLUGIN:-DEMO]: screening value: MONOCHROME2 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "US",
+   "tag": "(0028,0010)",
+   "value": "512",
+   "name": "Rows",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 512
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "US",
+   "tag": "(0028,0011)",
+   "value": "512",
+   "name": "Columns",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 512
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0028,0030)",
+   "value": "0.6641\\0.6641 ",
+   "name": "PixelSpacing",
+   "length": 14
+}
+[PLUGIN:-DEMO]: screening value: 0.6641\0.6641 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "US",
+   "tag": "(0028,0100)",
+   "value": "16",
+   "name": "BitsAllocated",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 16
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "US",
+   "tag": "(0028,0101)",
+   "value": "16",
+   "name": "BitsStored",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 16
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "US",
+   "tag": "(0028,0102)",
+   "value": "15",
+   "name": "HighBit",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 15
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "US",
+   "tag": "(0028,0103)",
+   "value": "1",
+   "name": "PixelRepresentation",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0028,0106)",
+   "value": "0",
+   "name": "SmallestImagePixelValue",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0028,0107)",
+   "value": "431",
+   "name": "LargestImagePixelValue",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 431
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0028,1050)",
+   "value": "215 ",
+   "name": "WindowCenter",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 215 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0028,1051)",
+   "value": "431 ",
+   "name": "WindowWidth",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 431 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0029,0010)",
+   "value": "GEMS_IMPS_01",
+   "name": "Private or Unrecognised Tag",
+   "length": 12
+}
+[PLUGIN:-DEMO]: screening value: GEMS_IMPS_01
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0029,1015)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0029,1016)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0029,1017)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0029,1018)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0029,1026)",
+   "value": "2",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 2
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0029,1034)",
+   "value": "16384",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 16384
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SL",
+   "tag": "(0029,1035)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0038,0300)",
+   "value": "",
+   "name": "CurrentPatientLocation",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0040,0242)",
+   "value": "hdx ",
+   "name": "PerformedStationName",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: hdx 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0040,0243)",
+   "value": "GE",
+   "name": "PerformedLocation",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: GE
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DA",
+   "tag": "(0040,0244)",
+   "value": "20180910",
+   "name": "PerformedProcedureStepStartDate",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 20180910
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "TM",
+   "tag": "(0040,0245)",
+   "value": "110623",
+   "name": "PerformedProcedureStepStartTime",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: 110623
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0040,0253)",
+   "value": "3225.1536577582 ",
+   "name": "PerformedProcedureStepID",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: 3225.1536577582 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0040,0254)",
+   "value": "MRI Spine lumbar",
+   "name": "PerformedProcedureStepDescription",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: MRI Spine lumbar
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0032,1060)",
+   "value": "MRI Spine lumbar",
+   "name": "RequestedProcedureDescription",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: MRI Spine lumbar
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "PN",
+   "tag": "(0040,0006)",
+   "value": "Fay^Carolyn^^^",
+   "name": "ScheduledPerformingPhysicianName",
+   "length": 14
+}
+[PLUGIN:-DEMO]: screening value: Fay^Carolyn^^^
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0040,0007)",
+   "value": "MRI Spine lumbar",
+   "name": "ScheduledProcedureStepDescription",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: MRI Spine lumbar
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0040,0009)",
+   "value": "LCA1809100142995",
+   "name": "ScheduledProcedureStepID",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: LCA1809100142995
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0040,1001)",
+   "value": "LCA1809100142995",
+   "name": "RequestedProcedureID",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: LCA1809100142995
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SQ",
+   "tag": "(0040,0275)",
+   "value": null,
+   "name": "RequestAttributesSequence",
+   "length": 4294967295
+}
+[PLUGIN:-DEMO]: ooh an SQ. i don't know how to xss screen that yet - wait!
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0043,0010)",
+   "value": "GEMS_PARM_01",
+   "name": "Private or Unrecognised Tag",
+   "length": 12
+}
+[PLUGIN:-DEMO]: screening value: GEMS_PARM_01
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,1001)",
+   "value": "4",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 4
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,1002)",
+   "value": "-4",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: -4
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,1003)",
+   "value": "-2",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: -2
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,1004)",
+   "value": "2",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 2
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,1006)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,1007)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,1008)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,1009)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,100a)",
+   "value": "1",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0043,100b)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0043,100c)",
+   "value": "80.000000 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 10
+}
+[PLUGIN:-DEMO]: screening value: 80.000000 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0043,100d)",
+   "value": "77.689766 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 10
+}
+[PLUGIN:-DEMO]: screening value: 77.689766 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0043,100e)",
+   "value": "0.000000",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0.000000
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "US",
+   "tag": "(0043,1010)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,101c)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,101d)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "OB",
+   "tag": "(0043,1028)",
+   "value": "Binary data (OB): 80 bytes",
+   "name": "Private or Unrecognised Tag",
+   "length": 80,
+   "devNote": "No support for VR: OB"
+}
+[PLUGIN:-DEMO]: screening value: Binary data (OB): 80 bytes
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "OB",
+   "tag": "(0043,1029)",
+   "value": "Binary data (OB): 2068 bytes",
+   "name": "Private or Unrecognised Tag",
+   "length": 2068,
+   "devNote": "No support for VR: OB"
+}
+[PLUGIN:-DEMO]: screening value: Binary data (OB): 2068 bytes
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "OB",
+   "tag": "(0043,102a)",
+   "value": "Binary data (OB): 5648 bytes",
+   "name": "Private or Unrecognised Tag",
+   "length": 5648,
+   "devNote": "No support for VR: OB"
+}
+[PLUGIN:-DEMO]: screening value: Binary data (OB): 5648 bytes
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,102c)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0043,102d)",
+   "value": "p+",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: p+
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0043,102e)",
+   "value": "",
+   "name": "Private or Unrecognised Tag",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,102f)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,1030)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SS",
+   "tag": "(0043,1032)",
+   "value": "2",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 2
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "FL",
+   "tag": "(0043,1033)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0043,1034)",
+   "value": "0 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UL",
+   "tag": "(0043,1035)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UL",
+   "tag": "(0043,1036)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UL",
+   "tag": "(0043,1037)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "FL",
+   "tag": "(0043,1038)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 96
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0043,1039)",
+   "value": "0\\2097152\\0\\0 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 14
+}
+[PLUGIN:-DEMO]: screening value: 0\2097152\0\0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0043,1060)",
+   "value": "0\\0\\0\\0\\0\\0\\0\\0 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: 0\0\0\0\0\0\0\0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0043,1061)",
+   "value": "1.2.826.0.1.3680043.6.40545.69421.20180910115748.4408.24.22",
+   "name": "Private or Unrecognised Tag",
+   "length": 60
+}
+[PLUGIN:-DEMO]: screening value: 1.2.826.0.1.3680043.6.40545.69421.20180910115748.4408.24.22
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SH",
+   "tag": "(0043,1062)",
+   "value": "17051 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: 17051 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0043,106f)",
+   "value": "0\\0\\0\\0 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: 0\0\0\0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "US",
+   "tag": "(0043,107d)",
+   "value": "0",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 0
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0043,1080)",
+   "value": "iMNS:0\\C:0\\A:\\USAIIWJ452FtuvpmbwhYJzIlwgsSqCpF\\26000000149dc90f\\B:0 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 68
+}
+[PLUGIN:-DEMO]: screening value: iMNS:0\C:0\A:\USAIIWJ452FtuvpmbwhYJzIlwgsSqCpF\26000000149dc90f\B:0 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0043,1081)",
+   "value": "C-GE_HNS CTL456 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 16
+}
+[PLUGIN:-DEMO]: screening value: C-GE_HNS CTL456 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0043,1082)",
+   "value": "SRMode=120\\GCoilType=2\\gradientAmp=8916\\lineFreq=50\\RFampType=10\\DerateGrad=Yes ",
+   "name": "Private or Unrecognised Tag",
+   "length": 80
+}
+[PLUGIN:-DEMO]: screening value: SRMode=120\GCoilType=2\gradientAmp=8916\lineFreq=50\RFampType=10\DerateGrad=Yes 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0043,1083)",
+   "value": "1\\1 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: 1\1 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0043,1084)",
+   "value": "10000\\0\\-1\\0\\\\NO\\ ",
+   "name": "Private or Unrecognised Tag",
+   "length": 18
+}
+[PLUGIN:-DEMO]: screening value: 10000\0\-1\0\\NO\ 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "UI",
+   "tag": "(0043,1088)",
+   "value": "1.2.840.113619.2.322.2807.4229815.20811.1536388525.565",
+   "name": "Private or Unrecognised Tag",
+   "length": 54
+}
+[PLUGIN:-DEMO]: screening value: 1.2.840.113619.2.322.2807.4229815.20811.1536388525.565
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0043,1089)",
+   "value": "IEC\\IEC_NORMAL\\IEC_NORMAL ",
+   "name": "Private or Unrecognised Tag",
+   "length": 26
+}
+[PLUGIN:-DEMO]: screening value: IEC\IEC_NORMAL\IEC_NORMAL 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0043,108a)",
+   "value": "COL ",
+   "name": "Private or Unrecognised Tag",
+   "length": 4
+}
+[PLUGIN:-DEMO]: screening value: COL 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0043,1090)",
+   "value": "WHOLE_BODY_6_MIN\\LOCAL_PEAK_6_MIN\\PARTIAL_BODY_6MIN ",
+   "name": "Private or Unrecognised Tag",
+   "length": 52
+}
+[PLUGIN:-DEMO]: screening value: WHOLE_BODY_6_MIN\LOCAL_PEAK_6_MIN\PARTIAL_BODY_6MIN 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DS",
+   "tag": "(0043,1091)",
+   "value": "1.013\\2.02681\\1.0134",
+   "name": "Private or Unrecognised Tag",
+   "length": 20
+}
+[PLUGIN:-DEMO]: screening value: 1.013\2.02681\1.0134
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0043,1095)",
+   "value": "TG/s1,CF/s2,AS/s2 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 18
+}
+[PLUGIN:-DEMO]: screening value: TG/s1,CF/s2,AS/s2 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0043,1096)",
+   "value": "PRODUCT ",
+   "name": "Private or Unrecognised Tag",
+   "length": 8
+}
+[PLUGIN:-DEMO]: screening value: PRODUCT 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0043,1097)",
+   "value": "2\\1\\1.5 0.2 0.2 5 32 0.4 1.13\\1.5 0.2 0.2 5 64 0.4 1.13\\1.5 0.2 0.2 5 32 0.4 1.13\\100\\0\\0\\rev=1;a=75;b=2;c=32;d=8;e=3;f=2;g=1;h=40",
+   "name": "Private or Unrecognised Tag",
+   "length": 130
+}
+[PLUGIN:-DEMO]: screening value: 2\1\1.5 0.2 0.2 5 32 0.4 1.13\1.5 0.2 0.2 5 64 0.4 1.13\1.5 0.2 0.2 5 32 0.4 1.13\100\0\0\rev=1;a=75;b=2;c=32;d=8;e=3;f=2;g=1;h=40
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "IS",
+   "tag": "(0043,109a)",
+   "value": "1 ",
+   "name": "Private or Unrecognised Tag",
+   "length": 2
+}
+[PLUGIN:-DEMO]: screening value: 1 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0008,1040)",
+   "value": "",
+   "name": "InstitutionalDepartmentName",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SQ",
+   "tag": "(0400,0550)",
+   "value": null,
+   "name": "ModifiedAttributesSequence",
+   "length": 4294967295
+}
+[PLUGIN:-DEMO]: ooh an SQ. i don't know how to xss screen that yet - wait!
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "DT",
+   "tag": "(0400,0562)",
+   "value": "20180910122931",
+   "name": "AttributeModificationDateTime",
+   "length": 14
+}
+[PLUGIN:-DEMO]: screening value: 20180910122931
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0400,0563)",
+   "value": "Mach7 Technologies",
+   "name": "ModifyingSystem",
+   "length": 18
+}
+[PLUGIN:-DEMO]: screening value: Mach7 Technologies
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "LO",
+   "tag": "(0400,0564)",
+   "value": "",
+   "name": "SourceOfPreviousValues",
+   "length": 0
+}
+[PLUGIN:-DEMO]: screening value: 
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "CS",
+   "tag": "(0400,0565)",
+   "value": "COERCE",
+   "name": "ReasonForTheAttributeModification",
+   "length": 6
+}
+[PLUGIN:-DEMO]: screening value: COERCE
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "SQ",
+   "tag": "(0400,0561)",
+   "value": null,
+   "name": "OriginalAttributesSequence",
+   "length": 4294967295
+}
+[PLUGIN:-DEMO]: ooh an SQ. i don't know how to xss screen that yet - wait!
+[PLUGIN:-DEMO]: Message from main thread -> {
+   "vr": "OW",
+   "tag": "(7fe0,0010)",
+   "value": "Binary data (OW): 524288 bytes",
+   "name": "PixelData",
+   "length": 524288,
+   "devNote": "No support for VR: OW"
+}
+[PLUGIN:-DEMO]: screening value: Binary data (OW): 524288 bytes

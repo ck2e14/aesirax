@@ -23,9 +23,9 @@ const testDirs = {
 
 /**
  * Main entry point for the application.
- * Initializes the application, runs the
+ * Initialises the application, runs the
  * multi-threaded and/or single-threaded
- * DICOM parsing, and shuts down targetDirhe application.
+ * DICOM parsing, and shuts down app.
  *
  * @param cfg
  * @returns void
@@ -40,9 +40,9 @@ async function main(cfg: Cfg) {
 
   await init();
 
+  cfg.targetDir = `../data/JonathanSnowMR/isolate`;
   // cfg.targetDir = `../data/brokenSiemensCT/isolate`; 
   // cfg.targetDir = `../data/QUANTREDEUSIX`; 
-  cfg.targetDir = `../data/JonathanSnowMR/isolate`;
   // cfg.targetDir = `/Users/chriskennedy/Desktop/SWE/aesirax/data/STANWORTHLORNAMISS/SER00001`;
   // cfg.targetDir = `../data/FELIX/isolate`;// FELIX images are breaking atm on pixel data, i think its expecting JPEG EOI for an img that doesn't use that
 
@@ -68,8 +68,18 @@ async function main(cfg: Cfg) {
     process.exit();
   }
 
-  setTimeout(() => {
-    if (cfg.verbose) write(`Completed current parsing work`, "INFO");
-    process.exit(); // make this robust but its basically always fine but better to check q length
-  }, 300); // Wait for logs to finish writing
+  if (cfg.verbose) {
+    write(`Completed current parsing work`, "INFO");
+  }
+
+  setInterval(() => { }, 5_000) // this is a hack to keep the process alive whilst i work out
+  // a non-annoying or stupid way to make sure plugins are ready for the parent thread to exit 
+  // which is required because plugins are likely to be using worker threads that don't stay alive 
+  // if the parent's got no more event loop work. Probs just a counter or an awaitable promise idk.
+
+  // setTimeout(() => {
+  //   // process.exit(); // make this robust but its basically always fine but better to check q length
+  // }, 0); // Wait for logs to finish writing
+  //
+
 }

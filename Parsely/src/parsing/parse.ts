@@ -18,6 +18,10 @@ import { exp_SHIELD, Plugin } from "./plugins/plugins.js";
  * It's an iterative TLV binary decoder that supports recursive calls 
  * to handle nested datasets (sequence elements' items).
  *
+ * TODO: plugins kinda need a way to signal that main thread is allowed 
+ * to quit because it hella does not respect the clearing of workers'
+ * callstacks.
+ *
  * See the comments at the end of this file for greater detail.
  * @param buffer
  * @param ctx
@@ -51,7 +55,7 @@ export async function parse(
       parseLength(buffer, cursor, el, ctx);
       await parseValue(buffer, cursor, el, ctx); // async/await bleed because recurses with parse()
 
-      if (plugin.sync) {
+      if (plugin && plugin.sync) {
         await wrapAndRunPlugin(plugin, buffer, el)
       } else {
         wrapAndRunPlugin(plugin, buffer, el)

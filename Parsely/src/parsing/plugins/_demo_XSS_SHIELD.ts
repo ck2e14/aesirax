@@ -3,8 +3,7 @@ import { appendFileSync } from "fs";
 import { Plugin } from "./plugins.js";
 import { Worker } from "worker_threads";
 import { Parse } from "../../global.js";
-
-
+import { VR } from "../../enums.js";
 
 
 // Here's a random example plugin. It recieves each completely parsed DICOM element 
@@ -14,14 +13,12 @@ import { Parse } from "../../global.js";
 // pass that to calls to parse().
 
 
-
-
 //   -- Main thread 
 // -----------------------------------------------------------------------------------------------
-
-// Step 1: Export a Plugin<R> object. In this case with a closured reference to a worker 
-// thread that'll be doing the work.
-export const exp_SHIELD: Plugin<null> = (() => {
+// Step 1: Export a Plugin object. In this case with a closured reference to a worker 
+// thread that'll be doing the work. Since we are colocating worker/main thread code in 
+// the same file, use a ternary to avoid an unlimited recursive thread spawning script :P
+export const exp_SHIELD: Plugin = isMainThread ? (() => {
   const worker = new Worker('./dist/parsing/plugins/_demo_XSS_SHIELD.js');
   const id = worker.threadId;
 
@@ -42,20 +39,31 @@ export const exp_SHIELD: Plugin<null> = (() => {
     // each element's handling before the cursor is moved to the start of the next element. 
     fn: (elementAsBytes: Buffer, el: Parse.Element) => {
       worker.postMessage({ elementAsBytes, el })
-      return null
     }
   }
-})();
+})() : null;
 
 
 
 //   -- Worker 
 // -----------------------------------------------------------------------------------------------
+if (!isMainThread) {
+  const logPath = `./[SHIELD]-${threadId}-combined.log`
 
-!isMainThread && (() => {
-  parentPort.on("message", async (msg: any) => {
-    appendFileSync(`./${threadId}-combined.log`, `[PLUGIN:-DEMO]: Message from main thread -> ${JSON.stringify(msg, null, 3)}\n`)     // would normally await fs/promises appendFile() here but seems to behave badly on sigint when a worker thread, not sure why
-    // ... do XSS and SQLi screening here ...
+  parentPort.on("message", async (msg: { elementAsBytes: Buffer, el: Parse.Element, id: string }) => {
+    appendFileSync(logPath, `[PLUGIN:-DEMO]: Message from main thread -> ${JSON.stringify(msg.el, null, 3)}\n`) // would normally await fs/promises appendFile() here but seems to behave badly on sigint when a worker thread, not sure why
+
+    if ('elementAsBytes' in msg) {
+      // ... do XSS and SQLi screening here ...
+      if (msg.el.vr === VR.SQ) {
+        appendFileSync(logPath, `[PLUGIN:-DEMO]: ooh an SQ. i don't know how to xss screen that yet - wait!\n`)
+      } else {
+        appendFileSync(logPath, `[PLUGIN:-DEMO]: screening value: ${msg.el.value}\n`)
+      }
+    }
+
+    // main thread expects to be told when the task is completed 
+    parentPort.postMessage({ completedId: msg.id })
   });
 
   process.on("uncaughtException", error => {
@@ -64,4 +72,4 @@ export const exp_SHIELD: Plugin<null> = (() => {
   });
 
   parentPort.postMessage({ msg: "i am rdy :)" })
-})();
+}
