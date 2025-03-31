@@ -63,7 +63,6 @@ export async function parseSQ(buffer: Buffer, ctx: Ctx, el: Element, parentCurso
   // -- Add traversed bytes & LIFO pop
   parentCursor.sync(ctx, buffer);
   removeSqFromStack(ctx);
-
   write(`Current stacks: ${printSqCtx(ctx)}, Depth: ${ctx.depth}`, "DEBUG");
 
   // -- Trigger stitching
@@ -85,8 +84,7 @@ export async function parseSQ(buffer: Buffer, ctx: Ctx, el: Element, parentCurso
  * @returns TagStr
  */
 function nextUndefLenSqTag(ctx: Ctx, cursor: Cursor, buffer: Buffer): TagStr {
-  const { sq } = stacks(ctx);
-  write(`Handling end of a dataSet item in SQ ${sq.tag} ${sq.name}`, "DEBUG");
+  write(`Handling end of a dataSet item in SQ ${stacks(ctx).sq.tag} ${stacks(ctx).sq.name}`, "DEBUG");
   cursor.walk(Bytes.LENGTH, ctx, buffer); // ignore this length, its always 0x0 for item delims
 
   const nextTagBytes = buffer.subarray(cursor.pos, cursor.pos + Bytes.TAG_NUM);
