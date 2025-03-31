@@ -3,7 +3,7 @@ node_modules
 data/
 logs/
 dist/
-# output.json
+output.json
 .npmrc
 *.log
 package-lock.json
