@@ -4,6 +4,9 @@ import { Plugin } from "./plugins.js";
 import { Worker } from "worker_threads";
 import { Parse } from "../../global.js";
 
+
+
+
 // Here's a random example plugin. It recieves each completely parsed DICOM element 
 // as bytes and as serialised obj. It scans the element value for XSS & SQLi payloads.
 
