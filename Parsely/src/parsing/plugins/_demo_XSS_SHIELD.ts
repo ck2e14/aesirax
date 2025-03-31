@@ -54,8 +54,8 @@ export const exp_SHIELD: Plugin<null> = (() => {
 
 !isMainThread && (() => {
   parentPort.on("message", async (msg: any) => {
-    // would normally await fs/promises appendFile() here but seems to behave badly on sigint when a worker thread, not sure why
-    appendFileSync(`./${threadId}-combined.log`, `[PLUGIN:-DEMO]: Message from main thread -> ${JSON.stringify(msg, null, 3)}\n`)
+    appendFileSync(`./${threadId}-combined.log`, `[PLUGIN:-DEMO]: Message from main thread -> ${JSON.stringify(msg, null, 3)}\n`)     // would normally await fs/promises appendFile() here but seems to behave badly on sigint when a worker thread, not sure why
+    // ... do XSS and SQLi screening here ...
   });
 
   process.on("uncaughtException", error => {
