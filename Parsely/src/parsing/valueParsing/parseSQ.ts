@@ -1,4 +1,3 @@
-import { printSqCtx } from "../../utils.js";
 import { saveElement, parse, exitParse } from "../parse.js";
 import { Cursor } from "../cursor.js";
 import { write } from "../../logging/logQ.js";
@@ -8,6 +7,7 @@ import { decodeTag } from "../parseTag.js";
 import { BufferBoundary, DicomError, Malformed } from "../../errors.js";
 import { ITEM_END_TAG, ITEM_START_TAG, MAX_UINT32, SQ_END_TAG } from "../constants.js";
 import { Parse } from "../../global.js";
+import { printSqCtx } from "../../utils.js";
 
 /**
  * Manage parsing of sequence elements. Does so by recursively
@@ -17,23 +17,27 @@ import { Parse } from "../../global.js";
  * sync cursors and return control to the parse() frame that
  * detected the outermost SQ.
  *
+ * Note that it takes in a Non SQ element because the default 
+ * at the start of each parse() loop iteration is to create a new 
+ * NonSQ element.
+ *
  * TODO check whether depth == cq stack .length, if not throw.
  *
  * @param seqBuffer
  * @param ctx
  * @param seqTag
  */
-export async function parseSQ(buffer: Buffer, ctx: Ctx, el: Parse.Element, parentCursor: Cursor) {
+export async function parseSQ(buffer: Buffer, ctx: Ctx, el: Parse.ElementInProgress, parentCursor: Cursor) {
   logEntryToSQ(ctx, el, parentCursor);
 
   // -- Convert & save SQ, and prepare to write all subsequent elements 
   //    to this nested dataset in the serialisation until the SQ's end.
-  el = convertElToSq(el);
-  saveElement(ctx, el, parentCursor, buffer, false);
+  const sq = convertElToSq(el as Parse.NonSQ);
+  saveElement(ctx, sq, parentCursor, buffer);
 
   // -- 0-Length, Defined length SQs: handle no-op (ctx reversal)
-  if (isEmptyDefLenSQ(el)) {
-    el.items.pop(); // init'd with an empty dataset obj, so remove it
+  if (isEmptyDefLenSQ(sq)) {
+    sq.items.pop(); // init'd with an empty dataset obj, so remove it
     return; // detect and return before walking to avoid need to retreat
   }
 
@@ -46,15 +50,15 @@ export async function parseSQ(buffer: Buffer, ctx: Ctx, el: Parse.Element, paren
 
   // -- 0-Length, undefined length SQs: handle no-op. Empty undef vs empty def len SQs 
   //    are detected at different byte positions hence their separation by cursor walks.
-  if (isEmptyUndefinedLengthSQ(el, tag)) {
-    write(`Saving undefined length empty SQ ${el.tag} ${el.name}.`, "DEBUG");
-    el.length = 0;
-    el.items.pop();
+  if (isEmptyUndefinedLengthSQ(sq, tag)) {
+    write(`Saving undefined length empty SQ ${sq.tag} ${sq.name}.`, "DEBUG");
+    sq.length = 0;
+    sq.items.pop();
     return;
   }
 
   // -- Stack SQ properties to maintain recursion-independent context
-  trackSQ(ctx, el);
+  trackSQ(ctx, sq);
 
   // -- Recurse to parse entire SQ, from the first item, which itself is a dataset.
   //    All new datasets always require a new call to parse().
@@ -67,7 +71,7 @@ export async function parseSQ(buffer: Buffer, ctx: Ctx, el: Parse.Element, paren
   write(`Current stacks: ${printSqCtx(ctx)}, Depth: ${ctx.depth}`, "DEBUG");
 
   // -- Trigger stitching
-  if (partial?.length > 0) {
+  if ((partial?.length ?? 0) > 0) {
     throw new BufferBoundary(`SQ ${stacks(ctx)?.sq?.name} is split across buffer boundary`);
   }
 }
@@ -85,7 +89,7 @@ export async function parseSQ(buffer: Buffer, ctx: Ctx, el: Parse.Element, paren
  * @returns Parse.TagStr
  */
 function nextUndefLenSqTag(ctx: Ctx, cursor: Cursor, buffer: Buffer): Parse.TagStr {
-  write(`Handling end of a dataSet item in SQ ${stacks(ctx).sq.tag} ${stacks(ctx).sq.name}`, "DEBUG");
+  write(`Handling end of a dataSet item in SQ ${stacks(ctx)?.sq?.tag} ${stacks(ctx)?.sq?.name}`, "DEBUG");
   cursor.walk(Bytes.LENGTH, ctx, buffer); // ignore this length, its always 0x0 for item delims
 
   const nextTagBytes = buffer.subarray(cursor.pos, cursor.pos + Bytes.TAG_NUM);
@@ -103,7 +107,7 @@ function nextUndefLenSqTag(ctx: Ctx, cursor: Cursor, buffer: Buffer): Parse.TagS
  * decisions particularly within sequences. 
  *
  * Each iteration of the loop represents the start 
- * of a new DICOM Parse.Element parse (the cursor rests on the 
+ * of a new DICOM Partial<Parse.Element> parse (the cursor rests on the 
  * start byte of the TLV element). 
  *
  * Some special detections have to take place specifically 
@@ -114,15 +118,16 @@ function nextUndefLenSqTag(ctx: Ctx, cursor: Cursor, buffer: Buffer): Parse.TagS
  * the next encoding is a new element, or a recursive 
  * frame needs to be returned from (end of a nested SQ) etc.
  */
-type ParseLoopFlowCommand = 'exit-recursion' | 'next-element' | void
+type ParsingFlowCmd = 'exit-recursion' | 'next-element' | void
 
 export function manageSqRecursion(
   buffer: Buffer,
   cursor: Cursor,
-  el: Parse.Element,
-  sq: Parse.Element,
+  el: Parse.ElementInProgress,
+  sq: Parse.SQ | undefined,
   ctx: Ctx,
-): ParseLoopFlowCommand {
+): ParsingFlowCmd {
+  if (!sq) return
 
   if (isDefLenItemStartTag(el)) {
     sq.items.push({});
@@ -141,9 +146,13 @@ export function manageSqRecursion(
 
     if (next === SQ_END_TAG) {
       write(`End of SQ ${sq.tag} ${sq.name}`, "DEBUG");
-      stacks(ctx).sq.length = stacks(ctx).bytes;
-      exitParse(ctx, cursor);
-      return 'exit-recursion'; // undef length sequences' completion basecase
+
+      const currentSq = stacks(ctx).sq
+      if (currentSq) /* tsc hoops */ {
+        currentSq.length = stacks(ctx)?.bytes ?? NaN
+        exitParse(ctx, cursor);
+        return 'exit-recursion'; // undef length sequence elements' completion basecase
+      }
     }
 
     throw new Malformed(`Got ${next}, expected ${ITEM_END_TAG}/${SQ_END_TAG}`);
@@ -194,7 +203,7 @@ export function exitDefLenSqRecursion(ctx: Ctx, cursor: Cursor): boolean {
   const { sq, len, bytes } = stacks(ctx);
   const isEnd = sq
     && len !== MAX_UINT32
-    && len === bytes + 8; // +8 because we walked 8 bytes (parentCursor.walk() - parseSQ()) before pushing sq to stack
+    && len === (bytes ?? 0) + 8; // +8 because we walked 8 bytes (parentCursor.walk() - parseSQ()) before pushing sq to stack. The ?? at runtime wont get hit, its a tsc hoop
 
   if (ctx.depth === 0 && isEnd) {
     throw new DicomError({
@@ -213,7 +222,7 @@ export function exitDefLenSqRecursion(ctx: Ctx, cursor: Cursor): boolean {
     return false
   }
 
-  if (bytes > sq.length) {
+  if (bytes && bytes > sq.length) {
     throw new Malformed(
       `Traversed more bytes than the defined length of the SQ. ` +
       `This is a bug or malformed DICOM. ` +
@@ -230,33 +239,36 @@ export function exitDefLenSqRecursion(ctx: Ctx, cursor: Cursor): boolean {
 
 
 /**
- * Detect the start of a new defined length SQ's item.
+ * Detect the start of a new defined length SQ's item. We check its under 
+ * MAX_UINT32 because thats a reserved value in DICOM to indicate undefined 
+ * length. Checking if the tag is ITEM_START_TAG is insufficient by itself.
  * @param ctx
  * @param el
  * @returns
  */
-export function isDefLenItemStartTag(el: Parse.Element) {
-  return el.length < MAX_UINT32 && el.tag === ITEM_START_TAG;
+export function isDefLenItemStartTag(el: Partial<Partial<Parse.Element>>) {
+  return el.length && el.length < MAX_UINT32 && el.tag === ITEM_START_TAG;
 }
 
 /**
- * Detect the end of an undefined length SQ's item.
+ * Detect the end of an undefined length SQ's item. Easy one this because 
+ * it uses a special signifier to straight up tell us its the end. No infer.
  * @param ctx
  * @param el
  * @returns
  */
-export function isUndefLenItemEndTag(ctx: Ctx, el: Parse.Element) {
+export function isUndefLenItemEndTag(ctx: Ctx, el: Partial<Partial<Parse.Element>>) {
   write(`End of undefined length sequence item ${el.tag} ${el.name}`, "DEBUG");
   return inSQ(ctx) && el.tag === ITEM_END_TAG;
 }
 
 /**
- * QoL helper to help guide control flow inside 
- * parsing logic - particularly in the parse() 
- * while loop.
+ * QoL helper to help guide control flow inside parsing logic - particularly in the parse().
+ * while loop. This works because we upfront set the length for defined length SQs, and 
+ * for undefined length SQs we're updating the length on the fly (CHECK)
  */
 export function inSQ(ctx: Ctx): boolean {
-  return stacks(ctx).len > 0;
+  return (stacks(ctx)?.len ?? 0) > 0;
 }
 
 /**
@@ -285,19 +297,43 @@ export function removeSqFromStack(ctx: Ctx) {
 }
 
 /**
- * Convert an element to a sequence element with an empty items array.
+ * Convert an element to a sequence element with an empty items array,
+ * and no 'value'. Sequence elements exist to support nested/hierarchical 
+ * structure in and don't themselves have a data value like the regular TLV 
+ * elements in DICOM. 
+ *
+ * It takes in and returns partial because until the last action of the 
+ * parse loop is complete then its an incomplete Partial<Parse.Element> 
+ *
+ * This is a mid-processing fn.
  * @param el
  */
-function convertElToSq(el: Parse.Element): Parse.Element {
-  const newSq = { ...el, items: [{}] };
-  delete newSq.value;
-  return newSq;
+function convertElToSq(el: Parse.NonSQ): Parse.SQ {
+  return {
+    vr: VR.SQ,
+    tag: el.tag,
+    name: el.name,
+    length: el.length,
+    items: [],
+  }
 }
+
+// export function isSqEl(el: Parse.ElementInProgress): el is Partial<Parse.SQ> {
+//   return el.vr === 'SQ'
+//     && !('value' in el)
+//     && 'items' in el
+// }
+//
+// export function isNotSqEl(el: Parse.ElementInProgress): el is Partial<Parse.NonSQ> {
+//   return el.vr !== 'SQ'
+//     && 'value' in el
+//     && !('items' in el)
+// }
 
 /**
  * QoL helper to guide control flow in parse()'s while loop.
  */
-function isEmptyDefLenSQ(el: Parse.Element) {
+function isEmptyDefLenSQ(el: Partial<Parse.Element>) {
   return el.vr === VR.SQ && el.length === 0;
 }
 
@@ -311,7 +347,7 @@ function isEmptyDefLenSQ(el: Parse.Element) {
  * @param el
  * @returns boolean
  */
-function isEmptyUndefinedLengthSQ(el: Parse.Element, tag: Parse.TagStr) {
+function isEmptyUndefinedLengthSQ(el: Partial<Parse.Element>, tag: Parse.TagStr) {
   return (
     el.vr === VR.SQ && //
     el.length === MAX_UINT32 &&
@@ -327,18 +363,18 @@ function isEmptyUndefinedLengthSQ(el: Parse.Element, tag: Parse.TagStr) {
  * @param el
  * @param newSq
  */
-function trackSQ(ctx: Ctx, el: Parse.Element) {
+function trackSQ(ctx: Ctx, el: Parse.SQ) {
   ctx.sqLens.push(el.length);
   ctx.sqStack.push(el);
   ctx.sqBytesStack.push(0);
 }
 
-function logEntryToSQ(ctx: Ctx, el: Parse.Element, parentCursor: Cursor) {
+function logEntryToSQ(ctx: Ctx, el: Partial<Partial<Parse.Element>>, parentCursor: Cursor) {
   const printLen = el.length === MAX_UINT32 ? "undef len" : el.length;
   if (inSQ(ctx)) {
-    write(`Parsing nested SQ ${el.tag}, ${el.name}, len: ${printLen}, parentCursor: ${parentCursor.pos}`, "DEBUG");
+    write(`Parsing nested SQ (${el.tag}, ${el.name}, len: ${printLen}, parentCursor: ${parentCursor.pos})`, "DEBUG");
   } else {
-    write(`Parsing SQ ${el.tag}, ${el.name}, len: ${printLen}, parentCursor: ${parentCursor.pos}`, "DEBUG");
+    write(`Parsing SQ (${el.tag}, ${el.name}, len: ${printLen}, parentCursor: ${parentCursor.pos})`, "DEBUG");
   }
 }
 

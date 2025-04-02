@@ -15,9 +15,9 @@ import { Cursor } from "./cursor.js";
  * @param buffer
  * @returns Continue
  */
-export function parseLength(buffer: Buffer, cursor: Cursor, el: Parse.Element, ctx: Ctx) {
+export function parseLength(buffer: Buffer, cursor: Cursor, el: Partial<Parse.Element>, ctx: Ctx) {
   // ----  Standard VR ----
-  if (!isExtVr(el.vr)) {
+  if (el.vr && !isExtVr(el.vr)) {
     decodeLength(el, buffer, cursor, ctx);
     cursor.walk(Bytes.UINT_16, ctx, buffer);
     return false;
@@ -36,8 +36,8 @@ export function parseLength(buffer: Buffer, cursor: Cursor, el: Parse.Element, c
  * @param cursor
  * @param ctx
  */
-export function decodeLength(el: Parse.Element, buffer: Buffer, cursor: Cursor, ctx: Ctx) {
-  if (isExtVr(el.vr)) {
+export function decodeLength(el: Parse.ElementInProgress, buffer: Buffer, cursor: Cursor, ctx: Ctx) {
+  if (el.vr && isExtVr(el.vr)) {
     el.length = ctx.usingLE
       ? buffer.readUInt32LE(cursor.pos)
       : buffer.readUInt32BE(cursor.pos); // len < 4 bytes, (4,294,967,295)

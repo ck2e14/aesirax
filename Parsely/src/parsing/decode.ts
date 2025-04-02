@@ -1,9 +1,9 @@
 import { Bytes, DicomErrorType, TransferSyntaxUid, VR } from "../enums.js";
-import { isVr } from "../utils.js";
 import { write } from "../logging/logQ.js";
 import { Ctx } from "../reading/ctx.js";
 import { BufferBoundary, DicomError } from "../errors.js";
 import { Parse } from "../global.js";
+import { isVr } from "../utils.js";
 
 const decodersLE: Partial<Parse.DecoderMap> = {
   // partial because will add VRs incrementally.
@@ -73,7 +73,7 @@ const decodersBE: Partial<Parse.DecoderMap> = {
  * @returns string
  */
 export function decodeValueBytes(
-  vr: string,
+  vr: VR,
   value: Buffer,
   ctx: Ctx,
   checkNullPadding = false // for debugging
@@ -88,7 +88,7 @@ export function decodeValueBytes(
     : decodersBE;
 
   try {
-    if (decoders.hasOwnProperty(vr)) {
+    if (typeof decoders[vr] == 'function') {
       return decoders[vr](value);
     }
 
@@ -102,7 +102,16 @@ export function decodeValueBytes(
 
     return value.toString();
   } catch (error) {
-    return decoders.default(value);
+    const defaultDecoder = decoders.default
+
+    if (defaultDecoder) {
+      return defaultDecoder(value);
+    } else {
+      throw new DicomError({
+        message: `Failed to select decoder`,
+        errorType: DicomErrorType.PARSING,
+      })
+    }
   }
 }
 
@@ -119,23 +128,23 @@ export function decodeVrBytes(buf: Buffer): VR {
   }
 
   const decodedVr = buf.toString("ascii", 0, Bytes.VR);
-  if (!isVr(decodedVr)) {
-    throwUnrecognisedVr(decodedVr, buf);
-  }
+  // if (!isVr(decodedVr)) {
+  //   throwUnrecognisedVr(decodedVr, buf);
+  // }
 
   return decodedVr as VR
 }
 
 /**
- * Throw an error if an unrecognised VR is encountered.
+ * Throw an error after an unrecognised VR is encountered.
  * @param vr
  * @param vrBuf
  * @throws DicomError
  */
 export function throwUnrecognisedVr(vr: string, vrBuffer: Buffer): never {
   throw new DicomError({
-    errorType: DicomErrorType.PARSING,
     message: `Unrecognised VR: ${vr}`,
+    errorType: DicomErrorType.PARSING,
     buffer: vrBuffer,
   });
 }
@@ -146,9 +155,7 @@ export function throwUnrecognisedVr(vr: string, vrBuffer: Buffer): never {
  * @returns string
  */
 export function utf8Decoder(value: Buffer): string {
-  return value //
-    .toString("utf8")
-    .replace(/\0+$/, "");
+  return value.toString("utf8").replace(/\0+$/, "");
 }
 
 /**

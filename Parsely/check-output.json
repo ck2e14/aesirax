@@ -1,0 +1,9 @@
+{
+   "(0002,0000)": {
+      "vr": "UL",
+      "tag": "(0002,0000)",
+      "value": "200",
+      "name": "FileMetaInformationGroupLength",
+      "length": 4
+   }
+}

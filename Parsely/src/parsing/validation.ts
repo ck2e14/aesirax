@@ -29,8 +29,7 @@ export function handleEx(
   buffer: Buffer,
   lastTagStart: number,
   tag?: Parse.TagStr
-): Parse.PartialEl {
-
+): Parse.TruncatedElementBuffer {
   const isUndefinedLength = error instanceof UndefinedLength;
   const parsingError = [BufferBoundary, RangeError].every(errType => !(error instanceof errType)); // i.e. not a buffer truncation error
 

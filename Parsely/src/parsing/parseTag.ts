@@ -12,13 +12,15 @@ import { Parse } from "../global.js";
  * @param cursor
  * @param el
  */
-export function parseTag(buffer: Buffer, cursor: Cursor, el: Parse.Element, ctx: Ctx) {
+export function parseTag(buffer: Buffer, cursor: Cursor, el: Parse.ElementInProgress, ctx: Ctx) {
   const start = cursor.pos;
   const end = cursor.pos + Bytes.TAG_NUM;
   const tagBuffer = buffer.subarray(start, end);
 
   el.tag = decodeTag(tagBuffer, ctx);
   el.name = getTagName(el.tag);
+
+  console.log(`end of parseTag, el: `, el)
 
   cursor.walk(Bytes.TAG_NUM, ctx, buffer);
 }

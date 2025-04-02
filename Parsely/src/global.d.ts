@@ -60,41 +60,49 @@ declare namespace Global {
 }
 
 declare namespace Parse {
-  export type Element = {
-    tag: TagStr;
-    name: string;
-    vr: VR;
-    length: number;
-    items?: Item[];
-    value?: string | number | Buffer;
-    fragments?: Fragments;
-    devNote?: string;
-  };
+  // export type Element = {
+  //   tag: TagStr;
+  //   name: string;
+  //   vr: VR;
+  //   length: number;
+  //   items?: Item[];
+  //   value?: string | number | Buffer;
+  //   fragments?: Fragments;
+  //   devNote?: string;
+  // };
 
-  type EBase = {
+  export type EBase = {
     tag: TagStr,
     name: string,
+    length: number,
+    vr: VR, // Keep VR at the base level
+    devNote?: string
   }
 
-  type NonSQ = {
+  // NonSQ specific properties
+  export type NonSQ = EBase & {
     vr: Omit<VR, "SQ">,
-    value: string | number | Buffer
+    value: string | number | Buffer,
+    fragments: Fragments | undefined,
   }
 
-  type SQ = {
+  // SQ specific properties
+  export type SQ = EBase & {
     vr: VR.SQ,
     items: Item[],
-    
   }
 
-  type E = EBase & (NonSQ | SQ)
-  //   ^?
+  export type Element = NonSQ | SQ
+  export type ElementInProgress = Partial<Element> & { _isComplete?: boolean };
 
+  type Prettify<T> = {
+    [K in keyof T]: T[K] extends object ? Prettify<T[K]> : T[K];
+  } & unknown;
 
   export type Fragments = Record<number, { value: string; length: number }>;
-  export type ParseResult = { truncated: true | null; buf: PartialEl };
-  export type PartialEl = Buffer | null; // because streaming
-  export type DataSet = Record<string, Element>;
+  export type ParseResult = { truncated: true | null; buf: TruncatedElementBuffer };
+  export type TruncatedElementBuffer = Buffer | undefined; // because streaming
+  export type DataSet = Record<string, Parse.Element | Partial<Parse.Element>>;
   export type Item = DataSet; // items are semantic aliases for DICOM Datasets, per the NEMA spec.
 
   export type Decoder = (value: Buffer) => string;

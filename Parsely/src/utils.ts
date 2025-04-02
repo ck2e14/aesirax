@@ -4,6 +4,7 @@ import { Cursor } from "./parsing/cursor.js";
 import { Ctx } from "./reading/ctx.js";
 import { write } from "./logging/logQ.js";
 import { Parse } from "./global.js";
+import { isSQ } from "./parsing/parse.js";
 import * as path from "path";
 
 export function mapToObj(map: Map<string, any>): any {
@@ -34,7 +35,7 @@ export function prettyPrintArray(arr: any[]): string {
   return str;
 }
 
-export function findDICOM(folder = "./", fileList = []) {
+export function findDICOM(folder = "./", fileList: string[] = []) {
   readdirSync(folder).forEach(file => {
     const filePath = path.join(folder, file);
 
@@ -78,13 +79,16 @@ export function useLE(tsn: TransferSyntaxUid): boolean {
  * @param spacing
  * @returns
  */
-export function cPos(ctx: Ctx, spacing = undefined) {
+export function cPos(ctx: Ctx, spacing?: number) {
   const cpos = Object.entries(ctx.cursors).reduce((acc, [id, c]) => {
     if (c.disposedOf) acc[id] = `_` + c.pos.toString();
     else acc[id] = c.pos;
     return acc;
   }, {});
-  return JSON.stringify(cpos, null, spacing);
+
+  return spacing
+    ? JSON.stringify(cpos, null, spacing)
+    : JSON.stringify(cpos)
 }
 
 /**
@@ -104,22 +108,24 @@ export function UNIMPLEMENTED_VR_PARSING(vr: VR): string {
  * Print an element to the console.
  * @param el
  */
-export function printElement(
-  el: Parse.Element,
-  cursor: Cursor,
-  buffer: Buffer,
-  ctx: Ctx
-) {
-  const msg = {
+export function printElement(el: Parse.ElementInProgress, cursor: Cursor, buffer: Buffer, ctx: Ctx) {
+  const msg: Record<string, any> = {
     Tag: el.tag,
     Name: el.name,
     VR: el.vr,
     Length: el.length,
-    Value: el.value,
+    Value: "",
+    "Windowed Buffer Size": buffer.length,
     "Cursor After Parse": cursor.pos,
-    CurrentBufferWindow: buffer.length,
-    Depth: ctx.depth,
+    "Recursive Depth": ctx.depth,
   };
+
+  if (!isSQ(el) && 'value' in el) {
+    msg.Value = el.value ?? ""
+  } else if (isSQ(el)) {
+    msg["SQ Item Count"] = el.items.length;
+    delete msg.Value
+  }
 
   if (el.devNote) {
     msg["DevNote"] = el.devNote;
@@ -136,7 +142,7 @@ export function printElement(
  * Print an element to the console minus exceptionally long values.
  * @param el
  */
-export function printMinusValue(el: Parse.Element, cursor: Cursor, buffer: Buffer, ctx: Ctx) {
+export function printMinusValue(el: Partial<Parse.Element>, cursor: Cursor, buffer: Buffer, ctx: Ctx) {
   const msg = {
     Tag: el.tag,
     Name: el.name,
@@ -162,11 +168,11 @@ export function printMinusValue(el: Parse.Element, cursor: Cursor, buffer: Buffe
  * Print an element to the console.
  * @param Element
  */
-export function logElement(el: Parse.Element, cursor: Cursor, buffer: Buffer, ctx: Ctx) {
+export function logElement(el: Partial<Parse.Element>, cursor: Cursor, buffer: Buffer, ctx: Ctx) {
   const unfuckingSupported = [VR.OB, VR.UN, VR.OW];
 
-  if (unfuckingSupported.includes(el.vr)) {
-    el.devNote = UNIMPLEMENTED_VR_PARSING(el.vr);
+  if (unfuckingSupported.includes(el.vr as VR)) {
+    el.devNote = UNIMPLEMENTED_VR_PARSING(el.vr as VR); // we know better than TS in this case. The narrowing here serves no purpose so we loosen to the VR level to save typing the fn signature with the Omit<VR,"SQ"> malarkey
     printMinusValue(el, cursor, buffer, ctx);
   } else {
     printElement(el, cursor, buffer, ctx);

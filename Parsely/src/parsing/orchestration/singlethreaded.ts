@@ -1,10 +1,11 @@
 import { writeFileSync } from "fs";
-import { findDICOM } from "../../utils.js";
 import { streamParse } from "../../reading/stream.js";
 import { syncParse } from "./syncReadParse.js";
 import { Cfg, Parse } from "../../global.js";
 import { write } from "../../logging/logQ.js";
 import { writeFile } from "fs/promises";
+import { findDICOM } from "../../utils.js";
+import { getValue } from "../parse.js";
 
 /**
  * Parse DICOM files using a single thread
@@ -21,29 +22,23 @@ export async function singleTheaded(cfg: Cfg, writeTo?: string) {
   }
 
   for (let i = 0; i < paths.length; i++) {
-    let elements: Parse.DataSet
-
     if (cfg.streamOrWhole === "whole") {
-      elements = await syncParse(paths[i], cfg);
+      parsedFiles.push(await syncParse(paths[i]));
     }
-
     if (cfg.streamOrWhole === "stream") {
-      elements = await streamParse(paths[i], cfg);
+      parsedFiles.push(await streamParse(paths[i], cfg));
     }
-
-    parsedFiles.push(elements);
   }
 
   const end = performance.now();
-
   write(`Parsed ${parsedFiles.length} file(s)`, "INFO");
   await writeFile("./check-output.json", JSON.stringify(parsedFiles[0], null, 3));
-  
 
-  for (const imageData of parsedFiles) {
-    const studyUid = imageData["(0020,000d)"]?.value ?? "UNKNOWN STUDY UID";
-    const imageUid = imageData["(0008,0018)"]?.value ?? "UNKNOWN IMAGE UID";
-    const writePath = writeTo ? `${writeTo}/${studyUid}-${imageUid}.json` : `./output.json`;
+
+  for (const imageDataset of parsedFiles) {
+    const sUid = getValue(imageDataset["(0020,000d)"]) ?? "UNKNOWN STUDY UID";
+    const iUid = getValue(imageDataset["(0008,0018)"]) ?? "UNKNOWN INSTANCE UID";
+    const writePath = writeTo ? `${writeTo}/${sUid}-${iUid}.json` : `./output.json`;
     writeFileSync(writePath, JSON.stringify(parsedFiles[0], null, 3));
   }
 

@@ -11,11 +11,13 @@ import { Parse } from "../global.js";
  * @param el
  * @throws DicomError
  */
-export function parseVR(buffer: Buffer, cursor: Cursor, el: Parse.Element, ctx: Ctx) {
+export function parseVR(buffer: Buffer, cursor: Cursor, el: Parse.ElementInProgress, ctx: Ctx) {
+  // window the buffer 0th+2
   const start = cursor.pos;
   const end = cursor.pos + Bytes.VR;
   const vrBuffer = buffer.subarray(start, end);
-
+  
+  // decode, validate & save the VR 
   el.vr = decodeVrBytes(vrBuffer);
   cursor.walk(Bytes.VR, ctx, buffer);
 }

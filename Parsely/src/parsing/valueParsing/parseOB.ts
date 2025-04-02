@@ -1,10 +1,10 @@
-import { saveElement } from "../parse.js";
+import { isNonSQ, isSQ, saveElement } from "../parse.js";
 import { ITEM_START_TAG, SQ_END_TAG } from "../constants.js";
 import { valueIsTruncated } from "../validation.js";
 import { Ctx } from "../../reading/ctx.js";
 import { Cursor } from "../cursor.js";
-import { Bytes } from "../../enums.js";
-import { BufferBoundary, Malformed } from "../../errors.js";
+import { Bytes, DicomErrorType } from "../../enums.js";
+import { BufferBoundary, DicomError, Malformed } from "../../errors.js";
 import { decodeTag } from "../parseTag.js";
 import { Parse } from "../../global.js";
 
@@ -13,17 +13,25 @@ import { Parse } from "../../global.js";
  * Checks for offset table but ignores it if exists, maybe
  * will support in future. It will save fragments individually,
  * optionally skipping the pixel data.
- * WARN does this properly handle non-fragment pixel data??
+ * WARN does this properly handle non-fragment pixel data?? TODO
  * @param ctx
  * @param el
  * @param cursor
  * @param buffer
  */
-export function parseUndefLenOB(ctx: Ctx, el: Parse.Element, cursor: Cursor, buffer: Buffer) {
+export function parseUndefLenOB(ctx: Ctx, el: Parse.ElementInProgress, cursor: Cursor, buffer: Buffer) {
+  if (!('length' in el)) {
+    throw new DicomError({
+      message: `parseUndefLenOB expects elements to have a length value by now.`,
+      errorType: DicomErrorType.PARSING
+    })
+  }
+
   const itemTagBytes = buffer.subarray(cursor.pos, cursor.pos + Bytes.TAG_NUM);
   const itemTag = decodeTag(itemTagBytes, ctx);
+  console.log({itemTag})
   if (itemTag !== ITEM_START_TAG) {
-    throw new Malformed(`Expeted an item start tag in undefined len ${el.tag} but got ${itemTag}`);
+    throw new Malformed(`Expected an item start tag in undefined len ${el.tag} but got ${itemTag}`);
   } else {
     cursor.walk(Bytes.TAG_NUM, ctx, buffer);
   }
@@ -38,7 +46,7 @@ export function parseUndefLenOB(ctx: Ctx, el: Parse.Element, cursor: Cursor, buf
   cursor.walk(offsetLen, ctx, buffer);
 
   el.length = 24 + offsetLen; // I.e. all the fixed length bytes that we walked and then whatever was the size of the offset as well.
-  el.fragments = {} as Parse.Fragments;
+  el.fragments = {}
 
   let i = 0;
   while (true) {

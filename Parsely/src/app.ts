@@ -33,16 +33,14 @@ const testDirs = {
  */
 main(cfg);
 async function main(cfg: Cfg) {
-  console.clear();
-
   if (cfg.verbose) {
     write(`Starting up...`, "INFO");
   }
 
   await init();
 
-  cfg.targetDir = `../data/JonathanSnowMR/isolate`;
-  // cfg.targetDir = `../data/brokenSiemensCT/isolate`; 
+  // cfg.targetDir = `../data/JonathanSnowMR/isolate`;
+  cfg.targetDir = `../data/brokenSiemensCT/isolate`; 
   // cfg.targetDir = `../data/QUANTREDEUSIX`; 
   // cfg.targetDir = `/Users/chriskennedy/Desktop/SWE/aesirax/data/STANWORTHLORNAMISS/SER00001`;
   // cfg.targetDir = `../data/FELIX/isolate`;// FELIX images are breaking atm on pixel data, i think its expecting JPEG EOI for an img that doesn't use that

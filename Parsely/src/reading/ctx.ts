@@ -1,5 +1,5 @@
 import { TransferSyntaxUid } from "../enums.js";
-import { Parse } from "../global.js";
+import { Cfg, Parse } from "../global.js";
 import { Cursor } from "../parsing/cursor.js";
 
 // Streaming means arbitrarily truncated buffers and by extension truncated DICOM elements. 
@@ -15,8 +15,8 @@ export type Ctx = {
   path: string;
   depth: number;
   start: number;
-  dataSet:Parse.DataSet;
-  truncatedBuffer: Buffer;
+  dataSet: Parse.DataSet;
+  truncatedBuffer: undefined | Buffer;
   bufWatermark: number;
   cursors: Record<ID, Cursor>;
   totalStreamedBytes: number; // this is not cursor-driven, i.e. nothing to do with parse(). It's the sum of the size of all buffers streamed into memory.
@@ -24,10 +24,10 @@ export type Ctx = {
   skipPixelData: boolean;
   transferSyntaxUid: TransferSyntaxUid;
   usingLE: boolean;
-  outerCursor: Cursor;
+  outerCursor: null | Cursor;
   visitedBytes: Record<number, number>; // cursor-walk driven. Refers to bytes we actually interacted with. Doesn't necessarily mean read from, may have walked straight past some depending on what they were expected to have been e.g. null VR bytes
   // --- sq stacking
-  sqStack: Parse.Element[];
+  sqStack: Parse.SQ[];
   sqLens: number[];
   sqBytesStack: number[];
 };
@@ -39,8 +39,7 @@ export type Ctx = {
  * @param skipPixels
  * @returns Ctx
  */
-export function ctxFactory(path: string, cfg = null, assumeDefaults = true, skipPixels = true): Ctx {
-  if (!assumeDefaults) return { ...cfg, path };
+export function ctxFactory(path: string, cfg: Cfg, skipPixels = true): Ctx {
   return {
     path,
     tracePerf: true,

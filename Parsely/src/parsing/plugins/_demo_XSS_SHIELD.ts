@@ -16,28 +16,30 @@ import { VR } from "../../enums.js";
 // Step 1: Export a Plugin object. In this case with a closured reference to a worker 
 // thread that'll be doing the work. Since we are colocating worker/main thread code in 
 // the same file, use a ternary to avoid an unlimited recursive thread spawning script :P
-export const exp_SHIELD: Plugin = isMainThread ? (() => {
-  const worker = new Worker('./dist/parsing/plugins/_demo_XSS_SHIELD.js');
-  const id = worker.threadId;
+export const exp_SHIELD: Plugin | null = isMainThread
+  ? (() => {
+    const worker = new Worker('./dist/parsing/plugins/_demo_XSS_SHIELD.js');
+    const id = worker.threadId;
 
-  worker.on('message', (msg: any) => {
-    console.log(`[PLUGIN:-DEMO]: THREAD MSG: (ID: ${id}) -> ${JSON.stringify(msg, null, 3)}`)
-  })
-  worker.on('error', (err) => {
-    console.log(`[PLUGIN:-DEMO]: THREAD ERROR: (ID: ${id})\n${err.name} -> ${err.message}`)
-  })
+    worker.on('message', (msg: any) => {
+      console.log(`[PLUGIN:-DEMO]: THREAD MSG: (ID: ${id}) -> ${JSON.stringify(msg, null, 3)}`)
+    })
+    worker.on('error', (err) => {
+      console.log(`[PLUGIN:-DEMO]: THREAD ERROR: (ID: ${id})\n${err.name} -> ${err.message}`)
+    })
 
-  // return the plugin with some config & metadata for the parse() loop to execute appropriately.
-  return {
-    name: 'exp_SHIELD',
-    sync: 'async',
-    // This fn is is the method that gets called inside the core parse() loop as the last 
-    // action of each element's handling before the cursor reaches the start of the next element. 
-    fn: (elementAsBytes: Buffer, el: Parse.Element) => {
-      worker.postMessage({ elementAsBytes, el })
+    // return the plugin with some config & metadata for the parse() loop to execute appropriately.
+    return {
+      name: 'exp_SHIELD',
+      sync: 'async',
+      // This fn is is the method that gets called inside the core parse() loop as the last 
+      // action of each element's handling before the cursor reaches the start of the next element. 
+      fn: (elementAsBytes: Buffer, el: Parse.Element) => {
+        worker.postMessage({ elementAsBytes, el })
+      }
     }
-  }
-})() : null;
+  })()
+  : null;
 
 
 //   -- Worker 
@@ -45,7 +47,7 @@ export const exp_SHIELD: Plugin = isMainThread ? (() => {
 if (!isMainThread) {
   const logPath = `./[SHIELD]-${threadId}-combined.log`
 
-  parentPort.on("message", async (msg: { elementAsBytes: Buffer, el: Parse.Element, id: string }) => {
+  parentPort?.on("message", async (msg: { elementAsBytes: Buffer, el: Parse.Element, id: string }) => {
     appendFileSync(logPath, `[PLUGIN:-DEMO]: Message from main thread -> ${JSON.stringify(msg.el, null, 3)}\n`) // would normally await fs/promises appendFile() here but seems to behave badly on sigint when a worker thread, not sure why
 
     // ... do XSS and SQLi screening here ...
@@ -59,13 +61,13 @@ if (!isMainThread) {
     }
 
     // main thread expects to be told when the task is completed 
-    parentPort.postMessage({ completedId: msg.id })
+    parentPort?.postMessage({ completedId: msg.id })
   });
 
   process.on("uncaughtException", error => {
     console.error("Uncaught Exception:", error);
-    parentPort.postMessage({ error: error.message });
+    parentPort?.postMessage({ error: error.message });
   });
 
-  parentPort.postMessage({ msg: "i am rdy :)" })
+  parentPort?.postMessage({ msg: "i am rdy :)" })
 }

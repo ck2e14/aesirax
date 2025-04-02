@@ -5,9 +5,9 @@ import { createReadStream } from "fs";
 import { dataSetLength } from "../utils.js";
 import { Ctx, ctxFactory } from "./ctx.js";
 import { write } from "../logging/logQ.js";
-import { DicomError, UnsupportedTSN } from "../errors.js";
+import { DicomError, Malformed, UnsupportedTSN } from "../errors.js";
 import { Cfg, Parse } from "../global.js";
-import { parse } from "../parsing/parse.js";
+import { getValue, parse } from "../parsing/parse.js";
 
 export const SMALL_BUF_THRESHOLD = 1024;
 export const SMALL_BUF_ADVISORY = `PER_BUF_MAX is less than ${SMALL_BUF_THRESHOLD} bytes. This will work but isn't ideal for I/O efficiency`;
@@ -36,10 +36,10 @@ export const HEADER_END = 132;
  */
 export function streamParse(
   path: string,
-  cfg: Cfg = null,
+  cfg: Cfg,
   skipPixelData = true
 ): Promise<Parse.DataSet> {
-  const ctx = ctxFactory(path, cfg, true, skipPixelData);
+  const ctx = ctxFactory(path, cfg, skipPixelData);
 
   if (ctx.bufWatermark < HEADER_END + 1) {
     throw new DicomError({
@@ -84,7 +84,7 @@ export function streamParse(
  * @param currBytes
  * @returns TruncatedBuffer (byte[])
  */
-export async function handleDicomBytes(ctx: Ctx, currBytes: Buffer): Promise<Parse.PartialEl> {
+export async function handleDicomBytes(ctx: Ctx, currBytes: Buffer): Promise<Parse.TruncatedElementBuffer> {
   write(`Reading buffer (#${ctx.nByteArray} - ${currBytes.length} bytes) (${ctx.path})`, "DEBUG");
   return ctx.first
     ? handleFirstBuffer(ctx, currBytes)
@@ -101,14 +101,18 @@ export async function handleDicomBytes(ctx: Ctx, currBytes: Buffer): Promise<Par
  * @throws DicomError
  * @returns TruncatedBuffer (byte[])
  */
-async function handleFirstBuffer(ctx: Ctx, buffer: Buffer): Promise<Parse.PartialEl> {
+async function handleFirstBuffer(ctx: Ctx, buffer: Buffer): Promise<Parse.TruncatedElementBuffer> {
   validatePreamble(buffer); // throws if not void
   validateHeader(buffer); // throws if not void
 
   const parseResponse = await parse(buffer.subarray(HEADER_END, buffer.length), ctx); // window the buffer beyond 'DICM' HEADER to start at File Meta Info section
-  const tsn = getElementValue<string>("(0002,0010)", ctx.dataSet);
+  const tsn = getValue(ctx.dataSet["(0002,0010)"]);
 
-  if (tsn && !isSupportedTSN(tsn)) {
+  if (!(typeof tsn === 'string')) {
+    throw new Malformed(`Expected to find transfer syntax UID element in this buffer`)
+  }
+
+  if (!isSupportedTSN(tsn)) {
     throw new UnsupportedTSN(`TSN: ${tsn} is unsupported.`);
   }
 
@@ -128,24 +132,11 @@ async function handleFirstBuffer(ctx: Ctx, buffer: Buffer): Promise<Parse.Partia
  */
 function stitchBytes(ctx: Ctx, currBytes: Buffer): Buffer {
   const { truncatedBuffer, path } = ctx;
+
+  if (!truncatedBuffer) {
+    return Buffer.alloc(0)
+  }
+
   write(`Stitching ${truncatedBuffer.length} + ${currBytes.length} bytes (${path})`, "DEBUG");
   return Buffer.concat([truncatedBuffer, currBytes]);
 }
-
-/**
- * Get the value of an element from an array of elements. Note that without
- * accepting a callback for runtime type checking we can't actually guarantee
- * that the value is of the type we expect. This is a limitation of type erasure
- * in TypeScript. A flimsy aspect of compile-time-only generics and one
- * that would incur expensive runtime type checking to replicate proper type safety
- * which I guess we could do but I'd rather jump out the window than do that.
- * In Java or Golang you'd use the reflection API to check the type at runtime.
- * @param tag
- * @param elements
- * @returns T
- */
-function getElementValue<T = unknown>(tag: Parse.TagStr, elements: Parse.DataSet): T {
-  return (elements[tag]?.value ?? "NOT FOUND") as T;
-}
-
-

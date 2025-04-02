@@ -1,4 +1,4 @@
-import { exitDefLenSqRecursion, inSQ, manageSqRecursion, stacks } from "./valueParsing/parseSQ.js";
+import { exitDefLenSqRecursion, manageSqRecursion, stacks } from "./valueParsing/parseSQ.js";
 import { handleEx } from "./validation.js";
 import { Ctx } from "../reading/ctx.js";
 import { logElement } from "../utils.js";
@@ -8,7 +8,9 @@ import { parseTag } from "./parseTag.js";
 import { parseLength } from "./parseLength.js";
 import { parseValue } from "./parseValue.js";
 import { Parse } from "../global.js";
-import { exp_SHIELD, Plugin } from "./plugins/plugins.js";
+import { DicomErrorType, VR } from "../enums.js";
+import { DicomError } from "../errors.js";
+import { Plugin } from "./plugins/plugins.js";
 
 /**
  * parse() orchestrates the parsing logic; it decodes and serialises 
@@ -30,24 +32,25 @@ import { exp_SHIELD, Plugin } from "./plugins/plugins.js";
 export async function parse(
   buffer: Buffer,
   ctx: Ctx,
-  plugin: Plugin = exp_SHIELD /* defaulted to experimental plugin while dev */
-): Promise<Parse.PartialEl> {
-  ctx.depth++;
+  plugin?: Plugin
+): Promise<Parse.TruncatedElementBuffer> {
 
-  let cursor: Cursor = newCursor(ctx);
-  let lastTagStart: number;
+  ctx.depth++;
+  const cursor = newCursor(ctx);
+  let lastTagStart = 0
 
   // Tag > VR > Length > Value > Plugin
   while (cursor.pos < buffer.length) {
     lastTagStart = cursor.pos;
+
     const el = newElement();
-    const sq = stacks(ctx).sq;
+    const currentSq = stacks(ctx).sq;
 
     try {
       if (exitDefLenSqRecursion(ctx, cursor)) return;
       parseTag(buffer, cursor, el, ctx);
 
-      const cmd = manageSqRecursion(buffer, cursor, el, sq, ctx);
+      const cmd = manageSqRecursion(buffer, cursor, el, currentSq, ctx);
       if (cmd === 'exit-recursion') return;
       if (cmd === 'next-element') continue;
 
@@ -55,10 +58,11 @@ export async function parse(
       parseLength(buffer, cursor, el, ctx);
       await parseValue(buffer, cursor, el, ctx); // async/await bleed because recurses with parse()
 
-      if (plugin && plugin.sync) {
-        await wrapAndRunPlugin(plugin, buffer, el)
-      } else {
-        wrapAndRunPlugin(plugin, buffer, el)
+      if (plugin) {
+        const finalEl = finaliseElement(el)
+        plugin.sync
+          ? await wrapAndRunPlugin(plugin, buffer, finalEl)
+          : wrapAndRunPlugin(plugin, buffer, finalEl)
       }
     } catch (error) {
       exitParse(ctx, cursor);
@@ -74,34 +78,38 @@ export async function parse(
  * Return a new empty element object.
  * @returns Element
  */
-export function newElement(): Parse.Element {
+export function newElement(): Parse.ElementInProgress {
   return {
-    vr: null,
-    tag: null,
-    value: null,
-    name: null,
-    length: null
+    vr: undefined,
+    tag: undefined,
+    value: undefined,
+    name: undefined,
+    length: undefined,
   };
 }
 
 /**
- * Save the current element to the appropriate dataset.
+ * Save the current element to the appropriate dataset. I.e. add the 
+ * objects ref to a scope that exists beyond the parse() frame the 
+ * element was created inside. 
  * @param ctx
  * @param lastSqItem
  * @param el
  */
-export function saveElement(
-  ctx: Ctx,
-  el: Parse.Element,
-  cursor: Cursor,
-  buffer: Buffer,
-  print = true
-) {
-  if (print) {
-    logElement(el, cursor, buffer, ctx);
+export function saveElement(ctx: Ctx, el: Parse.ElementInProgress, cursor: Cursor, buffer: Buffer) {
+  if (!el.tag) {
+    throw new DicomError({
+      message: "saveElement() was called but at a minimum this requires the Tag to have been decoded and added to the Partial<Parse.Element> object",
+      errorType: DicomErrorType.PARSING,
+      buffer
+    })
   }
-  if (inSQ(ctx)) {
-    const { lastSqItem } = stacks(ctx);
+
+  logElement(el, cursor, buffer, ctx);
+
+  const { lastSqItem } = stacks(ctx);
+  if (lastSqItem) {
+    lastSqItem
     lastSqItem[el.tag] = el;
   } else {
     ctx.dataSet[el.tag] = el;
@@ -111,7 +119,7 @@ export function saveElement(
 async function wrapAndRunPlugin(
   plugin: Plugin,
   buffer: Buffer,
-  el: Parse.Element
+  el: Parse.Element // should be complete elements only by this point. Plugins are called at the end of each TLV parse loop iteration. 
 ): Promise<ReturnType<typeof plugin["fn"]>> {
   try {
     return await plugin.fn(buffer, el)
@@ -130,6 +138,46 @@ async function wrapAndRunPlugin(
 export function exitParse(ctx: Ctx, cursor: Cursor) {
   ctx.depth--;
   cursor.dispose();
+}
+
+// Helper type guards & getter fns to improve DX but maintain type 
+// safety after splitting Element into Partial<Parse.Element> union of sq/non sq
+export const isSQ = (element: Partial<Parse.Element>): element is Parse.SQ => {
+  return element && element?.vr === VR.SQ && !('value' in element) && ('items' in element)
+}
+
+export const isNonSQ = (element: Partial<Parse.Element>): element is Parse.NonSQ => {
+  return element && element?.vr !== VR.SQ && ('value' in element) && !('items' in element)
+}
+
+export const getValue = (element: Partial<Parse.Element>): string | number | Buffer | undefined => {
+  return isNonSQ(element) ? element.value : undefined
+}
+export const getItems = (element: Partial<Parse.Element>): Parse.Item[] | undefined => {
+  return isSQ(element) ? element.items : undefined
+}
+
+// Check if all required fields are present for either El type
+export function finaliseElement(element: Parse.ElementInProgress): Parse.Element {
+  if (isSQ(element)) {
+    if (!element.items || !element.name || !element.length || element.vr || element.tag) {
+      throw new DicomError({
+        message: `ElementInProgress is expected to have been fully parsed and populated by this point. Currently have: ${JSON.stringify(element)}`,
+        errorType: DicomErrorType.PARSING
+      })
+    }
+  }
+
+  if (!isSQ(element)) {
+    if (!element.tag || !element.vr || !element.length || !element.name) {
+      throw new DicomError({
+        message: `ElementInProgress is expected to have been fully parsed and populated by this point. Currently have: ${JSON.stringify(element)}`,
+        errorType: DicomErrorType.PARSING
+      })
+    }
+  }
+
+  return element as Parse.Element
 }
 
 /**                         -- DETAIL --

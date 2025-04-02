@@ -2,7 +2,7 @@ import { readFile } from "fs/promises";
 import { parse } from "../parse.js";
 import { HEADER_END } from "../../reading/stream.js";
 import { ctxFactory } from "../../reading/ctx.js";
-import { Parse } from "../../global.js";
+import { Cfg, Parse } from "../../global.js";
 
 /**
  * An awaitable asynchronous function (only async to support nonblocking file i/o) 
@@ -16,8 +16,8 @@ import { Parse } from "../../global.js";
  * @param cfg
  * @returns DataSet
  */
-export async function syncParse(path: string, cfg = null, skipPixelData = true): Promise<Parse.DataSet> {
-  const ctx = ctxFactory(path, cfg, true, skipPixelData);
+export async function syncParse(path: string, cfg = {} as Cfg, skipPixelData = true): Promise<Parse.DataSet> {
+  const ctx = ctxFactory(path, cfg, skipPixelData);
   const buf = (await readFile(path)).subarray(HEADER_END, undefined);
   parse(buf, ctx);
   return ctx.dataSet;
