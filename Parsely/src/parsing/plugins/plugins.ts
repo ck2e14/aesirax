@@ -3,7 +3,6 @@ import { Parse } from "../../global.js";
 export type Plugin<R = unknown> = {
   name: string,
   sync: 'async' | 'sync',
-  runs: number,
   fn: (elementAsBytes: Buffer, el: Parse.Element) => R;
 }
 
