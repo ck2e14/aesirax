@@ -71,26 +71,6 @@ declare namespace Parse {
     devNote?: string;
   };
 
-  type EBase = {
-    tag: TagStr,
-    name: string,
-  }
-
-  type NonSQ = {
-    vr: Omit<VR, "SQ">,
-    value: string | number | Buffer
-  }
-
-  type SQ = {
-    vr: VR.SQ,
-    items: Item[],
-    
-  }
-
-  type E = EBase & (NonSQ | SQ)
-  //   ^?
-
-
   export type Fragments = Record<number, { value: string; length: number }>;
   export type ParseResult = { truncated: true | null; buf: PartialEl };
   export type PartialEl = Buffer | null; // because streaming

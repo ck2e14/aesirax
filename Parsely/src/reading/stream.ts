@@ -14,21 +14,16 @@ export const SMALL_BUF_ADVISORY = `PER_BUF_MAX is less than ${SMALL_BUF_THRESHOL
 export const HEADER_END = 132;
 
 /**
- * StreamParse() does what it sounds like, it streams according 
- * to config and runs parsing logic against whatever bytes it 
- * gets per buffered chunk. 
+ * StreamParse() streams according to config and runs parsing logic 
+ * against whatever bytes it gets per buffered chunk. 
  *
- * Note that sitching happens when elements are truncated. So,
- * while a highwatermark is set, the actual max size of each buffer
- * handled is not currently governed. This means that you're in
- * effect governed by the largest element's size in bytes. So if
- * you have an absolutely massive echo image for example where
- * pixel data is colossal, you're going to see a pretty large
- * amount of stitching if the watermark is very low, and a
- * relatively large performance hit. Stitching exists to support 
- * very memory-constrained environments and there is probably a 
- * variable sweetspot for performance when it comes to watermark 
- * that depends on factors that I can't be arsed to test properly.
+ * Note that sitching happens when elements are truncated. So, while 
+ * a highwatermark is set, the actual max size of each buffer handled 
+ * is not currently governed. This means that you're in effect governed 
+ * by the largest element's size in bytes. So if you have an absolutely 
+ * massive echo image for example where pixel data is colossal, you're 
+ * going to see a pretty large amount of stitching if the watermark is 
+ * very low, and a big performance hit. 
  *
  * @param path
  * @returns Promise<Element[]>
@@ -135,11 +130,7 @@ function stitchBytes(ctx: Ctx, currBytes: Buffer): Buffer {
 /**
  * Get the value of an element from an array of elements. Note that without
  * accepting a callback for runtime type checking we can't actually guarantee
- * that the value is of the type we expect. This is a limitation of type erasure
- * in TypeScript. A flimsy aspect of compile-time-only generics and one
- * that would incur expensive runtime type checking to replicate proper type safety
- * which I guess we could do but I'd rather jump out the window than do that.
- * In Java or Golang you'd use the reflection API to check the type at runtime.
+ * that the value is of the type we expect. 
  * @param tag
  * @param elements
  * @returns T

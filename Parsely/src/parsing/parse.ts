@@ -44,7 +44,7 @@ export async function parse(
     const sq = stacks(ctx).sq;
 
     try {
-      if (exitDefLenSqRecursion(ctx, cursor)) return;
+      if (exitDefLenSqRecursion(ctx, cursor)) return; // this must happen first
       parseTag(buffer, cursor, el, ctx);
 
       const cmd = manageSqRecursion(buffer, cursor, el, sq, ctx);
@@ -100,9 +100,9 @@ export function saveElement(
   if (print) {
     logElement(el, cursor, buffer, ctx);
   }
+
   if (inSQ(ctx)) {
-    const { lastSqItem } = stacks(ctx);
-    lastSqItem[el.tag] = el;
+    stacks(ctx)[el.tag] = el;
   } else {
     ctx.dataSet[el.tag] = el;
   }
@@ -112,9 +112,12 @@ async function wrapAndRunPlugin(
   plugin: Plugin,
   buffer: Buffer,
   el: Parse.Element
-): Promise<ReturnType<typeof plugin["fn"]>> {
+): Promise<ReturnType<typeof plugin["handleParsedElement"]>> {
   try {
-    return await plugin.fn(buffer, el)
+    return await plugin.handleParsedElement(buffer, el, {
+      studyUid: 'placeholder_s_uid',
+      instanceUid: 'placeholder_i_uid'
+    })
   } catch (error) {
     console.log(`Plugin failure: [${plugin.name}]`);
     return null
@@ -137,15 +140,18 @@ export function exitParse(ctx: Ctx, cursor: Cursor) {
  * Give it a buffer where buffer[0] is the exact first byte of a 
  * dataset (i.e. after the DCM preamble for the outermost dataset or 
  * first byte of nested datasets), and it will parse as far as the 
- * buffer allows, returning a BufferBoundary error if the current buffer 
- * doesn't reach the end of the file. 
+ * buffer allows, returning a BufferBoundary error if the current 
+ * buffer doesn't reach the end of the file. 
  *
- * If parse() encounters nested datasets (via sequence elements),
- * it will call itself at the correct byte position and reflect 
- * the hierarchy in the overall DICOM serialisation. Context (Ctx)
- * is maintained at the global scope, allowing recursion interrupted
- * by the length of the buffer to pick up where it left off when the 
- * next buffer is provided (e.g. via streamed file i/o: read.ts).
+ * If parse() encounters nested datasets (in sequence (SQ) elements),
+ * it will recurse, passing in the a buffer window starting at the first 
+ * byte, as is always required for calls to parse(). It uses recursion 
+ * depth tracking and context to place the element at the corresponding 
+ * JSON object depth. 
+ *
+ * Context (Ctx) is maintained at the global scope, allowing recursion 
+ * interrupted by the length of the buffer to pick up where it left off 
+ * when the next buffer is provided (e.g. via streamed file i/o: read.ts).
  *
  * Since it mutates a global context which stores the serialised 
  * DICOM object, parse() only returns a value when a BufferBoundary
@@ -158,7 +164,7 @@ export function exitParse(ctx: Ctx, cursor: Cursor) {
  * sense it's C++ performance with JS memory safety and TypeScript 
  * compiler safety. 
  *
- * TLDR; the idea is to give this function the start of raw DICOM 
+ * tldr; the idea is to give this function the start of raw DICOM 
  * dataset bytes, which in turn ensures that each new 'while' loop 
  * iteration is the start of a new element's bytes.
  */

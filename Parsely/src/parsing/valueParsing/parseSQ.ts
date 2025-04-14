@@ -23,7 +23,12 @@ import { Parse } from "../../global.js";
  * @param ctx
  * @param seqTag
  */
-export async function parseSQ(buffer: Buffer, ctx: Ctx, el: Parse.Element, parentCursor: Cursor) {
+export async function parseSQ(
+  buffer: Buffer,
+  ctx: Ctx,
+  el: Parse.Element,
+  parentCursor: Cursor
+) {
   logEntryToSQ(ctx, el, parentCursor);
 
   // -- Convert & save SQ, and prepare to write all subsequent elements 
@@ -67,6 +72,7 @@ export async function parseSQ(buffer: Buffer, ctx: Ctx, el: Parse.Element, paren
   write(`Current stacks: ${printSqCtx(ctx)}, Depth: ${ctx.depth}`, "DEBUG");
 
   // -- Trigger stitching
+  // FIXME: this is control flow not an exception really so maybe change to command pattern
   if (partial?.length > 0) {
     throw new BufferBoundary(`SQ ${stacks(ctx)?.sq?.name} is split across buffer boundary`);
   }
@@ -81,7 +87,6 @@ export async function parseSQ(buffer: Buffer, ctx: Ctx, el: Parse.Element, paren
  * @param ctx
  * @param cursor
  * @param buffer
- * @param itemDataSet
  * @returns Parse.TagStr
  */
 function nextUndefLenSqTag(ctx: Ctx, cursor: Cursor, buffer: Buffer): Parse.TagStr {

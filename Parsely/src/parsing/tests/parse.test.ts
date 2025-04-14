@@ -60,12 +60,16 @@ describe("(singlethreaded) parsing, focused on Sequence Elements", () => {
       await init();
    });
 
+   afterAll(() => {
+
+   })
+
    const undefNestSqTestObjs = testDirs.undefinedLengthSQs.withNesting;
    const undefNestSqTests = undefNestSqTestObjs.length;
    it(`correctly parses ${undefNestSqTests} DICOM images with undefined length, nested SQs`, async () => {
       //
       for (const testObj of undefNestSqTestObjs) {
-         const { input, output, notes = "" } = testObj;
+         const { input, output } = testObj;
          const [data] = await singleTheaded({ ...cfg, targetDir: input });
          const outFile = readFileSync(output, "utf8");
          const out = JSON.parse(outFile);
