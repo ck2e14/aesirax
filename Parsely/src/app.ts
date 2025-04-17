@@ -8,6 +8,7 @@ import { Cfg } from "./global.js";
 // WARN need to workout why, when stitching, last cursor isn't
 // disposedOf - despite the parsing and persistence working? 
 // CK @MARCH'25 - is this still an issue? cant remember!)
+// TODO lets build out first-class DICOMweb support for getting the data
 
 const testDirs = {
   undefinedLengthSQs: {

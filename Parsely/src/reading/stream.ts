@@ -97,18 +97,18 @@ export async function handleDicomBytes(ctx: Ctx, currBytes: Buffer): Promise<Par
  * @returns TruncatedBuffer (byte[])
  */
 async function handleFirstBuffer(ctx: Ctx, buffer: Buffer): Promise<Parse.PartialEl> {
-  validatePreamble(buffer); // throws if not void
-  validateHeader(buffer); // throws if not void
+  validatePreamble(buffer); // throws if not void return 
+  validateHeader(buffer); //   throws if not void return 
 
   const parseResponse = await parse(buffer.subarray(HEADER_END, buffer.length), ctx); // window the buffer beyond 'DICM' HEADER to start at File Meta Info section
-  const tsn = getElementValue<string>("(0002,0010)", ctx.dataSet);
+  const tsn = getElementValue<string | void>("(0002,0010)", ctx.dataSet);
 
-  if (tsn && !isSupportedTSN(tsn)) {
+  if (typeof tsn !== 'undefined' && !isSupportedTSN(tsn)) {
     throw new UnsupportedTSN(`TSN: ${tsn} is unsupported.`);
   }
 
   if (isSupportedTSN(tsn)) {
-    ctx.transferSyntaxUid = tsn ?? TransferSyntaxUid.ExplicitVRLittleEndian;
+    ctx.transferSyntaxUid = tsn // ?? TransferSyntaxUid.ExplicitVRLittleEndian; // commented out because I dont believe we should optimisitically fallback on even a default syntax. For predictability would rather fail if undetermined from header
     ctx.first = false;
     return parseResponse;
   }

@@ -6,11 +6,11 @@ import { Worker } from "worker_threads";
 import { Parse } from "../../global.js";
 import { VR } from "../../enums.js";
 
-// Here's an example plugin. It recieves each completely parsed DICOM element 
-// as bytes and as serialised obj. It scans the element value for XSS & SQLi payloads.
+// Here's an example plugin. It recieves each completely parsed DICOM element as bytes and as 
+// serialised obj. It detects HTML XSS, and SQLi payloads. 
 
-// You don't need to do what's in this example other than export a Plugin<R> object and 
-// pass that to calls to parse().
+// You don't need to do what's in this example other than export a Plugin<R> object and pass 
+// that to calls to parse().
 
 
 // -- Main thread 
@@ -34,7 +34,7 @@ export const exp_SHIELD: Plugin = !isMainThread
       log(`THREAD ERROR: (ID: ${id})\n${err.name} -> ${err.message}`)
     })
 
-    // this bundle represents the plugin's interface with Parsley's TLV loop
+    // this Plugin return object is the point of interface with the TLV parsing loop
     return {
       name: 'exp_SHIELD',
       sync: 'async', // toggle to optionally block moving to parse next TLV until plugin promise 
