@@ -1,9 +1,0 @@
-
-// this is the sort of interface that you want to provide (a la DicomSys) where 
-// the developer using the library is really empowered to extend the logic to 
-// literally anything they need - even calling CLI/other languages through bindings 
-// or ports or whatever. 
-//
-// So now you need to go and write the system. Keep it simple. 
-
-
