@@ -1,0 +1,2803 @@
+{
+   "(0002,0000)": {
+      "vr": "UL",
+      "tag": "(0002,0000)",
+      "value": "200",
+      "name": "FileMetaInformationGroupLength",
+      "length": 4
+   },
+   "(0002,0001)": {
+      "vr": "OB",
+      "tag": "(0002,0001)",
+      "value": "Binary data (OB): 2 bytes",
+      "name": "FileMetaInformationVersion",
+      "length": 2,
+      "devNote": "No support for VR: OB"
+   },
+   "(0002,0002)": {
+      "vr": "UI",
+      "tag": "(0002,0002)",
+      "value": "1.2.840.10008.5.1.4.1.1.2",
+      "name": "MediaStorageSOPClassUID",
+      "length": 26
+   },
+   "(0002,0003)": {
+      "vr": "UI",
+      "tag": "(0002,0003)",
+      "value": "1.3.12.2.1107.5.8.15.133762.30000024070314345389900000030",
+      "name": "MediaStorageSOPInstanceUID",
+      "length": 58
+   },
+   "(0002,0010)": {
+      "vr": "UI",
+      "tag": "(0002,0010)",
+      "value": "1.2.840.10008.1.2.1",
+      "name": "TransferSyntaxUID",
+      "length": 20
+   },
+   "(0002,0012)": {
+      "vr": "UI",
+      "tag": "(0002,0012)",
+      "value": "1.3.12.2.1107.5.8.15.10.20090701",
+      "name": "ImplementationClassUID",
+      "length": 32
+   },
+   "(0002,0013)": {
+      "vr": "SH",
+      "tag": "(0002,0013)",
+      "value": "syngo.via ",
+      "name": "ImplementationVersionName",
+      "length": 10
+   },
+   "(0008,0005)": {
+      "vr": "CS",
+      "tag": "(0008,0005)",
+      "value": "ISO_IR 100",
+      "name": "SpecificCharacterSet",
+      "length": 10
+   },
+   "(0008,0008)": {
+      "vr": "CS",
+      "tag": "(0008,0008)",
+      "value": "ORIGINAL\\PRIMARY\\AXIAL\\VMI\\CT_SOM10 DEMEP\\ME55KEV\\COUNT_2SRC\\CONVCT ",
+      "name": "ImageType",
+      "length": 68
+   },
+   "(0008,0016)": {
+      "vr": "UI",
+      "tag": "(0008,0016)",
+      "value": "1.2.840.10008.5.1.4.1.1.2",
+      "name": "SOPClassUID",
+      "length": 26
+   },
+   "(0008,0018)": {
+      "vr": "UI",
+      "tag": "(0008,0018)",
+      "value": "1.3.12.2.1107.5.8.15.133762.30000024070314345389900000030",
+      "name": "SOPInstanceUID",
+      "length": 58
+   },
+   "(0008,0020)": {
+      "vr": "DA",
+      "tag": "(0008,0020)",
+      "value": "20240703",
+      "name": "StudyDate",
+      "length": 8
+   },
+   "(0008,0021)": {
+      "vr": "DA",
+      "tag": "(0008,0021)",
+      "value": "20240703",
+      "name": "SeriesDate",
+      "length": 8
+   },
+   "(0008,0022)": {
+      "vr": "DA",
+      "tag": "(0008,0022)",
+      "value": "20240703",
+      "name": "AcquisitionDate",
+      "length": 8
+   },
+   "(0008,0023)": {
+      "vr": "DA",
+      "tag": "(0008,0023)",
+      "value": "20240703",
+      "name": "ContentDate",
+      "length": 8
+   },
+   "(0008,002a)": {
+      "vr": "DT",
+      "tag": "(0008,002a)",
+      "value": "20240703143458.356768 ",
+      "name": "AcquisitionDateTime",
+      "length": 22
+   },
+   "(0008,0030)": {
+      "vr": "TM",
+      "tag": "(0008,0030)",
+      "value": "143458.356768 ",
+      "name": "StudyTime",
+      "length": 14
+   },
+   "(0008,0031)": {
+      "vr": "TM",
+      "tag": "(0008,0031)",
+      "value": "143458.356768 ",
+      "name": "SeriesTime",
+      "length": 14
+   },
+   "(0008,0032)": {
+      "vr": "TM",
+      "tag": "(0008,0032)",
+      "value": "143458.356768 ",
+      "name": "AcquisitionTime",
+      "length": 14
+   },
+   "(0008,0033)": {
+      "vr": "TM",
+      "tag": "(0008,0033)",
+      "value": "143458.356768 ",
+      "name": "ContentTime",
+      "length": 14
+   },
+   "(0008,0050)": {
+      "vr": "SH",
+      "tag": "(0008,0050)",
+      "value": "",
+      "name": "AccessionNumber",
+      "length": 0
+   },
+   "(0008,0060)": {
+      "vr": "CS",
+      "tag": "(0008,0060)",
+      "value": "CT",
+      "name": "Modality",
+      "length": 2
+   },
+   "(0008,0070)": {
+      "vr": "LO",
+      "tag": "(0008,0070)",
+      "value": "Siemens Healthineers",
+      "name": "Manufacturer",
+      "length": 20
+   },
+   "(0008,0090)": {
+      "vr": "PN",
+      "tag": "(0008,0090)",
+      "value": "",
+      "name": "ReferringPhysicianName",
+      "length": 0
+   },
+   "(0008,1032)": {
+      "vr": "SQ",
+      "tag": "(0008,1032)",
+      "name": "ProcedureCodeSequence",
+      "length": 148,
+      "items": [
+         {
+            "(0008,0100)": {
+               "vr": "SH",
+               "tag": "(0008,0100)",
+               "value": "CACRY ",
+               "name": "CodeValue",
+               "length": 6
+            },
+            "(0008,0102)": {
+               "vr": "SH",
+               "tag": "(0008,0102)",
+               "value": "INSIGNIA PRIVATE",
+               "name": "CodingSchemeDesignator",
+               "length": 16
+            },
+            "(0008,0104)": {
+               "vr": "LO",
+               "tag": "(0008,0104)",
+               "value": "CT Cardiac Angiogram Coronary ",
+               "name": "CodeMeaning",
+               "length": 30
+            }
+         },
+         {
+            "(0008,0100)": {
+               "vr": "SH",
+               "tag": "(0008,0100)",
+               "value": "CT Coronary ",
+               "name": "CodeValue",
+               "length": 12
+            },
+            "(0008,0102)": {
+               "vr": "SH",
+               "tag": "(0008,0102)",
+               "value": "99CT_VIA",
+               "name": "CodingSchemeDesignator",
+               "length": 8
+            },
+            "(0008,0104)": {
+               "vr": "LO",
+               "tag": "(0008,0104)",
+               "value": "CT Coronary ",
+               "name": "CodeMeaning",
+               "length": 12
+            }
+         }
+      ]
+   },
+   "(0008,1090)": {
+      "vr": "LO",
+      "tag": "(0008,1090)",
+      "value": "NAEOTOM Alpha ",
+      "name": "ManufacturerModelName",
+      "length": 14
+   },
+   "(0008,3010)": {
+      "vr": "UI",
+      "tag": "(0008,3010)",
+      "value": "1.3.12.2.1107.5.8.15.133762.30000024070314345389900000031",
+      "name": "IrradiationEventUID",
+      "length": 58
+   },
+   "(0010,0010)": {
+      "vr": "PN",
+      "tag": "(0010,0010)",
+      "value": "NaeotomTest ",
+      "name": "PatientName",
+      "length": 12
+   },
+   "(0010,0020)": {
+      "vr": "LO",
+      "tag": "(0010,0020)",
+      "value": "NaeotomTest ",
+      "name": "PatientID",
+      "length": 12
+   },
+   "(0010,0030)": {
+      "vr": "DA",
+      "tag": "(0010,0030)",
+      "value": "20240703",
+      "name": "PatientBirthDate",
+      "length": 8
+   },
+   "(0010,0040)": {
+      "vr": "CS",
+      "tag": "(0010,0040)",
+      "value": "O ",
+      "name": "PatientSex",
+      "length": 2
+   },
+   "(0012,0062)": {
+      "vr": "CS",
+      "tag": "(0012,0062)",
+      "value": "YES ",
+      "name": "PatientIdentityRemoved",
+      "length": 4
+   },
+   "(0012,0063)": {
+      "vr": "LO",
+      "tag": "(0012,0063)",
+      "value": "Deidentified\\Basic Application Confidentiality Profile applied",
+      "name": "DeidentificationMethod",
+      "length": 62
+   },
+   "(0012,0064)": {
+      "vr": "SQ",
+      "tag": "(0012,0064)",
+      "name": "DeidentificationMethodCodeSequence",
+      "length": 84,
+      "items": [
+         {
+            "(0008,0100)": {
+               "vr": "SH",
+               "tag": "(0008,0100)",
+               "value": "113100",
+               "name": "CodeValue",
+               "length": 6
+            },
+            "(0008,0102)": {
+               "vr": "SH",
+               "tag": "(0008,0102)",
+               "value": "DCM ",
+               "name": "CodingSchemeDesignator",
+               "length": 4
+            },
+            "(0008,0104)": {
+               "vr": "LO",
+               "tag": "(0008,0104)",
+               "value": "Basic Application Confidentiality Profile ",
+               "name": "CodeMeaning",
+               "length": 42
+            }
+         }
+      ]
+   },
+   "(0018,0010)": {
+      "vr": "LO",
+      "tag": "(0018,0010)",
+      "value": "DeIdentified",
+      "name": "ContrastBolusAgent",
+      "length": 12
+   },
+   "(0018,0015)": {
+      "vr": "CS",
+      "tag": "(0018,0015)",
+      "value": "HEART ",
+      "name": "BodyPartExamined",
+      "length": 6
+   },
+   "(0018,0022)": {
+      "vr": "CS",
+      "tag": "(0018,0022)",
+      "value": "TP80PC1076\\PULSTART_P0065PC\\PULSEND_P0080PC\\OSCRATEMIN052BPM\\OSCRATEMAX060BPM\\OSCRATEAVG056BPM\\SYNCUSREDIT_NO\\BESTPHASE_OFF\\RECONTYPE_TIME\\GATE_01_OF_01\\STACK_BLENDED",
+      "name": "ScanOptions",
+      "length": 166
+   },
+   "(0018,0050)": {
+      "vr": "DS",
+      "tag": "(0018,0050)",
+      "value": "0.4 ",
+      "name": "SliceThickness",
+      "length": 4
+   },
+   "(0018,0060)": {
+      "vr": "DS",
+      "tag": "(0018,0060)",
+      "value": "",
+      "name": "KVP",
+      "length": 0
+   },
+   "(0018,0090)": {
+      "vr": "DS",
+      "tag": "(0018,0090)",
+      "value": "504 ",
+      "name": "DataCollectionDiameter",
+      "length": 4
+   },
+   "(0018,1020)": {
+      "vr": "LO",
+      "tag": "(0018,1020)",
+      "value": "syngo CT VB10A",
+      "name": "SoftwareVersions",
+      "length": 14
+   },
+   "(0018,1030)": {
+      "vr": "LO",
+      "tag": "(0018,1030)",
+      "value": "DeIdentified",
+      "name": "ProtocolName",
+      "length": 12
+   },
+   "(0018,1100)": {
+      "vr": "DS",
+      "tag": "(0018,1100)",
+      "value": "180.851847182 ",
+      "name": "ReconstructionDiameter",
+      "length": 14
+   },
+   "(0018,1110)": {
+      "vr": "DS",
+      "tag": "(0018,1110)",
+      "value": "1113",
+      "name": "DistanceSourceToDetector",
+      "length": 4
+   },
+   "(0018,1111)": {
+      "vr": "DS",
+      "tag": "(0018,1111)",
+      "value": "610 ",
+      "name": "DistanceSourceToPatient",
+      "length": 4
+   },
+   "(0018,1120)": {
+      "vr": "DS",
+      "tag": "(0018,1120)",
+      "value": "0 ",
+      "name": "GantryDetectorTilt",
+      "length": 2
+   },
+   "(0018,1130)": {
+      "vr": "DS",
+      "tag": "(0018,1130)",
+      "value": "189.000 ",
+      "name": "TableHeight",
+      "length": 8
+   },
+   "(0018,1140)": {
+      "vr": "CS",
+      "tag": "(0018,1140)",
+      "value": "CW",
+      "name": "RotationDirection",
+      "length": 2
+   },
+   "(0018,1150)": {
+      "vr": "IS",
+      "tag": "(0018,1150)",
+      "value": "78",
+      "name": "ExposureTime",
+      "length": 2
+   },
+   "(0018,1151)": {
+      "vr": "IS",
+      "tag": "(0018,1151)",
+      "value": "1275",
+      "name": "XRayTubeCurrent",
+      "length": 4
+   },
+   "(0018,1152)": {
+      "vr": "IS",
+      "tag": "(0018,1152)",
+      "value": "100 ",
+      "name": "Exposure",
+      "length": 4
+   },
+   "(0018,1160)": {
+      "vr": "SH",
+      "tag": "(0018,1160)",
+      "value": "W12 ",
+      "name": "FilterType",
+      "length": 4
+   },
+   "(0018,1170)": {
+      "vr": "IS",
+      "tag": "(0018,1170)",
+      "value": "101 ",
+      "name": "GeneratorPower",
+      "length": 4
+   },
+   "(0018,1190)": {
+      "vr": "DS",
+      "tag": "(0018,1190)",
+      "value": "0.8\\1.2 ",
+      "name": "FocalSpots",
+      "length": 8
+   },
+   "(0018,1200)": {
+      "vr": "DA",
+      "tag": "(0018,1200)",
+      "value": "20240605",
+      "name": "DateOfLastCalibration",
+      "length": 8
+   },
+   "(0018,1201)": {
+      "vr": "TM",
+      "tag": "(0018,1201)",
+      "value": "074609.000000 ",
+      "name": "TimeOfLastCalibration",
+      "length": 14
+   },
+   "(0018,1210)": {
+      "vr": "SH",
+      "tag": "(0018,1210)",
+      "value": "Bv40f\\4 ",
+      "name": "ConvolutionKernel",
+      "length": 8
+   },
+   "(0018,5100)": {
+      "vr": "CS",
+      "tag": "(0018,5100)",
+      "value": "FFS ",
+      "name": "PatientPosition",
+      "length": 4
+   },
+   "(0018,9305)": {
+      "vr": "FD",
+      "tag": "(0018,9305)",
+      "value": "0.25",
+      "name": "RevolutionTime",
+      "length": 8
+   },
+   "(0018,9306)": {
+      "vr": "FD",
+      "tag": "(0018,9306)",
+      "value": "0.4",
+      "name": "SingleCollimationWidth",
+      "length": 8
+   },
+   "(0018,9307)": {
+      "vr": "FD",
+      "tag": "(0018,9307)",
+      "value": "57.6",
+      "name": "TotalCollimationWidth",
+      "length": 8
+   },
+   "(0018,9309)": {
+      "vr": "FD",
+      "tag": "(0018,9309)",
+      "value": "737.2",
+      "name": "TableSpeed",
+      "length": 8
+   },
+   "(0018,9310)": {
+      "vr": "FD",
+      "tag": "(0018,9310)",
+      "value": "184.32000000000002",
+      "name": "TableFeedPerRotation",
+      "length": 8
+   },
+   "(0018,9311)": {
+      "vr": "FD",
+      "tag": "(0018,9311)",
+      "value": "3.2",
+      "name": "SpiralPitchFactor",
+      "length": 8
+   },
+   "(0018,9313)": {
+      "vr": "FD",
+      "tag": "(0018,9313)",
+      "value": "0",
+      "name": "DataCollectionCenterPatient",
+      "length": 24
+   },
+   "(0018,9318)": {
+      "vr": "FD",
+      "tag": "(0018,9318)",
+      "value": "20.668",
+      "name": "ReconstructionTargetCenterPatient",
+      "length": 24
+   },
+   "(0018,9323)": {
+      "vr": "CS",
+      "tag": "(0018,9323)",
+      "value": "ELLIP_ZEC ",
+      "name": "ExposureModulationType",
+      "length": 10
+   },
+   "(0018,9345)": {
+      "vr": "FD",
+      "tag": "(0018,9345)",
+      "value": "9.194217602099798",
+      "name": "CTDIvol",
+      "length": 8
+   },
+   "(0018,9346)": {
+      "vr": "SQ",
+      "tag": "(0018,9346)",
+      "name": "CTDIPhantomTypeCodeSequence",
+      "length": 68,
+      "items": [
+         {
+            "(0008,0100)": {
+               "vr": "SH",
+               "tag": "(0008,0100)",
+               "value": "113691",
+               "name": "CodeValue",
+               "length": 6
+            },
+            "(0008,0102)": {
+               "vr": "SH",
+               "tag": "(0008,0102)",
+               "value": "DCM ",
+               "name": "CodingSchemeDesignator",
+               "length": 4
+            },
+            "(0008,0104)": {
+               "vr": "LO",
+               "tag": "(0008,0104)",
+               "value": "IEC Body Dosimetry Phantom",
+               "name": "CodeMeaning",
+               "length": 26
+            }
+         }
+      ]
+   },
+   "(0018,9361)": {
+      "vr": "CS",
+      "tag": "(0018,9361)",
+      "value": "YES ",
+      "name": "MultienergyCTAcquisition",
+      "length": 4
+   },
+   "(0018,9362)": {
+      "vr": "SQ",
+      "tag": "(0018,9362)",
+      "name": "MultienergyCTAcquisitionSequence",
+      "length": 3512,
+      "items": [
+         {
+            "(0018,9304)": {
+               "vr": "SQ",
+               "tag": "(0018,9304)",
+               "name": "CTAcquisitionDetailsSequence",
+               "length": 880,
+               "items": [
+                  {
+                     "(0018,0090)": {
+                        "vr": "DS",
+                        "tag": "(0018,0090)",
+                        "value": "504 ",
+                        "name": "DataCollectionDiameter",
+                        "length": 4
+                     },
+                     "(0018,1120)": {
+                        "vr": "DS",
+                        "tag": "(0018,1120)",
+                        "value": "0 ",
+                        "name": "GantryDetectorTilt",
+                        "length": 2
+                     },
+                     "(0018,1130)": {
+                        "vr": "DS",
+                        "tag": "(0018,1130)",
+                        "value": "189 ",
+                        "name": "TableHeight",
+                        "length": 4
+                     },
+                     "(0018,1140)": {
+                        "vr": "CS",
+                        "tag": "(0018,1140)",
+                        "value": "CW",
+                        "name": "RotationDirection",
+                        "length": 2
+                     },
+                     "(0018,9305)": {
+                        "vr": "FD",
+                        "tag": "(0018,9305)",
+                        "value": "0.25",
+                        "name": "RevolutionTime",
+                        "length": 8
+                     },
+                     "(0018,9306)": {
+                        "vr": "FD",
+                        "tag": "(0018,9306)",
+                        "value": "0.4",
+                        "name": "SingleCollimationWidth",
+                        "length": 8
+                     },
+                     "(0018,9307)": {
+                        "vr": "FD",
+                        "tag": "(0018,9307)",
+                        "value": "57.6",
+                        "name": "TotalCollimationWidth",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "1",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,0090)": {
+                        "vr": "DS",
+                        "tag": "(0018,0090)",
+                        "value": "504 ",
+                        "name": "DataCollectionDiameter",
+                        "length": 4
+                     },
+                     "(0018,1120)": {
+                        "vr": "DS",
+                        "tag": "(0018,1120)",
+                        "value": "0 ",
+                        "name": "GantryDetectorTilt",
+                        "length": 2
+                     },
+                     "(0018,1130)": {
+                        "vr": "DS",
+                        "tag": "(0018,1130)",
+                        "value": "189 ",
+                        "name": "TableHeight",
+                        "length": 4
+                     },
+                     "(0018,1140)": {
+                        "vr": "CS",
+                        "tag": "(0018,1140)",
+                        "value": "CW",
+                        "name": "RotationDirection",
+                        "length": 2
+                     },
+                     "(0018,9305)": {
+                        "vr": "FD",
+                        "tag": "(0018,9305)",
+                        "value": "0.25",
+                        "name": "RevolutionTime",
+                        "length": 8
+                     },
+                     "(0018,9306)": {
+                        "vr": "FD",
+                        "tag": "(0018,9306)",
+                        "value": "0.4",
+                        "name": "SingleCollimationWidth",
+                        "length": 8
+                     },
+                     "(0018,9307)": {
+                        "vr": "FD",
+                        "tag": "(0018,9307)",
+                        "value": "57.6",
+                        "name": "TotalCollimationWidth",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "2",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,0090)": {
+                        "vr": "DS",
+                        "tag": "(0018,0090)",
+                        "value": "504 ",
+                        "name": "DataCollectionDiameter",
+                        "length": 4
+                     },
+                     "(0018,1120)": {
+                        "vr": "DS",
+                        "tag": "(0018,1120)",
+                        "value": "0 ",
+                        "name": "GantryDetectorTilt",
+                        "length": 2
+                     },
+                     "(0018,1130)": {
+                        "vr": "DS",
+                        "tag": "(0018,1130)",
+                        "value": "189 ",
+                        "name": "TableHeight",
+                        "length": 4
+                     },
+                     "(0018,1140)": {
+                        "vr": "CS",
+                        "tag": "(0018,1140)",
+                        "value": "CW",
+                        "name": "RotationDirection",
+                        "length": 2
+                     },
+                     "(0018,9305)": {
+                        "vr": "FD",
+                        "tag": "(0018,9305)",
+                        "value": "0.25",
+                        "name": "RevolutionTime",
+                        "length": 8
+                     },
+                     "(0018,9306)": {
+                        "vr": "FD",
+                        "tag": "(0018,9306)",
+                        "value": "0.4",
+                        "name": "SingleCollimationWidth",
+                        "length": 8
+                     },
+                     "(0018,9307)": {
+                        "vr": "FD",
+                        "tag": "(0018,9307)",
+                        "value": "57.6",
+                        "name": "TotalCollimationWidth",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "3",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,0090)": {
+                        "vr": "DS",
+                        "tag": "(0018,0090)",
+                        "value": "504 ",
+                        "name": "DataCollectionDiameter",
+                        "length": 4
+                     },
+                     "(0018,1120)": {
+                        "vr": "DS",
+                        "tag": "(0018,1120)",
+                        "value": "0 ",
+                        "name": "GantryDetectorTilt",
+                        "length": 2
+                     },
+                     "(0018,1130)": {
+                        "vr": "DS",
+                        "tag": "(0018,1130)",
+                        "value": "189 ",
+                        "name": "TableHeight",
+                        "length": 4
+                     },
+                     "(0018,1140)": {
+                        "vr": "CS",
+                        "tag": "(0018,1140)",
+                        "value": "CW",
+                        "name": "RotationDirection",
+                        "length": 2
+                     },
+                     "(0018,9305)": {
+                        "vr": "FD",
+                        "tag": "(0018,9305)",
+                        "value": "0.25",
+                        "name": "RevolutionTime",
+                        "length": 8
+                     },
+                     "(0018,9306)": {
+                        "vr": "FD",
+                        "tag": "(0018,9306)",
+                        "value": "0.4",
+                        "name": "SingleCollimationWidth",
+                        "length": 8
+                     },
+                     "(0018,9307)": {
+                        "vr": "FD",
+                        "tag": "(0018,9307)",
+                        "value": "57.6",
+                        "name": "TotalCollimationWidth",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "4",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,0090)": {
+                        "vr": "DS",
+                        "tag": "(0018,0090)",
+                        "value": "368 ",
+                        "name": "DataCollectionDiameter",
+                        "length": 4
+                     },
+                     "(0018,1120)": {
+                        "vr": "DS",
+                        "tag": "(0018,1120)",
+                        "value": "0 ",
+                        "name": "GantryDetectorTilt",
+                        "length": 2
+                     },
+                     "(0018,1130)": {
+                        "vr": "DS",
+                        "tag": "(0018,1130)",
+                        "value": "189 ",
+                        "name": "TableHeight",
+                        "length": 4
+                     },
+                     "(0018,1140)": {
+                        "vr": "CS",
+                        "tag": "(0018,1140)",
+                        "value": "CW",
+                        "name": "RotationDirection",
+                        "length": 2
+                     },
+                     "(0018,9305)": {
+                        "vr": "FD",
+                        "tag": "(0018,9305)",
+                        "value": "0.25",
+                        "name": "RevolutionTime",
+                        "length": 8
+                     },
+                     "(0018,9306)": {
+                        "vr": "FD",
+                        "tag": "(0018,9306)",
+                        "value": "0.4",
+                        "name": "SingleCollimationWidth",
+                        "length": 8
+                     },
+                     "(0018,9307)": {
+                        "vr": "FD",
+                        "tag": "(0018,9307)",
+                        "value": "57.6",
+                        "name": "TotalCollimationWidth",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "5",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,0090)": {
+                        "vr": "DS",
+                        "tag": "(0018,0090)",
+                        "value": "368 ",
+                        "name": "DataCollectionDiameter",
+                        "length": 4
+                     },
+                     "(0018,1120)": {
+                        "vr": "DS",
+                        "tag": "(0018,1120)",
+                        "value": "0 ",
+                        "name": "GantryDetectorTilt",
+                        "length": 2
+                     },
+                     "(0018,1130)": {
+                        "vr": "DS",
+                        "tag": "(0018,1130)",
+                        "value": "189 ",
+                        "name": "TableHeight",
+                        "length": 4
+                     },
+                     "(0018,1140)": {
+                        "vr": "CS",
+                        "tag": "(0018,1140)",
+                        "value": "CW",
+                        "name": "RotationDirection",
+                        "length": 2
+                     },
+                     "(0018,9305)": {
+                        "vr": "FD",
+                        "tag": "(0018,9305)",
+                        "value": "0.25",
+                        "name": "RevolutionTime",
+                        "length": 8
+                     },
+                     "(0018,9306)": {
+                        "vr": "FD",
+                        "tag": "(0018,9306)",
+                        "value": "0.4",
+                        "name": "SingleCollimationWidth",
+                        "length": 8
+                     },
+                     "(0018,9307)": {
+                        "vr": "FD",
+                        "tag": "(0018,9307)",
+                        "value": "57.6",
+                        "name": "TotalCollimationWidth",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "6",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,0090)": {
+                        "vr": "DS",
+                        "tag": "(0018,0090)",
+                        "value": "368 ",
+                        "name": "DataCollectionDiameter",
+                        "length": 4
+                     },
+                     "(0018,1120)": {
+                        "vr": "DS",
+                        "tag": "(0018,1120)",
+                        "value": "0 ",
+                        "name": "GantryDetectorTilt",
+                        "length": 2
+                     },
+                     "(0018,1130)": {
+                        "vr": "DS",
+                        "tag": "(0018,1130)",
+                        "value": "189 ",
+                        "name": "TableHeight",
+                        "length": 4
+                     },
+                     "(0018,1140)": {
+                        "vr": "CS",
+                        "tag": "(0018,1140)",
+                        "value": "CW",
+                        "name": "RotationDirection",
+                        "length": 2
+                     },
+                     "(0018,9305)": {
+                        "vr": "FD",
+                        "tag": "(0018,9305)",
+                        "value": "0.25",
+                        "name": "RevolutionTime",
+                        "length": 8
+                     },
+                     "(0018,9306)": {
+                        "vr": "FD",
+                        "tag": "(0018,9306)",
+                        "value": "0.4",
+                        "name": "SingleCollimationWidth",
+                        "length": 8
+                     },
+                     "(0018,9307)": {
+                        "vr": "FD",
+                        "tag": "(0018,9307)",
+                        "value": "57.6",
+                        "name": "TotalCollimationWidth",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "7",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,0090)": {
+                        "vr": "DS",
+                        "tag": "(0018,0090)",
+                        "value": "368 ",
+                        "name": "DataCollectionDiameter",
+                        "length": 4
+                     },
+                     "(0018,1120)": {
+                        "vr": "DS",
+                        "tag": "(0018,1120)",
+                        "value": "0 ",
+                        "name": "GantryDetectorTilt",
+                        "length": 2
+                     },
+                     "(0018,1130)": {
+                        "vr": "DS",
+                        "tag": "(0018,1130)",
+                        "value": "189 ",
+                        "name": "TableHeight",
+                        "length": 4
+                     },
+                     "(0018,1140)": {
+                        "vr": "CS",
+                        "tag": "(0018,1140)",
+                        "value": "CW",
+                        "name": "RotationDirection",
+                        "length": 2
+                     },
+                     "(0018,9305)": {
+                        "vr": "FD",
+                        "tag": "(0018,9305)",
+                        "value": "0.25",
+                        "name": "RevolutionTime",
+                        "length": 8
+                     },
+                     "(0018,9306)": {
+                        "vr": "FD",
+                        "tag": "(0018,9306)",
+                        "value": "0.4",
+                        "name": "SingleCollimationWidth",
+                        "length": 8
+                     },
+                     "(0018,9307)": {
+                        "vr": "FD",
+                        "tag": "(0018,9307)",
+                        "value": "57.6",
+                        "name": "TotalCollimationWidth",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "8",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  }
+               ]
+            },
+            "(0018,9312)": {
+               "vr": "SQ",
+               "tag": "(0018,9312)",
+               "name": "CTGeometrySequence",
+               "length": 368,
+               "items": [
+                  {
+                     "(0018,1110)": {
+                        "vr": "DS",
+                        "tag": "(0018,1110)",
+                        "value": "1113",
+                        "name": "DistanceSourceToDetector",
+                        "length": 4
+                     },
+                     "(0018,9335)": {
+                        "vr": "FD",
+                        "tag": "(0018,9335)",
+                        "value": "610",
+                        "name": "DistanceSourceToDataCollectionCenter",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "1",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,1110)": {
+                        "vr": "DS",
+                        "tag": "(0018,1110)",
+                        "value": "1113",
+                        "name": "DistanceSourceToDetector",
+                        "length": 4
+                     },
+                     "(0018,9335)": {
+                        "vr": "FD",
+                        "tag": "(0018,9335)",
+                        "value": "610",
+                        "name": "DistanceSourceToDataCollectionCenter",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "2",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,1110)": {
+                        "vr": "DS",
+                        "tag": "(0018,1110)",
+                        "value": "1113",
+                        "name": "DistanceSourceToDetector",
+                        "length": 4
+                     },
+                     "(0018,9335)": {
+                        "vr": "FD",
+                        "tag": "(0018,9335)",
+                        "value": "610",
+                        "name": "DistanceSourceToDataCollectionCenter",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "3",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,1110)": {
+                        "vr": "DS",
+                        "tag": "(0018,1110)",
+                        "value": "1113",
+                        "name": "DistanceSourceToDetector",
+                        "length": 4
+                     },
+                     "(0018,9335)": {
+                        "vr": "FD",
+                        "tag": "(0018,9335)",
+                        "value": "610",
+                        "name": "DistanceSourceToDataCollectionCenter",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "4",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,1110)": {
+                        "vr": "DS",
+                        "tag": "(0018,1110)",
+                        "value": "1113",
+                        "name": "DistanceSourceToDetector",
+                        "length": 4
+                     },
+                     "(0018,9335)": {
+                        "vr": "FD",
+                        "tag": "(0018,9335)",
+                        "value": "610",
+                        "name": "DistanceSourceToDataCollectionCenter",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "5",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,1110)": {
+                        "vr": "DS",
+                        "tag": "(0018,1110)",
+                        "value": "1113",
+                        "name": "DistanceSourceToDetector",
+                        "length": 4
+                     },
+                     "(0018,9335)": {
+                        "vr": "FD",
+                        "tag": "(0018,9335)",
+                        "value": "610",
+                        "name": "DistanceSourceToDataCollectionCenter",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "6",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,1110)": {
+                        "vr": "DS",
+                        "tag": "(0018,1110)",
+                        "value": "1113",
+                        "name": "DistanceSourceToDetector",
+                        "length": 4
+                     },
+                     "(0018,9335)": {
+                        "vr": "FD",
+                        "tag": "(0018,9335)",
+                        "value": "610",
+                        "name": "DistanceSourceToDataCollectionCenter",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "7",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,1110)": {
+                        "vr": "DS",
+                        "tag": "(0018,1110)",
+                        "value": "1113",
+                        "name": "DistanceSourceToDetector",
+                        "length": 4
+                     },
+                     "(0018,9335)": {
+                        "vr": "FD",
+                        "tag": "(0018,9335)",
+                        "value": "610",
+                        "name": "DistanceSourceToDataCollectionCenter",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "8",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  }
+               ]
+            },
+            "(0018,9321)": {
+               "vr": "SQ",
+               "tag": "(0018,9321)",
+               "name": "CTExposureSequence",
+               "length": 376,
+               "items": [
+                  {
+                     "(0018,9323)": {
+                        "vr": "CS",
+                        "tag": "(0018,9323)",
+                        "value": "ELLIP_ZEC ",
+                        "name": "ExposureModulationType",
+                        "length": 10
+                     },
+                     "(0018,9324)": {
+                        "vr": "FD",
+                        "tag": "(0018,9324)",
+                        "value": "",
+                        "name": "EstimatedDoseSaving",
+                        "length": 0
+                     },
+                     "(0018,9328)": {
+                        "vr": "FD",
+                        "tag": "(0018,9328)",
+                        "value": "78.125",
+                        "name": "ExposureTimeInms",
+                        "length": 8
+                     },
+                     "(0018,9330)": {
+                        "vr": "FD",
+                        "tag": "(0018,9330)",
+                        "value": "635.094543",
+                        "name": "XRayTubeCurrentInmA",
+                        "length": 8
+                     },
+                     "(0018,9332)": {
+                        "vr": "FD",
+                        "tag": "(0018,9332)",
+                        "value": "50",
+                        "name": "ExposureInmAs",
+                        "length": 8
+                     },
+                     "(0018,9345)": {
+                        "vr": "FD",
+                        "tag": "(0018,9345)",
+                        "value": "4.581410845313456",
+                        "name": "CTDIvol",
+                        "length": 8
+                     },
+                     "(0018,9346)": {
+                        "vr": "SQ",
+                        "tag": "(0018,9346)",
+                        "name": "CTDIPhantomTypeCodeSequence",
+                        "length": 68,
+                        "items": [
+                           {
+                              "(0008,0100)": {
+                                 "vr": "SH",
+                                 "tag": "(0008,0100)",
+                                 "value": "113691",
+                                 "name": "CodeValue",
+                                 "length": 6
+                              },
+                              "(0008,0102)": {
+                                 "vr": "SH",
+                                 "tag": "(0008,0102)",
+                                 "value": "DCM ",
+                                 "name": "CodingSchemeDesignator",
+                                 "length": 4
+                              },
+                              "(0008,0104)": {
+                                 "vr": "LO",
+                                 "tag": "(0008,0104)",
+                                 "value": "IEC Body Dosimetry Phantom",
+                                 "name": "CodeMeaning",
+                                 "length": 26
+                              }
+                           }
+                        ]
+                     },
+                     "(0018,9377)": {
+                        "vr": "US",
+                        "tag": "(0018,9377)",
+                        "value": "1",
+                        "name": "ReferencedXRaySourceIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,9323)": {
+                        "vr": "CS",
+                        "tag": "(0018,9323)",
+                        "value": "ELLIP_ZEC ",
+                        "name": "ExposureModulationType",
+                        "length": 10
+                     },
+                     "(0018,9324)": {
+                        "vr": "FD",
+                        "tag": "(0018,9324)",
+                        "value": "",
+                        "name": "EstimatedDoseSaving",
+                        "length": 0
+                     },
+                     "(0018,9328)": {
+                        "vr": "FD",
+                        "tag": "(0018,9328)",
+                        "value": "78.125",
+                        "name": "ExposureTimeInms",
+                        "length": 8
+                     },
+                     "(0018,9330)": {
+                        "vr": "FD",
+                        "tag": "(0018,9330)",
+                        "value": "639.446777",
+                        "name": "XRayTubeCurrentInmA",
+                        "length": 8
+                     },
+                     "(0018,9332)": {
+                        "vr": "FD",
+                        "tag": "(0018,9332)",
+                        "value": "50",
+                        "name": "ExposureInmAs",
+                        "length": 8
+                     },
+                     "(0018,9345)": {
+                        "vr": "FD",
+                        "tag": "(0018,9345)",
+                        "value": "4.612806756786342",
+                        "name": "CTDIvol",
+                        "length": 8
+                     },
+                     "(0018,9346)": {
+                        "vr": "SQ",
+                        "tag": "(0018,9346)",
+                        "name": "CTDIPhantomTypeCodeSequence",
+                        "length": 68,
+                        "items": [
+                           {
+                              "(0008,0100)": {
+                                 "vr": "SH",
+                                 "tag": "(0008,0100)",
+                                 "value": "113691",
+                                 "name": "CodeValue",
+                                 "length": 6
+                              },
+                              "(0008,0102)": {
+                                 "vr": "SH",
+                                 "tag": "(0008,0102)",
+                                 "value": "DCM ",
+                                 "name": "CodingSchemeDesignator",
+                                 "length": 4
+                              },
+                              "(0008,0104)": {
+                                 "vr": "LO",
+                                 "tag": "(0008,0104)",
+                                 "value": "IEC Body Dosimetry Phantom",
+                                 "name": "CodeMeaning",
+                                 "length": 26
+                              }
+                           }
+                        ]
+                     },
+                     "(0018,9377)": {
+                        "vr": "US",
+                        "tag": "(0018,9377)",
+                        "value": "2",
+                        "name": "ReferencedXRaySourceIndex",
+                        "length": 2
+                     }
+                  }
+               ]
+            },
+            "(0018,9325)": {
+               "vr": "SQ",
+               "tag": "(0018,9325)",
+               "name": "CTXRayDetailsSequence",
+               "length": 592,
+               "items": [
+                  {
+                     "(0018,0060)": {
+                        "vr": "DS",
+                        "tag": "(0018,0060)",
+                        "value": "140 ",
+                        "name": "KVP",
+                        "length": 4
+                     },
+                     "(0018,1160)": {
+                        "vr": "SH",
+                        "tag": "(0018,1160)",
+                        "value": "W12 ",
+                        "name": "FilterType",
+                        "length": 4
+                     },
+                     "(0018,1190)": {
+                        "vr": "DS",
+                        "tag": "(0018,1190)",
+                        "value": "0.8\\1.2 ",
+                        "name": "FocalSpots",
+                        "length": 8
+                     },
+                     "(0018,7050)": {
+                        "vr": "CS",
+                        "tag": "(0018,7050)",
+                        "value": "ALUMINUM",
+                        "name": "FilterMaterial",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "1",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,0060)": {
+                        "vr": "DS",
+                        "tag": "(0018,0060)",
+                        "value": "140 ",
+                        "name": "KVP",
+                        "length": 4
+                     },
+                     "(0018,1160)": {
+                        "vr": "SH",
+                        "tag": "(0018,1160)",
+                        "value": "W12 ",
+                        "name": "FilterType",
+                        "length": 4
+                     },
+                     "(0018,1190)": {
+                        "vr": "DS",
+                        "tag": "(0018,1190)",
+                        "value": "0.8\\1.2 ",
+                        "name": "FocalSpots",
+                        "length": 8
+                     },
+                     "(0018,7050)": {
+                        "vr": "CS",
+                        "tag": "(0018,7050)",
+                        "value": "ALUMINUM",
+                        "name": "FilterMaterial",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "2",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,0060)": {
+                        "vr": "DS",
+                        "tag": "(0018,0060)",
+                        "value": "140 ",
+                        "name": "KVP",
+                        "length": 4
+                     },
+                     "(0018,1160)": {
+                        "vr": "SH",
+                        "tag": "(0018,1160)",
+                        "value": "W12 ",
+                        "name": "FilterType",
+                        "length": 4
+                     },
+                     "(0018,1190)": {
+                        "vr": "DS",
+                        "tag": "(0018,1190)",
+                        "value": "0.8\\1.2 ",
+                        "name": "FocalSpots",
+                        "length": 8
+                     },
+                     "(0018,7050)": {
+                        "vr": "CS",
+                        "tag": "(0018,7050)",
+                        "value": "ALUMINUM",
+                        "name": "FilterMaterial",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "3",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,0060)": {
+                        "vr": "DS",
+                        "tag": "(0018,0060)",
+                        "value": "140 ",
+                        "name": "KVP",
+                        "length": 4
+                     },
+                     "(0018,1160)": {
+                        "vr": "SH",
+                        "tag": "(0018,1160)",
+                        "value": "W12 ",
+                        "name": "FilterType",
+                        "length": 4
+                     },
+                     "(0018,1190)": {
+                        "vr": "DS",
+                        "tag": "(0018,1190)",
+                        "value": "0.8\\1.2 ",
+                        "name": "FocalSpots",
+                        "length": 8
+                     },
+                     "(0018,7050)": {
+                        "vr": "CS",
+                        "tag": "(0018,7050)",
+                        "value": "ALUMINUM",
+                        "name": "FilterMaterial",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "4",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,0060)": {
+                        "vr": "DS",
+                        "tag": "(0018,0060)",
+                        "value": "140 ",
+                        "name": "KVP",
+                        "length": 4
+                     },
+                     "(0018,1160)": {
+                        "vr": "SH",
+                        "tag": "(0018,1160)",
+                        "value": "W12 ",
+                        "name": "FilterType",
+                        "length": 4
+                     },
+                     "(0018,1190)": {
+                        "vr": "DS",
+                        "tag": "(0018,1190)",
+                        "value": "0.8\\1.2 ",
+                        "name": "FocalSpots",
+                        "length": 8
+                     },
+                     "(0018,7050)": {
+                        "vr": "CS",
+                        "tag": "(0018,7050)",
+                        "value": "ALUMINUM",
+                        "name": "FilterMaterial",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "5",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,0060)": {
+                        "vr": "DS",
+                        "tag": "(0018,0060)",
+                        "value": "140 ",
+                        "name": "KVP",
+                        "length": 4
+                     },
+                     "(0018,1160)": {
+                        "vr": "SH",
+                        "tag": "(0018,1160)",
+                        "value": "W12 ",
+                        "name": "FilterType",
+                        "length": 4
+                     },
+                     "(0018,1190)": {
+                        "vr": "DS",
+                        "tag": "(0018,1190)",
+                        "value": "0.8\\1.2 ",
+                        "name": "FocalSpots",
+                        "length": 8
+                     },
+                     "(0018,7050)": {
+                        "vr": "CS",
+                        "tag": "(0018,7050)",
+                        "value": "ALUMINUM",
+                        "name": "FilterMaterial",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "6",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,0060)": {
+                        "vr": "DS",
+                        "tag": "(0018,0060)",
+                        "value": "140 ",
+                        "name": "KVP",
+                        "length": 4
+                     },
+                     "(0018,1160)": {
+                        "vr": "SH",
+                        "tag": "(0018,1160)",
+                        "value": "W12 ",
+                        "name": "FilterType",
+                        "length": 4
+                     },
+                     "(0018,1190)": {
+                        "vr": "DS",
+                        "tag": "(0018,1190)",
+                        "value": "0.8\\1.2 ",
+                        "name": "FocalSpots",
+                        "length": 8
+                     },
+                     "(0018,7050)": {
+                        "vr": "CS",
+                        "tag": "(0018,7050)",
+                        "value": "ALUMINUM",
+                        "name": "FilterMaterial",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "7",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,0060)": {
+                        "vr": "DS",
+                        "tag": "(0018,0060)",
+                        "value": "140 ",
+                        "name": "KVP",
+                        "length": 4
+                     },
+                     "(0018,1160)": {
+                        "vr": "SH",
+                        "tag": "(0018,1160)",
+                        "value": "W12 ",
+                        "name": "FilterType",
+                        "length": 4
+                     },
+                     "(0018,1190)": {
+                        "vr": "DS",
+                        "tag": "(0018,1190)",
+                        "value": "0.8\\1.2 ",
+                        "name": "FocalSpots",
+                        "length": 8
+                     },
+                     "(0018,7050)": {
+                        "vr": "CS",
+                        "tag": "(0018,7050)",
+                        "value": "ALUMINUM",
+                        "name": "FilterMaterial",
+                        "length": 8
+                     },
+                     "(0018,9378)": {
+                        "vr": "US",
+                        "tag": "(0018,9378)",
+                        "value": "8",
+                        "name": "ReferencedPathIndex",
+                        "length": 2
+                     }
+                  }
+               ]
+            },
+            "(0018,9365)": {
+               "vr": "SQ",
+               "tag": "(0018,9365)",
+               "name": "MultienergyCTXRaySourceSequence",
+               "length": 256,
+               "items": [
+                  {
+                     "(0018,1170)": {
+                        "vr": "IS",
+                        "tag": "(0018,1170)",
+                        "value": "101 ",
+                        "name": "GeneratorPower",
+                        "length": 4
+                     },
+                     "(0018,9366)": {
+                        "vr": "US",
+                        "tag": "(0018,9366)",
+                        "value": "1",
+                        "name": "XRaySourceIndex",
+                        "length": 2
+                     },
+                     "(0018,9367)": {
+                        "vr": "UC",
+                        "tag": "(0018,9367)",
+                        "value": "A ",
+                        "name": "XRaySourceID",
+                        "length": 2
+                     },
+                     "(0018,9368)": {
+                        "vr": "CS",
+                        "tag": "(0018,9368)",
+                        "value": "CONSTANT_SOURCE ",
+                        "name": "MultienergySourceTechnique",
+                        "length": 16
+                     },
+                     "(0018,9369)": {
+                        "vr": "DT",
+                        "tag": "(0018,9369)",
+                        "value": "20240605084904.083000 ",
+                        "name": "SourceStartDateTime",
+                        "length": 22
+                     },
+                     "(0018,936a)": {
+                        "vr": "DT",
+                        "tag": "(0018,936a)",
+                        "value": "20240605084904.360000 ",
+                        "name": "SourceEndDateTime",
+                        "length": 22
+                     }
+                  },
+                  {
+                     "(0018,1170)": {
+                        "vr": "IS",
+                        "tag": "(0018,1170)",
+                        "value": "101 ",
+                        "name": "GeneratorPower",
+                        "length": 4
+                     },
+                     "(0018,9366)": {
+                        "vr": "US",
+                        "tag": "(0018,9366)",
+                        "value": "2",
+                        "name": "XRaySourceIndex",
+                        "length": 2
+                     },
+                     "(0018,9367)": {
+                        "vr": "UC",
+                        "tag": "(0018,9367)",
+                        "value": "B ",
+                        "name": "XRaySourceID",
+                        "length": 2
+                     },
+                     "(0018,9368)": {
+                        "vr": "CS",
+                        "tag": "(0018,9368)",
+                        "value": "CONSTANT_SOURCE ",
+                        "name": "MultienergySourceTechnique",
+                        "length": 16
+                     },
+                     "(0018,9369)": {
+                        "vr": "DT",
+                        "tag": "(0018,9369)",
+                        "value": "20240605084904.083000 ",
+                        "name": "SourceStartDateTime",
+                        "length": 22
+                     },
+                     "(0018,936a)": {
+                        "vr": "DT",
+                        "tag": "(0018,936a)",
+                        "value": "20240605084904.360000 ",
+                        "name": "SourceEndDateTime",
+                        "length": 22
+                     }
+                  }
+               ]
+            },
+            "(0018,936f)": {
+               "vr": "SQ",
+               "tag": "(0018,936f)",
+               "name": "MultienergyCTXRayDetectorSequence",
+               "length": 624,
+               "items": [
+                  {
+                     "(0018,9370)": {
+                        "vr": "US",
+                        "tag": "(0018,9370)",
+                        "value": "1",
+                        "name": "XRayDetectorIndex",
+                        "length": 2
+                     },
+                     "(0018,9371)": {
+                        "vr": "UC",
+                        "tag": "(0018,9371)",
+                        "value": "A ",
+                        "name": "XRayDetectorID",
+                        "length": 2
+                     },
+                     "(0018,9372)": {
+                        "vr": "CS",
+                        "tag": "(0018,9372)",
+                        "value": "PHOTON_COUNTING ",
+                        "name": "MultienergyDetectorType",
+                        "length": 16
+                     },
+                     "(0018,9374)": {
+                        "vr": "DS",
+                        "tag": "(0018,9374)",
+                        "value": "140 ",
+                        "name": "NominalMaxEnergy",
+                        "length": 4
+                     },
+                     "(0018,9375)": {
+                        "vr": "DS",
+                        "tag": "(0018,9375)",
+                        "value": "20",
+                        "name": "NominalMinEnergy",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,9370)": {
+                        "vr": "US",
+                        "tag": "(0018,9370)",
+                        "value": "2",
+                        "name": "XRayDetectorIndex",
+                        "length": 2
+                     },
+                     "(0018,9371)": {
+                        "vr": "UC",
+                        "tag": "(0018,9371)",
+                        "value": "A ",
+                        "name": "XRayDetectorID",
+                        "length": 2
+                     },
+                     "(0018,9372)": {
+                        "vr": "CS",
+                        "tag": "(0018,9372)",
+                        "value": "PHOTON_COUNTING ",
+                        "name": "MultienergyDetectorType",
+                        "length": 16
+                     },
+                     "(0018,9374)": {
+                        "vr": "DS",
+                        "tag": "(0018,9374)",
+                        "value": "140 ",
+                        "name": "NominalMaxEnergy",
+                        "length": 4
+                     },
+                     "(0018,9375)": {
+                        "vr": "DS",
+                        "tag": "(0018,9375)",
+                        "value": "34",
+                        "name": "NominalMinEnergy",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,9370)": {
+                        "vr": "US",
+                        "tag": "(0018,9370)",
+                        "value": "3",
+                        "name": "XRayDetectorIndex",
+                        "length": 2
+                     },
+                     "(0018,9371)": {
+                        "vr": "UC",
+                        "tag": "(0018,9371)",
+                        "value": "A ",
+                        "name": "XRayDetectorID",
+                        "length": 2
+                     },
+                     "(0018,9372)": {
+                        "vr": "CS",
+                        "tag": "(0018,9372)",
+                        "value": "PHOTON_COUNTING ",
+                        "name": "MultienergyDetectorType",
+                        "length": 16
+                     },
+                     "(0018,9374)": {
+                        "vr": "DS",
+                        "tag": "(0018,9374)",
+                        "value": "140 ",
+                        "name": "NominalMaxEnergy",
+                        "length": 4
+                     },
+                     "(0018,9375)": {
+                        "vr": "DS",
+                        "tag": "(0018,9375)",
+                        "value": "62",
+                        "name": "NominalMinEnergy",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,9370)": {
+                        "vr": "US",
+                        "tag": "(0018,9370)",
+                        "value": "4",
+                        "name": "XRayDetectorIndex",
+                        "length": 2
+                     },
+                     "(0018,9371)": {
+                        "vr": "UC",
+                        "tag": "(0018,9371)",
+                        "value": "A ",
+                        "name": "XRayDetectorID",
+                        "length": 2
+                     },
+                     "(0018,9372)": {
+                        "vr": "CS",
+                        "tag": "(0018,9372)",
+                        "value": "PHOTON_COUNTING ",
+                        "name": "MultienergyDetectorType",
+                        "length": 16
+                     },
+                     "(0018,9374)": {
+                        "vr": "DS",
+                        "tag": "(0018,9374)",
+                        "value": "140 ",
+                        "name": "NominalMaxEnergy",
+                        "length": 4
+                     },
+                     "(0018,9375)": {
+                        "vr": "DS",
+                        "tag": "(0018,9375)",
+                        "value": "75",
+                        "name": "NominalMinEnergy",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,9370)": {
+                        "vr": "US",
+                        "tag": "(0018,9370)",
+                        "value": "5",
+                        "name": "XRayDetectorIndex",
+                        "length": 2
+                     },
+                     "(0018,9371)": {
+                        "vr": "UC",
+                        "tag": "(0018,9371)",
+                        "value": "B ",
+                        "name": "XRayDetectorID",
+                        "length": 2
+                     },
+                     "(0018,9372)": {
+                        "vr": "CS",
+                        "tag": "(0018,9372)",
+                        "value": "PHOTON_COUNTING ",
+                        "name": "MultienergyDetectorType",
+                        "length": 16
+                     },
+                     "(0018,9374)": {
+                        "vr": "DS",
+                        "tag": "(0018,9374)",
+                        "value": "140 ",
+                        "name": "NominalMaxEnergy",
+                        "length": 4
+                     },
+                     "(0018,9375)": {
+                        "vr": "DS",
+                        "tag": "(0018,9375)",
+                        "value": "20",
+                        "name": "NominalMinEnergy",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,9370)": {
+                        "vr": "US",
+                        "tag": "(0018,9370)",
+                        "value": "6",
+                        "name": "XRayDetectorIndex",
+                        "length": 2
+                     },
+                     "(0018,9371)": {
+                        "vr": "UC",
+                        "tag": "(0018,9371)",
+                        "value": "B ",
+                        "name": "XRayDetectorID",
+                        "length": 2
+                     },
+                     "(0018,9372)": {
+                        "vr": "CS",
+                        "tag": "(0018,9372)",
+                        "value": "PHOTON_COUNTING ",
+                        "name": "MultienergyDetectorType",
+                        "length": 16
+                     },
+                     "(0018,9374)": {
+                        "vr": "DS",
+                        "tag": "(0018,9374)",
+                        "value": "140 ",
+                        "name": "NominalMaxEnergy",
+                        "length": 4
+                     },
+                     "(0018,9375)": {
+                        "vr": "DS",
+                        "tag": "(0018,9375)",
+                        "value": "34",
+                        "name": "NominalMinEnergy",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,9370)": {
+                        "vr": "US",
+                        "tag": "(0018,9370)",
+                        "value": "7",
+                        "name": "XRayDetectorIndex",
+                        "length": 2
+                     },
+                     "(0018,9371)": {
+                        "vr": "UC",
+                        "tag": "(0018,9371)",
+                        "value": "B ",
+                        "name": "XRayDetectorID",
+                        "length": 2
+                     },
+                     "(0018,9372)": {
+                        "vr": "CS",
+                        "tag": "(0018,9372)",
+                        "value": "PHOTON_COUNTING ",
+                        "name": "MultienergyDetectorType",
+                        "length": 16
+                     },
+                     "(0018,9374)": {
+                        "vr": "DS",
+                        "tag": "(0018,9374)",
+                        "value": "140 ",
+                        "name": "NominalMaxEnergy",
+                        "length": 4
+                     },
+                     "(0018,9375)": {
+                        "vr": "DS",
+                        "tag": "(0018,9375)",
+                        "value": "62",
+                        "name": "NominalMinEnergy",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,9370)": {
+                        "vr": "US",
+                        "tag": "(0018,9370)",
+                        "value": "8",
+                        "name": "XRayDetectorIndex",
+                        "length": 2
+                     },
+                     "(0018,9371)": {
+                        "vr": "UC",
+                        "tag": "(0018,9371)",
+                        "value": "B ",
+                        "name": "XRayDetectorID",
+                        "length": 2
+                     },
+                     "(0018,9372)": {
+                        "vr": "CS",
+                        "tag": "(0018,9372)",
+                        "value": "PHOTON_COUNTING ",
+                        "name": "MultienergyDetectorType",
+                        "length": 16
+                     },
+                     "(0018,9374)": {
+                        "vr": "DS",
+                        "tag": "(0018,9374)",
+                        "value": "140 ",
+                        "name": "NominalMaxEnergy",
+                        "length": 4
+                     },
+                     "(0018,9375)": {
+                        "vr": "DS",
+                        "tag": "(0018,9375)",
+                        "value": "75",
+                        "name": "NominalMinEnergy",
+                        "length": 2
+                     }
+                  }
+               ]
+            },
+            "(0018,9379)": {
+               "vr": "SQ",
+               "tag": "(0018,9379)",
+               "name": "MultienergyCTPathSequence",
+               "length": 304,
+               "items": [
+                  {
+                     "(0018,9376)": {
+                        "vr": "US",
+                        "tag": "(0018,9376)",
+                        "value": "1",
+                        "name": "ReferencedXRayDetectorIndex",
+                        "length": 2
+                     },
+                     "(0018,9377)": {
+                        "vr": "US",
+                        "tag": "(0018,9377)",
+                        "value": "1",
+                        "name": "ReferencedXRaySourceIndex",
+                        "length": 2
+                     },
+                     "(0018,937a)": {
+                        "vr": "US",
+                        "tag": "(0018,937a)",
+                        "value": "1",
+                        "name": "MultienergyCTPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,9376)": {
+                        "vr": "US",
+                        "tag": "(0018,9376)",
+                        "value": "2",
+                        "name": "ReferencedXRayDetectorIndex",
+                        "length": 2
+                     },
+                     "(0018,9377)": {
+                        "vr": "US",
+                        "tag": "(0018,9377)",
+                        "value": "1",
+                        "name": "ReferencedXRaySourceIndex",
+                        "length": 2
+                     },
+                     "(0018,937a)": {
+                        "vr": "US",
+                        "tag": "(0018,937a)",
+                        "value": "2",
+                        "name": "MultienergyCTPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,9376)": {
+                        "vr": "US",
+                        "tag": "(0018,9376)",
+                        "value": "3",
+                        "name": "ReferencedXRayDetectorIndex",
+                        "length": 2
+                     },
+                     "(0018,9377)": {
+                        "vr": "US",
+                        "tag": "(0018,9377)",
+                        "value": "1",
+                        "name": "ReferencedXRaySourceIndex",
+                        "length": 2
+                     },
+                     "(0018,937a)": {
+                        "vr": "US",
+                        "tag": "(0018,937a)",
+                        "value": "3",
+                        "name": "MultienergyCTPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,9376)": {
+                        "vr": "US",
+                        "tag": "(0018,9376)",
+                        "value": "4",
+                        "name": "ReferencedXRayDetectorIndex",
+                        "length": 2
+                     },
+                     "(0018,9377)": {
+                        "vr": "US",
+                        "tag": "(0018,9377)",
+                        "value": "1",
+                        "name": "ReferencedXRaySourceIndex",
+                        "length": 2
+                     },
+                     "(0018,937a)": {
+                        "vr": "US",
+                        "tag": "(0018,937a)",
+                        "value": "4",
+                        "name": "MultienergyCTPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,9376)": {
+                        "vr": "US",
+                        "tag": "(0018,9376)",
+                        "value": "5",
+                        "name": "ReferencedXRayDetectorIndex",
+                        "length": 2
+                     },
+                     "(0018,9377)": {
+                        "vr": "US",
+                        "tag": "(0018,9377)",
+                        "value": "2",
+                        "name": "ReferencedXRaySourceIndex",
+                        "length": 2
+                     },
+                     "(0018,937a)": {
+                        "vr": "US",
+                        "tag": "(0018,937a)",
+                        "value": "5",
+                        "name": "MultienergyCTPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,9376)": {
+                        "vr": "US",
+                        "tag": "(0018,9376)",
+                        "value": "6",
+                        "name": "ReferencedXRayDetectorIndex",
+                        "length": 2
+                     },
+                     "(0018,9377)": {
+                        "vr": "US",
+                        "tag": "(0018,9377)",
+                        "value": "2",
+                        "name": "ReferencedXRaySourceIndex",
+                        "length": 2
+                     },
+                     "(0018,937a)": {
+                        "vr": "US",
+                        "tag": "(0018,937a)",
+                        "value": "6",
+                        "name": "MultienergyCTPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,9376)": {
+                        "vr": "US",
+                        "tag": "(0018,9376)",
+                        "value": "7",
+                        "name": "ReferencedXRayDetectorIndex",
+                        "length": 2
+                     },
+                     "(0018,9377)": {
+                        "vr": "US",
+                        "tag": "(0018,9377)",
+                        "value": "2",
+                        "name": "ReferencedXRaySourceIndex",
+                        "length": 2
+                     },
+                     "(0018,937a)": {
+                        "vr": "US",
+                        "tag": "(0018,937a)",
+                        "value": "7",
+                        "name": "MultienergyCTPathIndex",
+                        "length": 2
+                     }
+                  },
+                  {
+                     "(0018,9376)": {
+                        "vr": "US",
+                        "tag": "(0018,9376)",
+                        "value": "8",
+                        "name": "ReferencedXRayDetectorIndex",
+                        "length": 2
+                     },
+                     "(0018,9377)": {
+                        "vr": "US",
+                        "tag": "(0018,9377)",
+                        "value": "2",
+                        "name": "ReferencedXRaySourceIndex",
+                        "length": 2
+                     },
+                     "(0018,937a)": {
+                        "vr": "US",
+                        "tag": "(0018,937a)",
+                        "value": "8",
+                        "name": "MultienergyCTPathIndex",
+                        "length": 2
+                     }
+                  }
+               ]
+            },
+            "(0018,937b)": {
+               "vr": "UT",
+               "tag": "(0018,937b)",
+               "value": "COUNTING",
+               "name": "MultienergyAcquisitionDescription",
+               "length": 8
+            }
+         }
+      ]
+   },
+   "(0018,9363)": {
+      "vr": "SQ",
+      "tag": "(0018,9363)",
+      "name": "MultienergyCTProcessingSequence",
+      "length": 56,
+      "items": [
+         {
+            "(0018,937e)": {
+               "vr": "CS",
+               "tag": "(0018,937e)",
+               "value": "PROJECTION_BASED",
+               "name": "DecompositionMethod",
+               "length": 16
+            },
+            "(0018,937f)": {
+               "vr": "UT",
+               "tag": "(0018,937f)",
+               "value": "Iodine/Water",
+               "name": "DecompositionDescription",
+               "length": 12
+            }
+         }
+      ]
+   },
+   "(0018,9364)": {
+      "vr": "SQ",
+      "tag": "(0018,9364)",
+      "name": "MultienergyCTCharacteristicsSequence",
+      "length": 548,
+      "items": [
+         {
+            "(0018,937c)": {
+               "vr": "FD",
+               "tag": "(0018,937c)",
+               "value": "55",
+               "name": "MonoenergeticEnergyEquivalent",
+               "length": 8
+            },
+            "(0022,1612)": {
+               "vr": "SQ",
+               "tag": "(0022,1612)",
+               "name": "DerivationAlgorithmSequence",
+               "length": 154,
+               "items": [
+                  {
+                     "(0024,0202)": {
+                        "vr": "LO",
+                        "tag": "(0024,0202)",
+                        "value": "Siemens Healthineers",
+                        "name": "AlgorithmSource",
+                        "length": 20
+                     },
+                     "(0066,002f)": {
+                        "vr": "SQ",
+                        "tag": "(0066,002f)",
+                        "name": "AlgorithmFamilyCodeSequence",
+                        "length": 66,
+                        "items": [
+                           {
+                              "(0008,0100)": {
+                                 "vr": "SH",
+                                 "tag": "(0008,0100)",
+                                 "value": "123108",
+                                 "name": "CodeValue",
+                                 "length": 6
+                              },
+                              "(0008,0102)": {
+                                 "vr": "SH",
+                                 "tag": "(0008,0102)",
+                                 "value": "DCM ",
+                                 "name": "CodingSchemeDesignator",
+                                 "length": 4
+                              },
+                              "(0008,0104)": {
+                                 "vr": "LO",
+                                 "tag": "(0008,0104)",
+                                 "value": "Multispectral Processing",
+                                 "name": "CodeMeaning",
+                                 "length": 24
+                              }
+                           }
+                        ]
+                     },
+                     "(0066,0031)": {
+                        "vr": "LO",
+                        "tag": "(0066,0031)",
+                        "value": "VB10A ",
+                        "name": "AlgorithmVersion",
+                        "length": 6
+                     },
+                     "(0066,0036)": {
+                        "vr": "LO",
+                        "tag": "(0066,0036)",
+                        "value": "Monoenergetic Plus",
+                        "name": "AlgorithmName",
+                        "length": 18
+                     }
+                  }
+               ]
+            },
+            "(0074,1212)": {
+               "vr": "SQ",
+               "tag": "(0074,1212)",
+               "name": "PerformedProcessingParametersSequence",
+               "length": 346,
+               "items": [
+                  {
+                     "(0040,a040)": {
+                        "vr": "CS",
+                        "tag": "(0040,a040)",
+                        "value": "TEXT",
+                        "name": "ValueType",
+                        "length": 4
+                     },
+                     "(0040,a043)": {
+                        "vr": "SQ",
+                        "tag": "(0040,a043)",
+                        "name": "ConceptNameCodeSequence",
+                        "length": 66,
+                        "items": [
+                           {
+                              "(0008,0100)": {
+                                 "vr": "SH",
+                                 "tag": "(0008,0100)",
+                                 "value": "123108",
+                                 "name": "CodeValue",
+                                 "length": 6
+                              },
+                              "(0008,0102)": {
+                                 "vr": "SH",
+                                 "tag": "(0008,0102)",
+                                 "value": "DCM ",
+                                 "name": "CodingSchemeDesignator",
+                                 "length": 4
+                              },
+                              "(0008,0104)": {
+                                 "vr": "LO",
+                                 "tag": "(0008,0104)",
+                                 "value": "Multispectral Processing",
+                                 "name": "CodeMeaning",
+                                 "length": 24
+                              }
+                           }
+                        ]
+                     },
+                     "(0040,a160)": {
+                        "vr": "UT",
+                        "tag": "(0040,a160)",
+                        "value": "<SPECTRAL_MIX_DESCRIPTOR><Version>500</Version><Content>MON</Content><SliceLocation>-20668 -11401 -1937243</SliceLocation><FovInner>368.55127</FovInner><MarginSphere>0</MarginSphere><MarginField>0</MarginField></SPECTRAL_MIX_DESCRIPTOR>",
+                        "name": "TextValue",
+                        "length": 236
+                     }
+                  }
+               ]
+            }
+         }
+      ]
+   },
+   "(0020,000d)": {
+      "vr": "UI",
+      "tag": "(0020,000d)",
+      "value": "1.3.12.2.1107.5.8.15.133762.30000024070314345389900000006",
+      "name": "StudyInstanceUID",
+      "length": 58
+   },
+   "(0020,000e)": {
+      "vr": "UI",
+      "tag": "(0020,000e)",
+      "value": "1.3.12.2.1107.5.8.15.133762.30000024070314345389900000032",
+      "name": "SeriesInstanceUID",
+      "length": 58
+   },
+   "(0020,0010)": {
+      "vr": "SH",
+      "tag": "(0020,0010)",
+      "value": "",
+      "name": "StudyID",
+      "length": 0
+   },
+   "(0020,0011)": {
+      "vr": "IS",
+      "tag": "(0020,0011)",
+      "value": "6 ",
+      "name": "SeriesNumber",
+      "length": 2
+   },
+   "(0020,0012)": {
+      "vr": "IS",
+      "tag": "(0020,0012)",
+      "value": "601 ",
+      "name": "AcquisitionNumber",
+      "length": 4
+   },
+   "(0020,0013)": {
+      "vr": "IS",
+      "tag": "(0020,0013)",
+      "value": "1 ",
+      "name": "InstanceNumber",
+      "length": 2
+   },
+   "(0020,0032)": {
+      "vr": "DS",
+      "tag": "(0020,0032)",
+      "value": "-69.58138671875\\-290.65038671875\\1937.243 ",
+      "name": "ImagePositionPatient",
+      "length": 42
+   },
+   "(0020,0037)": {
+      "vr": "DS",
+      "tag": "(0020,0037)",
+      "value": "1\\0\\0\\0\\1\\0 ",
+      "name": "ImageOrientationPatient",
+      "length": 12
+   },
+   "(0020,0052)": {
+      "vr": "UI",
+      "tag": "(0020,0052)",
+      "value": "1.3.12.2.1107.5.8.15.133762.30000024070314345389900000026",
+      "name": "FrameOfReferenceUID",
+      "length": 58
+   },
+   "(0020,0060)": {
+      "vr": "CS",
+      "tag": "(0020,0060)",
+      "value": "",
+      "name": "Laterality",
+      "length": 0
+   },
+   "(0020,1040)": {
+      "vr": "LO",
+      "tag": "(0020,1040)",
+      "value": "",
+      "name": "PositionReferenceIndicator",
+      "length": 0
+   },
+   "(0020,1041)": {
+      "vr": "DS",
+      "tag": "(0020,1041)",
+      "value": "-1937.243 ",
+      "name": "SliceLocation",
+      "length": 10
+   },
+   "(0028,0002)": {
+      "vr": "US",
+      "tag": "(0028,0002)",
+      "value": "1",
+      "name": "SamplesPerPixel",
+      "length": 2
+   },
+   "(0028,0004)": {
+      "vr": "CS",
+      "tag": "(0028,0004)",
+      "value": "MONOCHROME2 ",
+      "name": "PhotometricInterpretation",
+      "length": 12
+   },
+   "(0028,0010)": {
+      "vr": "US",
+      "tag": "(0028,0010)",
+      "value": "512",
+      "name": "Rows",
+      "length": 2
+   },
+   "(0028,0011)": {
+      "vr": "US",
+      "tag": "(0028,0011)",
+      "value": "512",
+      "name": "Columns",
+      "length": 2
+   },
+   "(0028,0030)": {
+      "vr": "DS",
+      "tag": "(0028,0030)",
+      "value": "0.3532265625\\0.3532265625 ",
+      "name": "PixelSpacing",
+      "length": 26
+   },
+   "(0028,0100)": {
+      "vr": "US",
+      "tag": "(0028,0100)",
+      "value": "16",
+      "name": "BitsAllocated",
+      "length": 2
+   },
+   "(0028,0101)": {
+      "vr": "US",
+      "tag": "(0028,0101)",
+      "value": "16",
+      "name": "BitsStored",
+      "length": 2
+   },
+   "(0028,0102)": {
+      "vr": "US",
+      "tag": "(0028,0102)",
+      "value": "15",
+      "name": "HighBit",
+      "length": 2
+   },
+   "(0028,0103)": {
+      "vr": "US",
+      "tag": "(0028,0103)",
+      "value": "0",
+      "name": "PixelRepresentation",
+      "length": 2
+   },
+   "(0028,0106)": {
+      "vr": "US",
+      "tag": "(0028,0106)",
+      "value": "7123",
+      "name": "SmallestImagePixelValue",
+      "length": 2
+   },
+   "(0028,0107)": {
+      "vr": "US",
+      "tag": "(0028,0107)",
+      "value": "11483",
+      "name": "LargestImagePixelValue",
+      "length": 2
+   },
+   "(0028,0301)": {
+      "vr": "CS",
+      "tag": "(0028,0301)",
+      "value": "NO",
+      "name": "BurnedInAnnotation",
+      "length": 2
+   },
+   "(0028,1050)": {
+      "vr": "DS",
+      "tag": "(0028,1050)",
+      "value": "305 ",
+      "name": "WindowCenter",
+      "length": 4
+   },
+   "(0028,1051)": {
+      "vr": "DS",
+      "tag": "(0028,1051)",
+      "value": "880 ",
+      "name": "WindowWidth",
+      "length": 4
+   },
+   "(0028,1052)": {
+      "vr": "DS",
+      "tag": "(0028,1052)",
+      "value": "-8192 ",
+      "name": "RescaleIntercept",
+      "length": 6
+   },
+   "(0028,1053)": {
+      "vr": "DS",
+      "tag": "(0028,1053)",
+      "value": "1 ",
+      "name": "RescaleSlope",
+      "length": 2
+   },
+   "(0028,1054)": {
+      "vr": "LO",
+      "tag": "(0028,1054)",
+      "value": "HU",
+      "name": "RescaleType",
+      "length": 2
+   },
+   "(0028,1055)": {
+      "vr": "LO",
+      "tag": "(0028,1055)",
+      "value": "",
+      "name": "WindowCenterWidthExplanation",
+      "length": 0
+   },
+   "(0028,2110)": {
+      "vr": "CS",
+      "tag": "(0028,2110)",
+      "value": "00",
+      "name": "LossyImageCompression",
+      "length": 2
+   },
+   "(0040,9096)": {
+      "vr": "SQ",
+      "tag": "(0040,9096)",
+      "name": "RealWorldValueMappingSequence",
+      "length": 170,
+      "items": [
+         {
+            "(0028,3003)": {
+               "vr": "LO",
+               "tag": "(0028,3003)",
+               "value": "Monoenergetic Plus",
+               "name": "LUTExplanation",
+               "length": 18
+            },
+            "(0040,08ea)": {
+               "vr": "SQ",
+               "tag": "(0040,08ea)",
+               "name": "MeasurementUnitsCodeSequence",
+               "length": 60,
+               "items": [
+                  {
+                     "(0008,0100)": {
+                        "vr": "SH",
+                        "tag": "(0008,0100)",
+                        "value": "[hnsf'U]",
+                        "name": "CodeValue",
+                        "length": 8
+                     },
+                     "(0008,0102)": {
+                        "vr": "SH",
+                        "tag": "(0008,0102)",
+                        "value": "UCUM",
+                        "name": "CodingSchemeDesignator",
+                        "length": 4
+                     },
+                     "(0008,0104)": {
+                        "vr": "LO",
+                        "tag": "(0008,0104)",
+                        "value": "Hounsfield Unit ",
+                        "name": "CodeMeaning",
+                        "length": 16
+                     }
+                  }
+               ]
+            },
+            "(0040,9210)": {
+               "vr": "SH",
+               "tag": "(0040,9210)",
+               "value": "VMI ",
+               "name": "LUTLabel",
+               "length": 4
+            },
+            "(0040,9211)": {
+               "vr": "US",
+               "tag": "(0040,9211)",
+               "value": "65535",
+               "name": "RealWorldValueLastValueMapped",
+               "length": 2
+            },
+            "(0040,9216)": {
+               "vr": "US",
+               "tag": "(0040,9216)",
+               "value": "0",
+               "name": "RealWorldValueFirstValueMapped",
+               "length": 2
+            },
+            "(0040,9224)": {
+               "vr": "FD",
+               "tag": "(0040,9224)",
+               "value": "-8192",
+               "name": "RealWorldValueIntercept",
+               "length": 8
+            },
+            "(0040,9225)": {
+               "vr": "FD",
+               "tag": "(0040,9225)",
+               "value": "1",
+               "name": "RealWorldValueSlope",
+               "length": 8
+            }
+         }
+      ]
+   },
+   "(7fe0,0010)": {
+      "vr": "OW",
+      "tag": "(7fe0,0010)",
+      "value": "Binary data (OW): 524288 bytes",
+      "name": "PixelData",
+      "length": 524288,
+      "devNote": "No support for VR: OW"
+   }
+}
