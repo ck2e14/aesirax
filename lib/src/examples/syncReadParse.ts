@@ -1,7 +1,7 @@
 import { readFile } from "fs/promises";
 import { ctxFactory } from "../parsing/ctx.js";
 import { parse } from "../parsing/parse.js";
-import { HEADER_END } from "./stream.js";
+import { HEADER_END } from "./streamParse.js";
 import { Parse } from "../global.js";
 
 /**

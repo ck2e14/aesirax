@@ -1,6 +1,6 @@
 import { parentPort } from "worker_threads";
 import { writeFileSync } from "fs";
-import { streamParse } from "./stream.js";
+import { streamParse } from "./streamParse.js";
 
 parentPort.on("message", async (msg: { filepath: string; writeDir: string }) => {
   if (msg.filepath?.length) {
