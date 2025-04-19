@@ -23,6 +23,7 @@ import { exp_SHIELD, Plugin } from "./plugins/plugins.js";
  * callstacks.
  *
  * See the comments at the end of this file for greater detail.
+ *
  * @param buffer
  * @param ctx
  * @returns PartialEl (e.g. if streaming & buffer < file size)

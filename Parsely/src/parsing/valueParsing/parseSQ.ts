@@ -160,34 +160,38 @@ export function manageSqRecursion(
  * the bytes to have arrived at the end of a defined length sequence element, 
  * which doesn't have a distinct delimiting element, it just relies on checking 
  * the number of tarversed bytes since encountering the first relevant byte of 
- * the sequence against the length that the SQ instructed us to expect to have 
- * to traverse to reach the end. 
+ * the sequence against the length that the SQ instructed us to expect.
  *
- * This is recursive base case detection for use within parse().
+ * This is the recursive base case detection for use within parse().
  *
  * !! GOTCHA: Note that this has to be the first action in each parse loop because 
  * this type of SQ doesn't have a delimiter tag to indicate the end of the sequence.
  * It relies on tracking the number of walked bytes and comparing against the
  * stated Uint32 length from the beginning of the sequence. This can only
- * be reached after each loop iteration because each loop represents the total 
+ * be reached after each loop iteration because each loop represents the total TLV 
  * parsing of a single distinct element (including recursion), i.e. after the 
- * decoding of the last sq element's value. ***It needs to go first***, not after 
- * running the switch statement that parses values, because the recursive end of a 
- * child sq's last element value can also represent the end of 1 or more parent sqs.
- * For which all of those are a recursive depth, to be returned from. Which is why 
- * this fn returns a bool that we use for parse() loop flow control, to exit all 
- * terminated parents without anything else occuring. Without this, new elements 
- * will be serialised as existing within sequences that actually have terminated. 
+ * decoding of the last sq element's value.
+ *
+ * ***It needs to go first***
+ * Because the recursive end of a child sq's last element value can also represent 
+ * the end of 1 or more parent sqs. For which all of those are a recursive depth, 
+ * to be returned from. Which is why this fn returns a bool that we use for parse() 
+ * loop flow control, to exit all terminated parents without anything else occuring. 
+ * Without this, new elements will be serialised as existing within sequences that 
+ * actually have terminated. 
  *
  * So if we return from parseSQ() recursion and hit the 'continue' to begin the next 
  * while iteration, the next action needs to be this detection. That way we can handle 
- * the termination of 1-n sequences where the last actual element value was deeply nested.
+ * the termination of n sequences where the last element value was nested more than 
+ * once.
  *
  * In other words; the specific 'first action' placement of this check handles instances 
  * where the end of one SQ's last element's value represents the end of 1 or more parent 
  * SQ's last element value, as well as instances where an SQ is not terminated by the 
- * termination of one of its children SQs. This caused a mindbending bug before it was 
- * placed as the first action(!)
+ * termination of one of its children SQs. 
+ *
+ * This caused a mindbending bug before it was placed as the first action(!)
+ *
  * @param ctx
  * @param cursor 
  */

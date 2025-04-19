@@ -5,22 +5,6 @@ import { singleTheaded } from "./parsing/orchestration/singlethreaded.js";
 import { multiThreaded } from "./parsing/orchestration/multithreaded.js";
 import { Cfg } from "./global.js";
 
-// WARN need to workout why, when stitching, last cursor isn't
-// disposedOf - despite the parsing and persistence working? 
-// CK @MARCH'25 - is this still an issue? cant remember!)
-// TODO lets build out first-class DICOMweb support for getting the data
-
-const testDirs = {
-  undefinedLengthSQs: {
-    withNesting: ["../data/x", "../data/QUANTREDEUSIX"],
-    withoutNesting: ["../data/turkey", "../data/Aidence", "../data/CUMMINSMARJORIE"],
-  } as const,
-
-  definedLengthSQs: {
-    withNesting: ["../data/pi"],
-    withoutNesting: [""],
-  } as const,
-};
 
 /**
  * Main entry point for the application.
@@ -34,6 +18,11 @@ const testDirs = {
  */
 main(cfg);
 async function main(cfg: Cfg) {
+
+  // TODO need to workout why, when stitching, last cursor isn't
+  // disposedOf - despite the parsing and persistence working? 
+  // CK @MARCH'25 - is this still an issue? cant remember!)
+
   console.clear();
 
   if (cfg.verbose) {
@@ -57,14 +46,8 @@ async function main(cfg: Cfg) {
     .filter(filename => filename !== ".DS_Store")
     .length;
 
-  if (fileCount > 1) {
-    await multiThreaded(cfg);
-  }
-
-  if (fileCount === 1) {
-    await singleTheaded(cfg);
-  }
-
+  if (fileCount >= 2) await multiThreaded(cfg);
+  if (fileCount === 1) await singleTheaded(cfg);
   if (fileCount === 0) {
     write(`No files found in target directory. Exiting...`, "ERROR");
     process.exit();

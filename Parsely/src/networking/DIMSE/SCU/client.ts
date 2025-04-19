@@ -1,7 +1,6 @@
 import net from "net";
 
-// Writing my first A-ASSOCIATE-RQ from scratch
-// Implementing the specicifation according to:
+// Writing an A-ASSOCIATE-RQ from scratch
 // dicom.nema.org/medical/dicom/current/output/chtml/part08/sect_9.3.2.html
 
 const MAX_AET_LEN = 16;
