@@ -6,10 +6,10 @@ import { cPos, logElement } from "../../utils.js";
 import { Cursor } from "../cursor.js";
 import { Parse } from "../../global.js";
 import { Ctx } from "../ctx.js";
-import { parseValueDefault } from "./default.js";
 import { decodeTag } from "../TLV/tag.js";
 import { saveElement } from "../element.js";
 import { valueIsTruncated } from "../validation.js";
+import { parseValueDefault } from "./default.js";
 
 /**
  * Handle the OW ('Other Word') Pixel Data VR.

@@ -1,13 +1,13 @@
+import { Ctx } from "../ctx.js";
 import { Cursor } from "../cursor.js";
 import { VR } from "../../enums.js";
 import { MAX_UINT32 } from "../constants.js";
 import { Parse } from "../../global.js";
-import { parseSQ } from "../VRinterpretation/SQ.js";
-import { parseOW } from "../VRinterpretation/OW.js";
-import { parseUndefLenOB } from "../VRinterpretation/OB.js";
-import { parseValueDefault } from "../VRinterpretation/default.js";
-import { Ctx } from "../ctx.js";
 import { saveElement } from "../element.js";
+import { parseSQ } from "../valueInterpretation/SQ.js";
+import { parseOW } from "../valueInterpretation/OW.js";
+import { parseUndefLenOB } from "../valueInterpretation/OB.js";
+import { parseValueDefault } from "../valueInterpretation/default.js";
 
 /**
  * Repsonsible for selecting the appropriate pathing logic 
@@ -33,4 +33,5 @@ export async function parseValue(buffer: Buffer, cursor: Cursor, el: Parse.Eleme
       saveElement(ctx, el, cursor, buffer);
   }
 }
+
 

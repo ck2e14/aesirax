@@ -1,11 +1,7 @@
-import { Bytes, DicomErrorType, TransferSyntaxUid, VR } from "../enums.js";
-import { isVr } from "../utils.js";
-import { write } from "../logging/logQ.js";
-import { BufferBoundary, DicomError } from "../errors.js";
-import { Parse } from "../global.js";
-import { Ctx } from "./ctx.js";
+import { Parse } from "../../global.js";
+import { write } from "../../logging/logQ.js";
 
-const decodersLE: Partial<Parse.DecoderMap> = {
+export const decodersLE: Partial<Parse.DecoderMap> = {
   // partial because will add VRs incrementally.
   // currently only support numbers to base 10.
   AE: (subarray: Buffer) => utf8Decoder(subarray),
@@ -35,7 +31,7 @@ const decodersLE: Partial<Parse.DecoderMap> = {
   default: (subarray: Buffer) => subarray.toString("hex"),
 } as const;
 
-const decodersBE: Partial<Parse.DecoderMap> = {
+export const decodersBE: Partial<Parse.DecoderMap> = {
   // partial because will add VRs incrementally
   // currently only support numbers to base 10.
   AE: (subarray: Buffer) => utf8Decoder(subarray),
@@ -64,81 +60,6 @@ const decodersBE: Partial<Parse.DecoderMap> = {
   default: (subarray: Buffer) => subarray.toString("hex"),
 } as const;
 
-/**
- * Pass in a DICOM tag's VR and a buffer containing the bytes
- * representing the tag's value and get back an appropriately
- * decoded string. Nums will be coerced to strings, using base10
- * @param vr
- * @param value
- * @returns string
- */
-export function decodeValueBytes(
-  vr: string,
-  value: Buffer,
-  ctx: Ctx,
-  checkNullPadding = false // for debugging
-): string {
-
-  if (checkNullPadding) {
-    countNullBytes(value);
-  }
-
-  const decoders = ctx.transferSyntaxUid === TransferSyntaxUid.ExplicitVRLittleEndian
-    ? decodersLE
-    : decodersBE;
-
-  try {
-    if (decoders.hasOwnProperty(vr)) {
-      return decoders[vr](value);
-    }
-
-    if (vr === VR.OB || vr === VR.OW || vr === VR.OF) {
-      return `Binary data (${vr}): ${value.length} bytes`;
-    }
-
-    if (value.length > 1024) {
-      return "Assumed to be binary data, not supported for decoding/display";
-    }
-
-    return value.toString();
-  } catch (error) {
-    return decoders.default(value);
-  }
-}
-
-/**
- * Pass in a 2 byte buffer and get back the VR as a string
- * else throw a DicomError if unrecognised.
- * @param buf
- * @returns Global.VR
- * @throws DicomError
- */
-export function decodeVrBytes(buf: Buffer): VR {
-  if (buf.length !== Bytes.VR) {
-    throw new BufferBoundary(`decodeVrBytes() expected 2 bytes, got ${buf.length}`);
-  }
-
-  const decodedVr = buf.toString("ascii", 0, Bytes.VR);
-  if (!isVr(decodedVr)) {
-    throwUnrecognisedVr(decodedVr, buf);
-  }
-
-  return decodedVr as VR
-}
-
-/**
- * Throw an error if an unrecognised VR is encountered.
- * @param vr
- * @param vrBuf
- * @throws DicomError
- */
-export function throwUnrecognisedVr(vr: string, vrBuffer: Buffer): never {
-  throw new DicomError({
-    errorType: DicomErrorType.PARSING,
-    message: `Unrecognised VR: ${vr}`,
-    buffer: vrBuffer,
-  });
-}
 
 /**
  * Decode a buffer to UTF-8 string and remove any null byte padding
@@ -176,6 +97,7 @@ export function countNullBytes(value: Buffer): void {
   }
 }
 
+// This probs is a bad place for this function, if you ever get round to writing it at all
 function detectRepeatsForRepeatableElements(el: Element, buffer: Buffer) {
   // TODO fucking need some hench exhaustive list of all elements that permit repeats. This isn't
   // done by VR and is going to be a pain the neck to compile robustly, and it does matter because
