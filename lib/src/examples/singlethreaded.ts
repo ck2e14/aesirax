@@ -1,9 +1,10 @@
-import { findDICOM } from "../../utils.js";
-import { streamParse } from "../../reading/stream.js";
-import { syncParse } from "./syncReadParse.js";
-import { Cfg, Parse } from "../../global.js";
-import { write } from "../../logging/logQ.js";
+
 import { writeFile } from "fs/promises";
+import { findDICOM } from "../utils.js";
+import { write } from "../logging/logQ.js";
+import { Cfg, Parse } from "../global.js";
+import { syncParse } from "./syncReadParse.js";
+import { streamParse } from "./stream.js";
 
 /**
  * Parse DICOM files using a single thread

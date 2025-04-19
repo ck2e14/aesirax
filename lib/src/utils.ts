@@ -1,10 +1,10 @@
 import { TagDictByHex, TransferSyntaxUid, VR } from "./enums.js";
 import { readdirSync, statSync } from "fs";
 import { Cursor } from "./parsing/cursor.js";
-import { Ctx } from "./reading/ctx.js";
 import { write } from "./logging/logQ.js";
 import { Parse } from "./global.js";
 import * as path from "path";
+import { Ctx } from "./parsing/ctx.js";
 
 export function mapToObj(map: Map<string, any>): any {
   const obj = {};

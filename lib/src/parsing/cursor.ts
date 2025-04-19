@@ -1,7 +1,7 @@
 import { BufferBoundary } from "../errors.js";
 import { write } from "../logging/logQ.js";
-import { Ctx } from "../reading/ctx.js";
-import { inSQ } from "./valueParsing/parseSQ.js";
+import { Ctx } from "./ctx.js";
+import { inSQ } from "./VRinterpretation/SQ.js";
 
 export type Cursor = {
   pos: number;

@@ -1,13 +1,13 @@
-import { DicomErrorType, TransferSyntaxUid } from "../enums.js";
-import { detectMisalignment, isSupportedTSN } from "./validation.js";
-import { validateHeader, validatePreamble } from "../parsing/validation.js";
 import { createReadStream } from "fs";
 import { dataSetLength } from "../utils.js";
-import { Ctx, ctxFactory } from "./ctx.js";
 import { write } from "../logging/logQ.js";
 import { DicomError, UnsupportedTSN } from "../errors.js";
 import { Cfg, Parse } from "../global.js";
 import { parse } from "../parsing/parse.js";
+import { Ctx, ctxFactory } from "../parsing/ctx.js";
+import { DicomErrorType } from "../enums.js";
+import { detectMisalignment, isSupportedTSN } from "../parsing/validation.js";
+import { validateHeader, validatePreamble } from "../parsing/validate.js";
 
 export const SMALL_BUF_THRESHOLD = 1024;
 export const SMALL_BUF_ADVISORY = `PER_BUF_MAX is less than ${SMALL_BUF_THRESHOLD} bytes. This will work but isn't ideal for I/O efficiency`;

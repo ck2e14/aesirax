@@ -1,8 +1,8 @@
 import { readFile } from "fs/promises";
-import { parse } from "../parse.js";
-import { HEADER_END } from "../../reading/stream.js";
-import { ctxFactory } from "../../reading/ctx.js";
-import { Parse } from "../../global.js";
+import { ctxFactory } from "../parsing/ctx.js";
+import { parse } from "../parsing/parse.js";
+import { HEADER_END } from "./stream.js";
+import { Parse } from "../global.js";
 
 /**
  * An awaitable asynchronous function (only async to support nonblocking file i/o) 

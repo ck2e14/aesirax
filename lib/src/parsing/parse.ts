@@ -1,14 +1,15 @@
-import { exitDefLenSqRecursion, inSQ, manageSqRecursion, stacks } from "./valueParsing/parseSQ.js";
-import { handleEx } from "./validation.js";
-import { Ctx } from "../reading/ctx.js";
 import { logElement } from "../utils.js";
 import { newCursor, Cursor } from "./cursor.js";
-import { parseVR } from "./parseVR.js";
-import { parseTag } from "./parseTag.js";
-import { parseLength } from "./parseLength.js";
-import { parseValue } from "./parseValue.js";
+import { XSS } from "../plugins/xss.js";
+import { Plugin } from "../plugins/shape.js";
+import { Ctx } from "./ctx.js";
+import { exitDefLenSqRecursion, inSQ, manageSqRecursion, stacks } from "./VRinterpretation/SQ.js";
+import { handleEx } from "../errors.js";
 import { Parse } from "../global.js";
-import { exp_SHIELD, Plugin } from "./plugins/plugins.js";
+import { parseTag } from "./TLV/tag.js";
+import { parseVR } from "./TLV/VR.js";
+import { parseLength } from "./TLV/length.js";
+import { parseValue } from "./TLV/value.js";
 
 /**
  * parse() orchestrates the parsing logic; it decodes and serialises 
@@ -31,7 +32,7 @@ import { exp_SHIELD, Plugin } from "./plugins/plugins.js";
 export async function parse(
   buffer: Buffer,
   ctx: Ctx,
-  plugin: Plugin = exp_SHIELD /* defaulted to experimental plugin while dev */
+  plugin: Plugin = XSS /* defaulted to experimental plugin while dev */
 ): Promise<Parse.PartialEl> {
   ctx.depth++;
 

@@ -1,4 +1,5 @@
 import { DicomErrorType } from "./enums.js";
+import { Parse } from "./global.js";
 import { write } from "./logging/logQ.js";
 
 type Args = {
@@ -134,3 +135,46 @@ export function throwBadHexPattern(buf: Buffer, str: string): never {
     buffer: buf,
   });
 }
+
+/**
+ * Handle errors that occur during the parsing of a DICOM file. If
+ * the error is unrecoverable then throw it, otherwise return the
+ * partialled tag in bytes to be stitched to the next buffer.
+ *
+ * 'Partialled' is for handling stitching across streamed buffers'
+ * boundaries, parsing error is for when the parser is unable to
+ * handle for some other reason.
+ *
+ * Truncated SQ stitching works by throwing in the child depth
+ * and catching in the parent. So we pop() & pass buffer back to
+ * read() from the start of the SQ.
+ *
+ * @param error
+ * @param buffer
+ * @param lastTagStart
+ * @throws Error
+ * @returns PartialEl
+ */
+export function handleEx(
+  error: any,
+  buffer: Buffer,
+  lastTagStart: number,
+  tag?: Parse.TagStr
+): Parse.PartialEl {
+
+  const isUndefinedLength = error instanceof UndefinedLength;
+  const parsingError = [BufferBoundary, RangeError].every(errType => !(error instanceof errType)); // i.e. not a buffer truncation error
+
+  if (parsingError && !isUndefinedLength) {
+    write(`Error parsing tag ${tag ?? ""}: ${error.message}`, "ERROR");
+    throw error;
+  }
+
+  if (error instanceof BufferBoundary || error instanceof RangeError) {
+    write(`Tag is split across buffer boundary ${tag ?? ""}`, "DEBUG");
+    write(`Last tag was at cursor position: ${lastTagStart}`, "DEBUG");
+    return buffer.subarray(lastTagStart, buffer.length);
+  }
+}
+
+

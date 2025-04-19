@@ -2,14 +2,14 @@ import { EOI_TAG, FRAG_START_TAG, ITEM_START_TAG, MAX_UINT32, SQ_END_TAG } from 
 import { Bytes } from "../../enums.js";
 import { BufferBoundary, Malformed } from "../../errors.js";
 import { write } from "../../logging/logQ.js";
-import { Ctx } from "../../reading/ctx.js";
 import { cPos, logElement } from "../../utils.js";
 import { Cursor } from "../cursor.js";
 import { saveElement } from "../parse.js";
-import { decodeTag } from "../parseTag.js";
-import { valueIsTruncated } from "../validation.js";
-import { parseValueDefault } from "./parseDefault.js";
 import { Parse } from "../../global.js";
+import { Ctx } from "../ctx.js";
+import { parseValueDefault } from "./default.js";
+import { valueIsTruncated } from "../validate.js";
+import { decodeTag } from "../TLV/tag.js";
 
 /**
  * Handle the OW ('Other Word') Pixel Data VR.

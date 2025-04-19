@@ -2,8 +2,8 @@ import { unlinkSync, watch, } from "fs"
 import { mkdir } from "fs/promises"
 import { write } from "../logging/logQ.js"
 import { findDICOM } from "../utils.js"
-import { singleTheaded } from "../parsing/orchestration/singlethreaded.js"
 import { Cfg } from "../global.js"
+import { singleTheaded } from "../examples/singlethreaded.js"
 
 export async function monitorDropbox(cfg: Cfg, dropboxPath = '/Users/chriskennedy/Desktop/aesiraxDropbox') {
   mkdir(dropboxPath + '/' + 'outputs', { recursive: true })

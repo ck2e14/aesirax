@@ -1,8 +1,8 @@
-import { Bytes } from "../enums.js";
-import { Cursor } from "./cursor.js";
-import { Ctx } from "../reading/ctx.js";
-import { decodeVrBytes } from "./decode.js";
-import { Parse } from "../global.js";
+import { Bytes } from "../../enums.js";
+import { Cursor } from "../cursor.js";
+import { decodeVrBytes } from "../decode.js";
+import { Parse } from "../../global.js";
+import { Ctx } from "../ctx.js";
 
 /**
  * Decode the current element's VR and walk the cursor

@@ -1,10 +1,10 @@
 import sanitizeHtml from 'sanitize-html';
 import { isMainThread, parentPort, threadId } from "worker_threads";
 import { appendFileSync } from "fs";
-import { Plugin } from "./plugins.js";
 import { Worker } from "worker_threads";
-import { Parse } from "../../global.js";
-import { VR } from "../../enums.js";
+import { Plugin } from './shape.js';
+import { Parse } from '../global.js';
+import { VR } from '../enums.js';
 
 // Here's an example plugin. It recieves each completely parsed DICOM element as bytes and as 
 // serialised obj. It detects HTML XSS, and SQLi payloads. 
@@ -20,7 +20,7 @@ import { VR } from "../../enums.js";
 // thread that'll be doing the work. Since we are co-locating worker/main thread code in 
 // the same file, I'll use a ternary to make main thread logic only runs on the main thread.
 
-export const exp_SHIELD: Plugin = !isMainThread
+export const XSS: Plugin = !isMainThread
   ? null
   : (function() {
     const worker = new Worker('./dist/parsing/plugins/_demo_XSS_SHIELD.js');

@@ -1,9 +1,9 @@
 import { appendFileSync, writeFileSync } from "fs";
-import { write } from "../../logging/logQ.js";
-import { findDICOM } from "../../utils.js";
 import { Worker } from "worker_threads";
 import { cpus } from "os";
-import { Cfg } from "../../global.js";
+import { write } from "../logging/logQ.js";
+import { findDICOM } from "../utils.js";
+import { Cfg } from "../global.js";
 
 /**
  * Parse DICOM files using multiple threads

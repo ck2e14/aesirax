@@ -1,9 +1,9 @@
-import { Ctx } from "../reading/ctx.js";
-import { Cursor } from "./cursor.js";
-import { Bytes } from "../enums.js";
-import { getTagName } from "../utils.js";
-import { BufferBoundary, throwBadHexPattern } from "../errors.js";
-import { Parse } from "../global.js";
+import { Cursor } from "../cursor.js";
+import { Bytes } from "../../enums.js";
+import { getTagName } from "../../utils.js";
+import { BufferBoundary, throwBadHexPattern } from "../../errors.js";
+import { Parse } from "../../global.js";
+import { Ctx } from "../ctx.js";
 
 /**
  * Decode the current element's tag and

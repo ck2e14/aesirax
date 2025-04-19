@@ -1,9 +1,9 @@
 import { write } from "./logging/logQ.js";
 import { readdirSync } from "node:fs";
 import { cfg, init } from "./init/init.js";
-import { singleTheaded } from "./parsing/orchestration/singlethreaded.js";
-import { multiThreaded } from "./parsing/orchestration/multithreaded.js";
 import { Cfg } from "./global.js";
+import { multiThreaded } from "./examples/multithreaded.js";
+import { singleTheaded } from "./examples/singlethreaded.js";
 
 
 /**

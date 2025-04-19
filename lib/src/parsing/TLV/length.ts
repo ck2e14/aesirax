@@ -1,8 +1,8 @@
-import { Bytes } from "../enums.js";
-import { Parse } from "../global.js";
-import { Ctx } from "../reading/ctx.js";
-import { isExtVr } from "../utils.js";
-import { Cursor } from "./cursor.js";
+import { Bytes } from "../../enums.js";
+import { Parse } from "../../global.js";
+import { isExtVr } from "../../utils.js";
+import { Ctx } from "../ctx.js";
+import { Cursor } from "../cursor.js";
 
 /**
  * Decode the current element's value length, and move the cursor forward

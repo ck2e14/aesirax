@@ -1,14 +1,13 @@
-
-import { parseUndefLenOB } from "./valueParsing/parseOB.js";
-import { saveElement } from "./parse.js";
-import { parseValueDefault } from "./valueParsing/parseDefault.js";
-import { parseSQ } from "./valueParsing/parseSQ.js";
-import { parseOW } from "./valueParsing/parseOW.js";
-import { Cursor } from "./cursor.js";
-import { VR } from "../enums.js";
-import { Ctx } from "../reading/ctx.js";
-import { MAX_UINT32 } from "./constants.js";
-import { Parse } from "../global.js";
+import { saveElement } from "../parse.js";
+import { Cursor } from "../cursor.js";
+import { VR } from "../../enums.js";
+import { MAX_UINT32 } from "../constants.js";
+import { Parse } from "../../global.js";
+import { parseSQ } from "../VRinterpretation/SQ.js";
+import { parseOW } from "../VRinterpretation/OW.js";
+import { parseUndefLenOB } from "../VRinterpretation/OB.js";
+import { parseValueDefault } from "../VRinterpretation/default.js";
+import { Ctx } from "../ctx.js";
 
 /**
  * Repsonsible for selecting the appropriate pathing logic 

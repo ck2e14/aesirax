@@ -1,9 +1,9 @@
 import { Bytes, DicomErrorType, TransferSyntaxUid, VR } from "../enums.js";
 import { isVr } from "../utils.js";
 import { write } from "../logging/logQ.js";
-import { Ctx } from "../reading/ctx.js";
 import { BufferBoundary, DicomError } from "../errors.js";
 import { Parse } from "../global.js";
+import { Ctx } from "./ctx.js";
 
 const decodersLE: Partial<Parse.DecoderMap> = {
   // partial because will add VRs incrementally.

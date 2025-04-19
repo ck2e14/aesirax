@@ -1,4 +1,4 @@
-import { Parse } from "../../global.js";
+import { Parse } from "../global.js";
 
 export type Plugin<R = unknown> = {
   name: string,
@@ -12,4 +12,4 @@ export type Plugin<R = unknown> = {
 }
 
 // Implmentations grouped for export
-export { exp_SHIELD } from "./_demo_XSS_SHIELD.js";
+export { XSS } from "./xss.js";
