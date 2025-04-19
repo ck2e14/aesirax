@@ -2,7 +2,7 @@ import { Parse } from "../global.js";
 import { logElement } from "../utils.js";
 import { Ctx } from "./ctx.js";
 import { Cursor } from "./cursor.js";
-import { inSQ, stacks } from "./VRinterpretation/SQ.js";
+import { inSQ, stacks } from "./valueInterpretation/SQ.js";
 
 /**
  * Return a new empty element object.

@@ -1,9 +1,7 @@
-import { logElement } from "../utils.js";
 import { newCursor, Cursor } from "./cursor.js";
 import { XSS } from "../plugins/xss.js";
 import { Plugin } from "../plugins/plugins.js";
 import { Ctx } from "./ctx.js";
-import { exitDefLenSqRecursion, inSQ, manageSqRecursion, stacks } from "./VRinterpretation/SQ.js";
 import { handleEx } from "../errors.js";
 import { Parse } from "../global.js";
 import { parseTag } from "./TLV/tag.js";
@@ -12,6 +10,7 @@ import { parseLength } from "./TLV/length.js";
 import { parseValue } from "./TLV/value.js";
 import { wrapAndRunPlugin } from "../plugins/plugins.js";
 import { newElement } from "./element.js";
+import { exitDefLenSqRecursion, manageSqRecursion, stacks } from "./valueInterpretation/SQ.js";
 
 /**
  * parse() orchestrates the parsing logic; it decodes and serialises 
