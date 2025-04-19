@@ -1,4 +1,3 @@
-import { saveElement } from "../parse.js";
 import { Cursor } from "../cursor.js";
 import { VR } from "../../enums.js";
 import { MAX_UINT32 } from "../constants.js";
@@ -8,6 +7,7 @@ import { parseOW } from "../VRinterpretation/OW.js";
 import { parseUndefLenOB } from "../VRinterpretation/OB.js";
 import { parseValueDefault } from "../VRinterpretation/default.js";
 import { Ctx } from "../ctx.js";
+import { saveElement } from "../element.js";
 
 /**
  * Repsonsible for selecting the appropriate pathing logic 

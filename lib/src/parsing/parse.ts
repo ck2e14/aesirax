@@ -1,7 +1,7 @@
 import { logElement } from "../utils.js";
 import { newCursor, Cursor } from "./cursor.js";
 import { XSS } from "../plugins/xss.js";
-import { Plugin } from "../plugins/shape.js";
+import { Plugin } from "../plugins/plugins.js";
 import { Ctx } from "./ctx.js";
 import { exitDefLenSqRecursion, inSQ, manageSqRecursion, stacks } from "./VRinterpretation/SQ.js";
 import { handleEx } from "../errors.js";
@@ -10,6 +10,8 @@ import { parseTag } from "./TLV/tag.js";
 import { parseVR } from "./TLV/VR.js";
 import { parseLength } from "./TLV/length.js";
 import { parseValue } from "./TLV/value.js";
+import { wrapAndRunPlugin } from "../plugins/plugins.js";
+import { newElement } from "./element.js";
 
 /**
  * parse() orchestrates the parsing logic; it decodes and serialises 
@@ -70,60 +72,6 @@ export async function parse(
 
   exitParse(ctx, cursor);
   return buffer.subarray(lastTagStart, buffer.length);
-}
-
-/**
- * Return a new empty element object.
- * @returns Element
- */
-export function newElement(): Parse.Element {
-  return {
-    vr: null,
-    tag: null,
-    value: null,
-    name: null,
-    length: null
-  };
-}
-
-/**
- * Save the current element to the appropriate dataset.
- * @param ctx
- * @param lastSqItem
- * @param el
- */
-export function saveElement(
-  ctx: Ctx,
-  el: Parse.Element,
-  cursor: Cursor,
-  buffer: Buffer,
-  print = true
-) {
-  if (print) {
-    logElement(el, cursor, buffer, ctx);
-  }
-
-  if (inSQ(ctx)) {
-    stacks(ctx)[el.tag] = el;
-  } else {
-    ctx.dataSet[el.tag] = el;
-  }
-}
-
-async function wrapAndRunPlugin(
-  plugin: Plugin,
-  buffer: Buffer,
-  el: Parse.Element
-): Promise<ReturnType<typeof plugin["handleParsedElement"]>> {
-  try {
-    return await plugin.handleParsedElement(buffer, el, {
-      studyUid: 'placeholder_s_uid',
-      instanceUid: 'placeholder_i_uid'
-    })
-  } catch (error) {
-    console.log(`Plugin failure: [${plugin.name}]`);
-    return null
-  }
 }
 
 /**

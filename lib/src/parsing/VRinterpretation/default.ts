@@ -3,7 +3,7 @@ import { decodeValueBytes } from "../decode.js";
 import { BufferBoundary } from "../../errors.js";
 import { Parse } from "../../global.js";
 import { Ctx } from "../ctx.js";
-import { valueIsTruncated } from "../validate.js";
+import { valueIsTruncated } from "../validation.js";
 
 /**
  * Handle parsing the current element's value by 

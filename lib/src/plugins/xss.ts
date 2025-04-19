@@ -2,7 +2,7 @@ import sanitizeHtml from 'sanitize-html';
 import { isMainThread, parentPort, threadId } from "worker_threads";
 import { appendFileSync } from "fs";
 import { Worker } from "worker_threads";
-import { Plugin } from './shape.js';
+import { Plugin } from './plugins.js';
 import { Parse } from '../global.js';
 import { VR } from '../enums.js';
 

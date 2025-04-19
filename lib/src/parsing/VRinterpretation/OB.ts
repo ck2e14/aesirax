@@ -1,12 +1,12 @@
-import { saveElement } from "../parse.js";
 import { ITEM_START_TAG, SQ_END_TAG } from "../constants.js";
 import { Cursor } from "../cursor.js";
 import { Bytes } from "../../enums.js";
 import { BufferBoundary, Malformed } from "../../errors.js";
 import { Parse } from "../../global.js";
 import { Ctx } from "../ctx.js";
-import { valueIsTruncated } from "../validate.js";
 import { decodeTag } from "../TLV/tag.js";
+import { saveElement } from "../element.js";
+import { valueIsTruncated } from "../validation.js";
 
 /**
  * Handle the OB ('Other Byte') Pixel Data VR.

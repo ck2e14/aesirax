@@ -1,5 +1,5 @@
 import { printSqCtx } from "../../utils.js";
-import { saveElement, parse, exitParse } from "../parse.js";
+import { parse, exitParse } from "../parse.js";
 import { Cursor } from "../cursor.js";
 import { write } from "../../logging/logQ.js";
 import { Bytes, DicomErrorType, VR } from "../../enums.js";
@@ -8,6 +8,7 @@ import { ITEM_END_TAG, ITEM_START_TAG, MAX_UINT32, SQ_END_TAG } from "../constan
 import { Parse } from "../../global.js";
 import { Ctx } from "../ctx.js";
 import { decodeTag } from "../TLV/tag.js";
+import { saveElement } from "../element.js";
 
 /**
  * Manage parsing of sequence elements. Does so by recursively
