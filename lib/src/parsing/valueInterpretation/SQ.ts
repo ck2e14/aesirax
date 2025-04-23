@@ -11,11 +11,11 @@ import { decodeTag } from "../TLV/tag.js";
 import { saveElement } from "../element.js";
 
 /**
- * Manage parsing of sequence elements. Does so by recursively
- * entering parse() from the first item (dataset). Control flow
- * inside parse() continues to walk, using a new child cursor,
- * until base case(s) are met (truncation or sequence end). Then
- * sync cursors and return control to the parse() frame that
+ * Manage parsing of an encountered sequence element. Does so by 
+ * recursively entering parse() from the first item (dataset). 
+ * Control flow inside parse() continues to walk, using a new child 
+ * cursor, until base case(s) are met (truncation or sequence end). 
+ * Then sync cursors and return control to the parse() frame that
  * detected the outermost SQ.
  *
  * TODO check whether depth == cq stack .length, if not throw.
@@ -126,9 +126,9 @@ export function manageSqRecursion(
   buffer: Buffer,
   cursor: Cursor,
   el: Parse.Element,
-  sq: Parse.Element,
   ctx: Ctx,
 ): ParseLoopFlowCommand {
+  const sq = stacks(ctx).sq
 
   if (isDefLenItemStartTag(el)) {
     sq.items.push({});
@@ -141,6 +141,7 @@ export function manageSqRecursion(
 
     if (next === ITEM_START_TAG) {
       write(`Start of new item in SQ ${sq.tag} ${sq.name}`, "DEBUG");
+      console.log('yes')
       sq.items.push({});
       return 'next-element'
     }

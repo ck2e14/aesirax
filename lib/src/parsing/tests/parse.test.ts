@@ -24,7 +24,7 @@ const testDirs = {
         notes: "",
       },
       {
-        input: "../data/Aidence",
+        input: "../data/Aidence/NewAidencePrivateTagContents",
         output: "src/parsing/tests/jsonComparisons/aidenceWithPrivateTag.json",
         notes: "",
       },

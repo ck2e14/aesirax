@@ -1,3 +1,4 @@
+import { VR } from "../enums.js";
 import { Parse } from "../global.js";
 import { logElement } from "../utils.js";
 import { Ctx } from "./ctx.js";
@@ -34,9 +35,8 @@ export function saveElement(
   if (print) {
     logElement(el, cursor, buffer, ctx);
   }
-
   if (inSQ(ctx)) {
-    stacks(ctx)[el.tag] = el;
+    stacks(ctx).lastSqItem[el.tag] = el
   } else {
     ctx.dataSet[el.tag] = el;
   }

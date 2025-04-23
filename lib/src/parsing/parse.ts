@@ -44,13 +44,12 @@ export async function parse(
   while (cursor.pos < buffer.length) {
     lastTagStart = cursor.pos;
     const el = newElement();
-    const sq = stacks(ctx).sq;
 
     try {
       if (exitDefLenSqRecursion(ctx, cursor)) return; // this must happen first
       parseTag(buffer, cursor, el, ctx);
 
-      const cmd = manageSqRecursion(buffer, cursor, el, sq, ctx);
+      const cmd = manageSqRecursion(buffer, cursor, el, ctx);
       if (cmd === 'exit-recursion') return;
       if (cmd === 'next-element') continue;
 
@@ -58,11 +57,11 @@ export async function parse(
       parseLength(buffer, cursor, el, ctx);
       await parseValue(buffer, cursor, el, ctx); // async/await bleed because recurses with parse()
 
-      if (plugin && plugin.sync) {
-        await wrapAndRunPlugin(plugin, buffer, el)
-      } else {
-        wrapAndRunPlugin(plugin, buffer, el)
-      }
+      // if (plugin && plugin.sync) {
+      //   await wrapAndRunPlugin(plugin, buffer, el)
+      // } else {
+      //   wrapAndRunPlugin(plugin, buffer, el)
+      // }
     } catch (error) {
       exitParse(ctx, cursor);
       return handleEx(error, buffer, lastTagStart, el.tag);

@@ -31,7 +31,8 @@ async function main(cfg: Cfg) {
 
   await init();
 
-  cfg.targetDir = `../data/JonathanSnowMR/isolate`;
+  // cfg.targetDir = `../data/JonathanSnowMR/isolate`
+  cfg.targetDir = `/Users/chriskennedy/Desktop/SWE/Aesirax/data/Aidence/GSPS`
   // cfg.targetDir = `../data/brokenSiemensCT/isolate`; 
   // cfg.targetDir = `../data/QUANTREDEUSIX`; 
   // cfg.targetDir = `/Users/chriskennedy/Desktop/SWE/aesirax/data/STANWORTHLORNAMISS/SER00001`;
