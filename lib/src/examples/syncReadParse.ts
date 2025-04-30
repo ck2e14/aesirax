@@ -18,7 +18,7 @@ import { Parse } from "../global.js";
  */
 export async function syncParse(path: string, cfg = null, skipPixelData = true): Promise<Parse.DataSet> {
   const ctx = ctxFactory(path, cfg, true, skipPixelData);
-  const buf = (await readFile(path)).subarray(HEADER_END, undefined);
-  parse(buf, ctx);
+  const buf = (await readFile(path)).subarray(HEADER_END);
+  await parse(buf, ctx);
   return ctx.dataSet;
 }

@@ -66,9 +66,15 @@ export function parseUndefLenOB(ctx: Ctx, el: Parse.Element, cursor: Cursor, buf
     cursor.walk(fragLen, ctx, buffer);
 
     if (ctx.skipPixelData) {
-      el.fragments[i] = { length: fragLen, value: "SKIPPED PIXEL DATA" };
+      el.fragments[i] = {
+        length: fragLen,
+        value: "SKIPPED PIXEL DATA"
+      };
     } else {
-      el.fragments[i] = { length: fragLen, value: pixelBytes.toString("hex") };
+      el.fragments[i] = {
+        length: fragLen,
+        value: pixelBytes.toString("hex")
+      };
     }
   }
 

@@ -141,7 +141,6 @@ export function manageSqRecursion(
 
     if (next === ITEM_START_TAG) {
       write(`Start of new item in SQ ${sq.tag} ${sq.name}`, "DEBUG");
-      console.log('yes')
       sq.items.push({});
       return 'next-element'
     }

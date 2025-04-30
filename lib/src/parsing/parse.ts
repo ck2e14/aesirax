@@ -10,7 +10,12 @@ import { parseLength } from "./TLV/length.js";
 import { parseValue } from "./TLV/value.js";
 import { wrapAndRunPlugin } from "../plugins/plugins.js";
 import { newElement } from "./element.js";
-import { exitDefLenSqRecursion, manageSqRecursion, stacks } from "./valueInterpretation/SQ.js";
+import { exitDefLenSqRecursion, manageSqRecursion } from "./valueInterpretation/SQ.js";
+
+let x = 0;
+export function getParseObjectCreationCount() {
+  return x
+}
 
 /**
  * parse() orchestrates the parsing logic; it decodes and serialises 
@@ -26,6 +31,11 @@ import { exitDefLenSqRecursion, manageSqRecursion, stacks } from "./valueInterpr
  *
  * See the comments at the end of this file for greater detail.
  *
+ * TODO: think about how you could optimise for things like GSPS where 
+ * it's causing a very large number of calls to parse() (not deep recursion, 
+ * it's just got a shitload of slightly nested sequences). Probably need 
+ * object pooling as a start. 
+ *
  * @param buffer
  * @param ctx
  * @returns PartialEl (e.g. if streaming & buffer < file size)
@@ -38,12 +48,14 @@ export async function parse(
   ctx.depth++;
 
   let cursor: Cursor = newCursor(ctx);
+  x++
   let lastTagStart: number;
 
   // Tag > VR > Length > Value > Plugin
   while (cursor.pos < buffer.length) {
     lastTagStart = cursor.pos;
     const el = newElement();
+    x++
 
     try {
       if (exitDefLenSqRecursion(ctx, cursor)) return; // this must happen first
@@ -57,11 +69,11 @@ export async function parse(
       parseLength(buffer, cursor, el, ctx);
       await parseValue(buffer, cursor, el, ctx); // async/await bleed because recurses with parse()
 
-      // if (plugin && plugin.sync) {
-      //   await wrapAndRunPlugin(plugin, buffer, el)
-      // } else {
-      //   wrapAndRunPlugin(plugin, buffer, el)
-      // }
+      if (plugin && plugin.sync) {
+        await wrapAndRunPlugin(plugin, buffer, el)
+      } else {
+        wrapAndRunPlugin(plugin, buffer, el)
+      }
     } catch (error) {
       exitParse(ctx, cursor);
       return handleEx(error, buffer, lastTagStart, el.tag);

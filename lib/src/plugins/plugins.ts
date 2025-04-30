@@ -18,8 +18,8 @@ export async function wrapAndRunPlugin(
 ): Promise<ReturnType<typeof plugin["handleParsedElement"]>> {
   try {
     return await plugin.handleParsedElement(buffer, el, {
-      studyUid: 'placeholder_s_uid',
-      instanceUid: 'placeholder_i_uid'
+      studyUid: 'placeholder_s_uid_todo',
+      instanceUid: 'placeholder_i_uid_todo'
     })
   } catch (error) {
     console.log(`Plugin failure: [${plugin.name}]`);
@@ -27,6 +27,4 @@ export async function wrapAndRunPlugin(
   }
 }
 
-
-// Implmentations grouped for export
 export { XSS } from "./xss.js";

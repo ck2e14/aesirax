@@ -22,11 +22,14 @@ export async function singleTheaded(cfg: Cfg, writeTo?: string) {
 
   for (let i = 0; i < paths.length; i++) {
     // serialisedDataSet is one DICOM instance's entire set of elements
+    const s = performance.now();
+    console.log(cfg.streamOrWhole)
     const serialisedDataSet: Parse.DataSet = cfg.streamOrWhole === 'whole'
       ? await syncParse(paths[i], cfg)
-      : await streamParse(paths[i], cfg)
-
+      : await streamParse(paths[i], cfg);
+    const e = performance.now();
     parsedFiles.push(serialisedDataSet);
+    write(`Parsed & serialised DICOM instance in ${e - s}ms`, "INFO")
   }
 
   const end = performance.now();

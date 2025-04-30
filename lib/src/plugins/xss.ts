@@ -64,9 +64,8 @@ if (!isMainThread) {
     // its elements passed to the plugin anyway.
     if (!('elementAsBytes' in msg) || msg.el.vr === VR.SQ) {
       return
-    } else {
-      screenXSS(msg.el)
     }
+    screenXSS(msg.el)
   });
 
   process.on("uncaughtException", error => {
@@ -81,14 +80,15 @@ function log(msg: string) {
 }
 
 function screenXSS(el: Parse.Element) {
+
+  if (isPixelData(el)) {
+    return
+  }
+
+  log(`Screening tag ${el.tag} - ${el.vr} - ${el.name}...`)
+
   switch (typeof el.value) {
     case 'string':
-      if ([VR.OW, VR.OB].includes(el.vr)) {
-        break
-      }
-
-      log(`Screening tag ${el.tag} - ${el.vr} - ${el.name}...`)
-
       const sanitised = sanitizeHtml(el.value)
       if (sanitised !== el.value) {
         log(`Possible XSS detection in el ${el.tag}`)
@@ -96,16 +96,9 @@ function screenXSS(el: Parse.Element) {
       } else {
         log(`No XSS detection in string el: ${el.tag}`)
       }
-
       break;
 
     case 'object':
-      if ([VR.OW, VR.OB].includes(el.vr)) {
-        break
-      }
-
-      log(`Screening tag ${el.tag} - ${el.vr} - ${el.name}...`)
-
       if (Buffer.isBuffer(el.value)) {
         const str = el.value.toString('utf8')
         const san = sanitizeHtml(str)
@@ -116,8 +109,13 @@ function screenXSS(el: Parse.Element) {
           log(`No XSS detection in buffer el: ${el.tag}`)
         }
       }
+      break
 
     default:
       break;
   }
+}
+
+function isPixelData(el: Parse.Element) {
+  return [VR.OW, VR.OB].includes(el.vr)
 }
