@@ -21,6 +21,12 @@ async function main(cfg: Cfg) {
   // TODO need to workout why, when stitching, last cursor isn't
   // disposedOf - despite the parsing and persistence working? 
   // CK @MARCH'25 - is this still an issue? cant remember!)
+  
+  // TODO should implement optional lazy mode where values are 
+  // not parsed, rather a function to call that automatically 
+  // calls the right parsing code. This could get pretty complex 
+  // to support with streaming & truncated buffers. May want to 
+  // start only allowing lazy mode in 'whole' not 'stream' mode.
 
   console.clear();
 
@@ -30,7 +36,6 @@ async function main(cfg: Cfg) {
 
   await init();
 
-  
   cfg.targetDir = `../data/JonathanSnowMR/isolate`
   // cfg.targetDir = `/Users/chriskennedy/Desktop/SWE/Aesirax/data/Aidence/GSPS`
   // cfg.targetDir = `/Users/chriskennedy/Desktop/CIMAR/Software/services/GSPSPurge/t1/1.3.6.1.4.1.34692.6.775415760679.2530.1734372408504/images`
