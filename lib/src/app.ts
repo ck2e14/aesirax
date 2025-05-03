@@ -30,6 +30,7 @@ async function main(cfg: Cfg) {
 
   await init();
 
+  
   cfg.targetDir = `../data/JonathanSnowMR/isolate`
   // cfg.targetDir = `/Users/chriskennedy/Desktop/SWE/Aesirax/data/Aidence/GSPS`
   // cfg.targetDir = `/Users/chriskennedy/Desktop/CIMAR/Software/services/GSPSPurge/t1/1.3.6.1.4.1.34692.6.775415760679.2530.1734372408504/images`
