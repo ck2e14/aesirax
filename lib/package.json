@@ -5,6 +5,7 @@
    "main": "index.js",
    "type": "module",
    "scripts": {
+      "buildw": "tsc -w",
       "build": "tsc",
       "test": "jest --detectOpenHandles",
       "start": "node dist/app.js --expose-gc",

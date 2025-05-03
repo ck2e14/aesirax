@@ -12,11 +12,6 @@ import { wrapAndRunPlugin } from "../plugins/plugins.js";
 import { newElement } from "./element.js";
 import { exitDefLenSqRecursion, manageSqRecursion } from "./valueInterpretation/SQ.js";
 
-let x = 0;
-export function getParseObjectCreationCount() {
-  return x
-}
-
 /**
  * parse() orchestrates the parsing logic; it decodes and serialises 
  * elements contained in an arbitrary subset of a DICOM binary as long 
@@ -48,14 +43,12 @@ export async function parse(
   ctx.depth++;
 
   let cursor: Cursor = newCursor(ctx);
-  x++
   let lastTagStart: number;
 
   // Tag > VR > Length > Value > Plugin
   while (cursor.pos < buffer.length) {
     lastTagStart = cursor.pos;
     const el = newElement();
-    x++
 
     try {
       if (exitDefLenSqRecursion(ctx, cursor)) return; // this must happen first

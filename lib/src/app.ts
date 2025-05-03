@@ -1,11 +1,9 @@
 import { write } from "./logging/logQ.js";
-import { readdirSync } from "node:fs";
+import { readdirSync } from "fs";
 import { cfg, init } from "./init/init.js";
 import { Cfg } from "./global.js";
 import { multiThreaded } from "./examples/multithreaded.js";
 import { singleTheaded } from "./examples/singlethreaded.js";
-import { getX } from "./parsing/parse.js";
-
 
 /**
  * Main entry point for the application.
@@ -69,7 +67,6 @@ async function main(cfg: Cfg) {
   }
 
   write(`Manually exit when plugins are ready - this will be automated in future.`, "INFO")
-  console.log(getParseObjCreationCount())
   setInterval(() => { }, 5_000) // this is a hack to keep the process alive whilst i work out
   // a non-annoying or stupid way to make sure plugins are ready for the parent thread to exit 
   // which is required because plugins are likely to be using worker threads that don't stay alive 
