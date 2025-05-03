@@ -77,7 +77,7 @@ declare namespace Parse {
   export type DataSet = Record<string, Element>;
   export type Item = DataSet; // items are semantic aliases for DICOM Datasets, per the NEMA spec.
 
-  export type Decoder = (value: Buffer) => string;
+  export type Decoder = (value: Buffer) => string | number
   export type DecoderMap = Record<Global.VR | "default", Decoder>;
   export type TagStr = keyof typeof TagDictByHex; // 'keyof' gets the keys of an object type. So this is the union type of all the keys of TagDictByHex
 }
