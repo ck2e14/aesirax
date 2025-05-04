@@ -63,8 +63,15 @@ async function compare(filepath?: string) {
     const tagInAesiraxFormat = "(" + tagNumber.slice(0, 4) + "," + tagNumber.slice(4) + ")";
     let aesiraxParseValue = aesiraxParse[tagInAesiraxFormat.toLowerCase()]?.value;
 
+    if (typeof aesiraxParseValue === 'string' && aesiraxParseValue.includes("\\")) {
+      // likewise this is to accomodate dcmjs being nonconformant. It has a behaviour where it 
+      // takes the first value of a multiple value and discards the rest. So I lose the ability 
+      // to test my value multiplicity intepretation when using dcmjs library.  
+      aesiraxParseValue = aesiraxParseValue.split("\\")[0]
+    }
+
     if (
-      aesiraxParse[tagInAesiraxFormat.toLowerCase()].vr === VR.IS &&
+      [VR.IS, VR.DS].includes(aesiraxParse[tagInAesiraxFormat.toLowerCase()].vr) &&
       typeof aesiraxParseValue === 'string'
     ) {
       // aesirax correctly stringifies these values (VR = 'integer string') but dcmjs does not. 
@@ -76,18 +83,34 @@ async function compare(filepath?: string) {
       aesiraxParseValue = aesiraxParseValue.trim(); // this is because of null byte padding in LE
     }
 
-    const dcmjsParseValue = dcmjsParse.dict[tagNumber]?.Value?.[0];
+    let dcmjsParseValue = dcmjsParse.dict[tagNumber]?.Value?.[0];
     const isBuf = Buffer.isBuffer(aesiraxParseValue);
-    const isPixelsOrSequence = [VR.OB, VR.OW, VR.SQ].includes(aesiraxParse[tagInAesiraxFormat.toLowerCase()].vr);
+    const isPixelsOrSequence = [VR.OB, VR.OW].includes(aesiraxParse[tagInAesiraxFormat.toLowerCase()].vr);
+
+    if (aesiraxParse[tagInAesiraxFormat].vr == VR.SQ) {
+      // TODO unimplemented atm. may wish to mirror recursive parse() here or for simplicity, just spread 
+      // the data flatly into the top level dataset for the loop to later reach? This feels less good.
+      continue;
+    }
+
+    if (typeof aesiraxParseValue === 'bigint') {
+      dcmjsParseValue = BigInt(dcmjsParseValue)
+    }
 
     if (isBuf || isPixelsOrSequence) {
       const aesiraxBufferLen = aesiraxParse[tagInAesiraxFormat.toLowerCase()].length
       if (aesiraxBufferLen !== dcmjsParseValue.byteLength) {
         didnt++;
+        console.log(`\n\nAesirax did not parse the same value as dcmjs for tag ${tagInAesiraxFormat}`);
+        console.log({ aesiraxParseValue, dcmjsParseValue })
+        console.log(aesiraxParse[tagInAesiraxFormat.toLowerCase()])
       } else {
         did++;
       }
-    } else if (aesiraxParseValue !== dcmjsParseValue) {
+      continue;
+    }
+
+    if (aesiraxParseValue !== dcmjsParseValue) {
       console.log(`\n\nAesirax did not parse the same value as dcmjs for tag ${tagInAesiraxFormat}`);
       console.log({ aesiraxParseValue, dcmjsParseValue })
       console.log(aesiraxParse[tagInAesiraxFormat.toLowerCase()])
@@ -95,6 +118,7 @@ async function compare(filepath?: string) {
     } else {
       did++;
     }
+    continue;
   }
 
   console.log({ did, didnt })
