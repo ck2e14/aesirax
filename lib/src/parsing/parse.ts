@@ -1,3 +1,4 @@
+import { Element } from "./element.js";
 import { Plugin } from "../plugins/plugins.js";
 import { Ctx } from "./ctx.js";
 import { handleEx } from "../errors.js";
@@ -7,10 +8,8 @@ import { Parse } from "../global.js";
 import { parseTag } from "./TLV/tag.js";
 import { parseVR } from "./TLV/VR.js";
 import { parseValue } from "./TLV/value.js";
-// import { newElement } from "./element.js";
 import { parseLength } from "./TLV/length.js";
 import { Cursor } from "./cursor.js";
-import { Element, newElement } from "./element.js";
 
 /**
  * parse() orchestrates the parsing logic; it decodes and serialises 
@@ -20,26 +19,17 @@ import { Element, newElement } from "./element.js";
  * It's an iterative TLV binary decoder that supports recursive calls 
  * to handle nested datasets (sequence elements' items).
  *
- * TODO: plugins kinda need a way to signal that main thread is allowed 
- * to quit because it hella does not respect the clearing of workers'
- * callstacks.
+ * After testing diverse imaging against aesirax, dcmjs and Dicom-Parser 
+ * (all js libs): dicom-parser overall performed the best, dcmjs overall 
+ * the slowest. Aesirax has by far the narrowest support for the breadth 
+ * of transfer syntaxes that proper DICOM libraries can decode.
  *
- * See the comments at the end of this file for greater detail.
+ * Aesirax performed best on large Secondary Capture SOPs, and worst on 
+ * Element-dense GSPS SOPs (where the elements were many but the bytes 
+ * per element were few).
  *
- * TODO: think about how you could optimise for things like GSPS where 
- * it's causing a very large number of calls to parse() (not deep recursion, 
- * it's just got a shitload of slightly nested sequences). Probably need 
- * object pooling as a start. 
- *
- * After testing a bunch of diverse imaging, on the whole dicom-parser 
- * runs a bit quicker than my parser. dcmjs often performs very well too, 
- * about 50% marginally faster and 50% marginally slower than mine. However 
- * it appears that GSPS characteristics slow my code down in relative terms 
- * a lot (3x to dicom-parser) but that still only translates to about 2-3 
- * milliseconds difference, so it's not a huge deal. When it comes to very 
- * high numbers of fragments in pixel data it appears that dmcjs falls off 
- * a fucking cliff. e.g. an XA instance of 4.9mb parses in 39ms in dcmjs, 
- * the same image in 1.5ms in my parser, and dicom-parser does it in 1.99ms.
+ * dcmjs was mostly about the same speed as aesirax except when it was 
+ * slower it was sometimes /far/ slower, occasionally 30x slower. 
  *
  * @param buffer
  * @param ctx
@@ -57,8 +47,8 @@ export async function parse(
 
   // Tag > VR > Length > Value > Plugin
   while (cursor.pos < buffer.length) {
-    lastTagBufferOffset = cursor.pos;
     const el = new Element();
+    lastTagBufferOffset = cursor.pos;
 
     try {
       if (exitDefLenSqRecursion(ctx, cursor)) return; // this must happen first

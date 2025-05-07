@@ -35,7 +35,7 @@ async function main(cfg: Cfg) {
   //  - for string element values uses numerical representation with lazy conversion to utf8
   //  - run node with --inspect for GC trace etc
   //  - possibly full-on lazy eval but could be challenging given buffer truncation?
- 
+
   console.clear();
   await init();
 

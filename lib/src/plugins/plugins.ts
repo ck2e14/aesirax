@@ -1,5 +1,9 @@
 import { Parse } from "../global.js";
 
+// * TODO: plugins kinda need a way to signal that main thread is allowed 
+// * to quit because it hella does not respect the clearing of workers'
+// * callstacks.
+
 export type Plugin<R = unknown> = {
   name: string,
   sync: 'async' | 'sync',
@@ -16,8 +20,9 @@ export async function wrapAndRunPlugin(
   buffer: Buffer,
   el: Parse.Element
 ): Promise<ReturnType<typeof plugin["handleParsedElement"]>> {
+
   if (!plugin) {
-    return
+    return;
   }
 
   try {
@@ -27,7 +32,7 @@ export async function wrapAndRunPlugin(
     })
   } catch (error) {
     console.log(`Plugin failure: [${plugin?.name}]`);
-    return null
+    return null;
   }
 }
 

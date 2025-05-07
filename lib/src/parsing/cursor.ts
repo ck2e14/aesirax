@@ -5,8 +5,6 @@ import { inSQ } from "./valueInterpretation/SQ.js";
 
 let id = 0;
 
-// trying out as a class for JIT optimisations 
-
 export class Cursor {
   constructor(ctx: Ctx, pos = 0, buf?: Buffer) {
     this.buf = buf;
@@ -33,11 +31,9 @@ export class Cursor {
     if (buffer && this.pos + n > buffer.length) {
       throw new BufferBoundary(`Cursor walk would exceed buffer length`);
     }
-
     // walk the cursor 
     this.pos += n;
-
-    // as wel as walking the cursor, if we're in a sequence el, we need to 
+    // as well as walking the cursor, if we're in a sequence el, we need to 
     // update the number of bytes traversed (in whatever the most recently pushed 
     // sequence onto the stack is). This is for determining when we reached the 
     // end of defined length sequences, which don't use delimiter elements. 
@@ -76,7 +72,8 @@ export class Cursor {
 
     if (shouldMergeByteTraversal) {
       const { sqBytesStack: stack } = ctx;
-      stack[stack.length - 2] = stack[stack.length - 2] + stack[stack.length - 1];
+      const len = stack.length
+      stack[len - 2] = stack[len - 2] + stack[len - 1];
     }
 
     this.walk(ctx.sqBytesStack.at(-1) ?? 0, ctx, buffer);
