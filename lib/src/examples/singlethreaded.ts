@@ -1,5 +1,5 @@
 import { writeFile } from "fs/promises";
-import { findDICOM } from "../utils.js";
+import { findDICOM, safeJSON } from "../utils.js";
 import { write } from "../logging/logQ.js";
 import { Cfg, Parse } from "../global.js";
 import { syncParse } from "./syncReadParse.js";
@@ -21,15 +21,11 @@ export async function singleTheaded(cfg: Cfg, writeTo?: string) {
   }
 
   for (let i = 0; i < paths.length; i++) {
-    // serialisedDataSet is one DICOM instance's entire set of elements
-    const s = performance.now();
-    console.log(cfg.streamOrWhole)
     const serialisedDataSet: Parse.DataSet = cfg.streamOrWhole === 'whole'
-      ? await syncParse(paths[i], cfg)
+      ? await syncParse(paths[i], cfg) // for now, plugins are unsupported on sync version
       : await streamParse(paths[i], cfg);
-    const e = performance.now();
+
     parsedFiles.push(serialisedDataSet);
-    write(`Parsed & serialised DICOM instance in ${e - s}ms`, "INFO")
   }
 
   const end = performance.now();
@@ -39,7 +35,7 @@ export async function singleTheaded(cfg: Cfg, writeTo?: string) {
     const studyUid = imageData["(0020,000d)"]?.value ?? "UNKNOWN STUDY UID";
     const imageUid = imageData["(0008,0018)"]?.value ?? "UNKNOWN IMAGE UID";
     const writePath = writeTo ? `${writeTo}/${studyUid}-${imageUid}.json` : `./output.json`;
-    writeFile(writePath, JSON.stringify(parsedFiles[0], null, 3));
+    writeFile(writePath, safeJSON(parsedFiles[0]));
   }
 
   write(`Time elapsed including finding images in dir, streaming, and parsing: ${end - start} ms`, "INFO");

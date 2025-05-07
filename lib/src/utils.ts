@@ -14,6 +14,28 @@ export function mapToObj(map: Map<string, any>): any {
   return obj;
 }
 
+
+// Safety-first JSON replacement. It will never 
+// throw. If it hits an error it will return `{}`.
+// Intended for uses where failure is a no-op 
+// and its mostly critical that it doesn't cause
+// exceptions. 
+export function safeJSON(item: any, spacing = 3) {
+  try {
+    return JSON.stringify(item, (_key, value) => {
+      try {
+        return typeof value === 'bigint' ? value.toString() : value
+      } catch (error) {
+        return "unable to safely jsonify"
+      }
+    }, spacing)
+  } catch (error) {
+    write(error, "ERROR")
+    console.log(error)
+    return `{}`
+  }
+}
+
 export function prettyPrintMap(map: Map<string, any>): string {
   let str = ``;
 

@@ -11,7 +11,6 @@ import { Cfg } from "../global.js";
  * @returns promised worker threads' completion (void)
  */
 export async function multiThreaded(cfg: Cfg) {
-  const start = performance.now();
   const dicomFiles = findDICOM(cfg.targetDir);
   const nWorkers = cpus().length > dicomFiles.length ? dicomFiles.length : cpus().length;
   const workerPromises = [];
@@ -25,10 +24,8 @@ export async function multiThreaded(cfg: Cfg) {
   }
 
   await Promise.all(workerPromises);
-  const end = performance.now();
 
   write(`Parsed ${parsedFiles.length} parsedFiles`, "INFO");
-  write(`Time elapsed (minus end printing): ${end - start} ms`, "INFO");
   writeFileSync(`${cfg.writeDir}/parsedFiles.json`, "");
 
   for (let i = 0; i < parsedFiles.length; i++) {

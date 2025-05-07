@@ -17,32 +17,27 @@ import { singleTheaded } from "./examples/singlethreaded.js";
  */
 main(cfg);
 async function main(cfg: Cfg) {
-
   // TODO need to workout why, when stitching, last cursor isn't
   // disposedOf - despite the parsing and persistence working? 
   // CK @MARCH'25 - is this still an issue? cant remember!)
-  
-  // TODO should implement optional lazy mode where values are 
-  // not parsed, rather a function to call that automatically 
-  // calls the right parsing code. This could get pretty complex 
-  // to support with streaming & truncated buffers. May want to 
-  // start only allowing lazy mode in 'whole' not 'stream' mode.
 
+  // TODO you probably need to make sure thast your serialisation 
+  // to JSON accurately implements the DICOM JSON module spec in 
+  // the NEMA docs
+  // https://dicom.nema.org/medical/dicom/current/output/chtml/part18/sect_F.2.2.html
+  // or rather, you should have an option to enforce it. Because it 
+  // seems to have weird opinions on what not to include, e.g. 
+  // "Group Length (gggg,0000) attributes shall not be included in a DICOM JSON Model object."
+  // and that elements should be lexicographic order (alphabet) for some reason. 
+  // 
+  // TODO optimisations:
+  //  - change Element & Cursor for a class to help v8 JIT
+  //  - for string element values uses numerical representation with lazy conversion to utf8
+  //  - run node with --inspect for GC trace etc
+  //  - possibly full-on lazy eval but could be challenging given buffer truncation?
+ 
   console.clear();
-
-  if (cfg.verbose) {
-    write(`Starting up...`, "INFO");
-  }
-
   await init();
-
-  cfg.targetDir = `../data/JonathanSnowMR/isolate`
-  // cfg.targetDir = `/Users/chriskennedy/Desktop/SWE/Aesirax/data/Aidence/GSPS`
-  // cfg.targetDir = `/Users/chriskennedy/Desktop/CIMAR/Software/services/GSPSPurge/t1/1.3.6.1.4.1.34692.6.775415760679.2530.1734372408504/images`
-  // cfg.targetDir = `../data/brokenSiemensCT/isolate`; 
-  // cfg.targetDir = `../data/QUANTREDEUSIX`; 
-  // cfg.targetDir = `/Users/chriskennedy/Desktop/SWE/aesirax/data/STANWORTHLORNAMISS/SER00001`;
-  // cfg.targetDir = `../data/FELIX/isolate`;// FELIX images are breaking atm on pixel data, i think its expecting JPEG EOI for an img that doesn't use that
 
   if (!cfg.targetDir || !cfg.targetDir.length) {
     write(`No targetdir. Doing nothing.`, "INFO");

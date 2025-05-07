@@ -11,6 +11,7 @@ type ID = string;
 
 export type Ctx = {
   tracePerf: boolean;
+  lazy?: boolean;
   first: boolean;
   path: string;
   depth: number;

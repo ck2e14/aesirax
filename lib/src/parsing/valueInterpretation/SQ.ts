@@ -65,7 +65,7 @@ export async function parseSQ(
   // -- Recurse to parse entire SQ, from the first item, which itself is a dataset.
   //    All new datasets always require a new call to parse().
   const firstItem = buffer.subarray(parentCursor.pos, buffer.length);
-  const partial = await parse(firstItem, ctx); // parse returns 0 length buffer if no elem was truncated
+  const partial = await parse(firstItem, ctx, null); // parse returns 0 length buffer if no elem was truncated
 
   // -- Add traversed bytes & LIFO pop
   parentCursor.sync(ctx, buffer);

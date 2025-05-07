@@ -1,6 +1,7 @@
 import { TagDictByHex, VR } from "./enums.ts";
 
 export type Cfg = {
+  lazy: boolean;
   verbose: boolean;
   printToStdOut: boolean;
   debug: boolean;

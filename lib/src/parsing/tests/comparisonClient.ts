@@ -1,9 +1,11 @@
 import { existsSync, readFileSync } from "fs";
 import { stat } from "fs/promises";
-import * as dcmjs from "dcmjs";
-import minimist from "minimist";
 import { syncParse } from "../../examples/syncReadParse.js";
 import { VR } from "../../enums.js";
+import { write } from "../../logging/logQ.js";
+import minimist from "minimist";
+import * as dcmjs from "dcmjs";
+import { streamParse } from "../../examples/streamParse.js";
 
 class FileNotFound extends Error {
   constructor(path: string) {
@@ -32,28 +34,24 @@ class NotAFilePath extends Error {
 compare()
 async function compare(filepath?: string) {
   const cliArgs = minimist(process.argv.slice(2));
+
   filepath ??= cliArgs["filepath"];
 
-  if (!filepath && !('filepath' in cliArgs)) {
-    throw new MissingArgs([`--filepath=""`]);
-  }
+  if (!filepath && !('filepath' in cliArgs)) throw new MissingArgs([`--filepath=""`]);
+  if (!(await stat(filepath)).isFile()) throw new NotAFilePath(filepath);
+  if (!existsSync(filepath)) throw new FileNotFound(filepath);
 
-  console.log({ filepath })
-
-  const stats = await stat(filepath);
-  if (!stats.isFile()) {
-    throw new NotAFilePath(filepath);
-  }
-
-  if (!existsSync(filepath)) {
-    throw new FileNotFound(filepath);
-  }
-
+  // const aesiraxParse = await streamParse(filepath);
   const aesiraxParse = await syncParse(filepath);
-  const dcmjsParse = dcmjs.data.DicomMessage.readFile(readFileSync(filepath).buffer);
-  const dcmjsElements = Object.keys(dcmjsParse.dict);
 
-  let did = 0, didnt = 0;
+  const dcmjsStart = performance.now();
+  const fileBuf = readFileSync(filepath).buffer;
+  const dcmjsParse = dcmjs.data.DicomMessage.readFile(fileBuf);
+  const dcmjsEnd = performance.now();
+  const dcmjsElements = Object.keys(dcmjsParse.dict);
+  write(`dcmjs parsed in: ${dcmjsEnd - dcmjsStart}ms`, "INFO");
+
+  const results = { matched: [], mismatched: [] };
 
   for (const tagNumber of dcmjsElements) {
     if (tagNumber.length !== 8) {
@@ -61,17 +59,18 @@ async function compare(filepath?: string) {
     }
 
     const tagInAesiraxFormat = "(" + tagNumber.slice(0, 4) + "," + tagNumber.slice(4) + ")";
-    let aesiraxParseValue = aesiraxParse[tagInAesiraxFormat.toLowerCase()]?.value;
+    const aesiraxElement = aesiraxParse[tagInAesiraxFormat.toLowerCase()]
+    let aesiraxParseValue = aesiraxElement?.value
 
     if (typeof aesiraxParseValue === 'string' && aesiraxParseValue.includes("\\")) {
-      // likewise this is to accomodate dcmjs being nonconformant. It has a behaviour where it 
+      // likewise this is to accomodate dcmjs nonconformance. It has a behaviour where it 
       // takes the first value of a multiple value and discards the rest. So I lose the ability 
       // to test my value multiplicity intepretation when using dcmjs library.  
       aesiraxParseValue = aesiraxParseValue.split("\\")[0]
     }
 
     if (
-      [VR.IS, VR.DS].includes(aesiraxParse[tagInAesiraxFormat.toLowerCase()].vr) &&
+      [VR.IS, VR.DS].includes(aesiraxElement.vr) &&
       typeof aesiraxParseValue === 'string'
     ) {
       // aesirax correctly stringifies these values (VR = 'integer string') but dcmjs does not. 
@@ -85,41 +84,51 @@ async function compare(filepath?: string) {
 
     let dcmjsParseValue = dcmjsParse.dict[tagNumber]?.Value?.[0];
     const isBuf = Buffer.isBuffer(aesiraxParseValue);
-    const isPixelsOrSequence = [VR.OB, VR.OW].includes(aesiraxParse[tagInAesiraxFormat.toLowerCase()].vr);
+    const isPixelsOrSequence = [VR.OB, VR.OW].includes(aesiraxElement.vr);
 
-    if (aesiraxParse[tagInAesiraxFormat].vr == VR.SQ) {
+    if (aesiraxElement.vr == VR.SQ) {
       // TODO unimplemented atm. may wish to mirror recursive parse() here or for simplicity, just spread 
       // the data flatly into the top level dataset for the loop to later reach? This feels less good.
       continue;
     }
 
-    if (typeof aesiraxParseValue === 'bigint') {
+    if (typeof aesiraxElement.value === 'bigint') {
       dcmjsParseValue = BigInt(dcmjsParseValue)
     }
 
     if (isBuf || isPixelsOrSequence) {
-      const aesiraxBufferLen = aesiraxParse[tagInAesiraxFormat.toLowerCase()].length
+      const aesiraxBufferLen = aesiraxElement.length
+
       if (aesiraxBufferLen !== dcmjsParseValue.byteLength) {
-        didnt++;
-        console.log(`\n\nAesirax did not parse the same value as dcmjs for tag ${tagInAesiraxFormat}`);
-        console.log({ aesiraxParseValue, dcmjsParseValue })
-        console.log(aesiraxParse[tagInAesiraxFormat.toLowerCase()])
+        results.mismatched.push({
+          aesirax: aesiraxElement,
+          dcmjs: dcmjsParse.dict[tagNumber]
+        })
       } else {
-        did++;
+        results.matched.push(aesiraxElement)
       }
+
       continue;
     }
 
     if (aesiraxParseValue !== dcmjsParseValue) {
-      console.log(`\n\nAesirax did not parse the same value as dcmjs for tag ${tagInAesiraxFormat}`);
-      console.log({ aesiraxParseValue, dcmjsParseValue })
-      console.log(aesiraxParse[tagInAesiraxFormat.toLowerCase()])
-      didnt++;
+      results.mismatched.push({
+        aesirax: aesiraxElement,
+        dcmjs: dcmjsParse.dict[tagNumber]
+      })
     } else {
-      did++;
+      results.matched.push(aesiraxElement)
     }
+
     continue;
   }
 
-  console.log({ did, didnt })
+  // console.dir(results, { depth: Infinity })
+  write(
+    `Comparison results: matched: ${results.matched.length}.. ` +
+    `mismatched: ${results.mismatched.length}`,
+    "INFO"
+  );
+
+  return results;
 }

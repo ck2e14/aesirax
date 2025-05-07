@@ -82,7 +82,7 @@ export async function handleDicomBytes(ctx: Ctx, currBytes: Buffer): Promise<Par
   write(`Reading buffer (#${ctx.nByteArray} - ${currBytes.length} bytes) (${ctx.path})`, "DEBUG");
   return ctx.first
     ? handleFirstBuffer(ctx, currBytes)
-    : await parse(stitchBytes(ctx, currBytes), ctx);
+    : await parse(stitchBytes(ctx, currBytes), ctx, null);
 }
 
 /**
@@ -99,7 +99,7 @@ async function handleFirstBuffer(ctx: Ctx, buffer: Buffer): Promise<Parse.Partia
   validatePreamble(buffer); // throws if not void return 
   validateHeader(buffer); //   throws if not void return 
 
-  const parseResponse = await parse(buffer.subarray(HEADER_END, buffer.length), ctx); // window the buffer beyond 'DICM' HEADER to start at File Meta Info section
+  const parseResponse = await parse(buffer.subarray(HEADER_END, buffer.length), ctx, null); // window the buffer beyond 'DICM' HEADER to start at File Meta Info section
   const tsn = getElementValue<string | void>("(0002,0010)", ctx.dataSet);
 
   if (typeof tsn !== 'undefined' && !isSupportedTSN(tsn)) {
@@ -107,7 +107,7 @@ async function handleFirstBuffer(ctx: Ctx, buffer: Buffer): Promise<Parse.Partia
   }
 
   if (isSupportedTSN(tsn)) {
-    ctx.transferSyntaxUid = tsn // ?? TransferSyntaxUid.ExplicitVRLittleEndian; // commented out because I dont believe we should optimisitically fallback on even a default syntax. For predictability would rather fail if undetermined from header
+    ctx.transferSyntaxUid = tsn;
     ctx.first = false;
     return parseResponse;
   }
@@ -137,5 +137,3 @@ function stitchBytes(ctx: Ctx, currBytes: Buffer): Buffer {
 function getElementValue<T = unknown>(tag: Parse.TagStr, elements: Parse.DataSet): T {
   return (elements[tag]?.value ?? "NOT FOUND") as T;
 }
-
-

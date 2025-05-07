@@ -19,6 +19,23 @@ export function newElement(): Parse.Element {
   };
 }
 
+export class Element {
+  constructor() {
+    this.tag = null;
+    this.vr = null;
+    this.length = null;
+    this.value = null;
+    this.name = null;
+  }
+  public tag: Parse.TagStr
+  public name: string
+  public vr: VR
+  public value?: string | number | Buffer
+  public length: number // value's bytes 
+  public fragments?: Parse.Fragments;
+  public devNote?: string
+}
+
 /**
  * Save the current element to the appropriate dataset.
  * @param ctx

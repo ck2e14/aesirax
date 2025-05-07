@@ -14,7 +14,12 @@ import { parseValueDefault } from "../valueInterpretation/default.js";
  * based on the already determined VR of the currently 
  * parsing element.
  */
-export async function parseValue(buffer: Buffer, cursor: Cursor, el: Parse.Element, ctx: Ctx) {
+export async function parseValue(
+  buffer: Buffer,
+  cursor: Cursor,
+  el: Parse.Element,
+  ctx: Ctx
+) {
   switch (true) {
     case el.vr === VR.SQ:
       await parseSQ(buffer, ctx, el, cursor); // ctx-aware recurse
@@ -33,5 +38,3 @@ export async function parseValue(buffer: Buffer, cursor: Cursor, el: Parse.Eleme
       saveElement(ctx, el, cursor, buffer);
   }
 }
-
-

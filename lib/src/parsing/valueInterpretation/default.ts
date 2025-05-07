@@ -40,8 +40,7 @@ export function decodeValueBytes(
   value: Buffer,
   ctx: Ctx,
   checkNullPadding = false // for debugging
-): string {
-
+) {
   if (checkNullPadding) {
     countNullBytes(value);
   }

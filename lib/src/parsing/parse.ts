@@ -1,16 +1,16 @@
-import { newCursor, Cursor } from "./cursor.js";
-import { XSS } from "../plugins/xss.js";
 import { Plugin } from "../plugins/plugins.js";
 import { Ctx } from "./ctx.js";
 import { handleEx } from "../errors.js";
+import { exitDefLenSqRecursion, manageSqRecursion } from "./valueInterpretation/SQ.js";
+import { wrapAndRunPlugin } from "../plugins/plugins.js";
 import { Parse } from "../global.js";
 import { parseTag } from "./TLV/tag.js";
 import { parseVR } from "./TLV/VR.js";
-import { parseLength } from "./TLV/length.js";
 import { parseValue } from "./TLV/value.js";
-import { wrapAndRunPlugin } from "../plugins/plugins.js";
-import { newElement } from "./element.js";
-import { exitDefLenSqRecursion, manageSqRecursion } from "./valueInterpretation/SQ.js";
+// import { newElement } from "./element.js";
+import { parseLength } from "./TLV/length.js";
+import { Cursor } from "./cursor.js";
+import { Element, newElement } from "./element.js";
 
 /**
  * parse() orchestrates the parsing logic; it decodes and serialises 
@@ -31,24 +31,34 @@ import { exitDefLenSqRecursion, manageSqRecursion } from "./valueInterpretation/
  * it's just got a shitload of slightly nested sequences). Probably need 
  * object pooling as a start. 
  *
+ * After testing a bunch of diverse imaging, on the whole dicom-parser 
+ * runs a bit quicker than my parser. dcmjs often performs very well too, 
+ * about 50% marginally faster and 50% marginally slower than mine. However 
+ * it appears that GSPS characteristics slow my code down in relative terms 
+ * a lot (3x to dicom-parser) but that still only translates to about 2-3 
+ * milliseconds difference, so it's not a huge deal. When it comes to very 
+ * high numbers of fragments in pixel data it appears that dmcjs falls off 
+ * a fucking cliff. e.g. an XA instance of 4.9mb parses in 39ms in dcmjs, 
+ * the same image in 1.5ms in my parser, and dicom-parser does it in 1.99ms.
+ *
  * @param buffer
  * @param ctx
  * @returns PartialEl (e.g. if streaming & buffer < file size)
- */
+*/
 export async function parse(
   buffer: Buffer,
   ctx: Ctx,
-  plugin: Plugin = XSS /* defaulted to experimental plugin while dev */
+  plugin: Plugin
 ): Promise<Parse.PartialEl> {
-  ctx.depth++;
 
-  let cursor: Cursor = newCursor(ctx);
-  let lastTagStart: number;
+  ctx.depth++;
+  let cursor = new Cursor(ctx)
+  let lastTagBufferOffset: number;
 
   // Tag > VR > Length > Value > Plugin
   while (cursor.pos < buffer.length) {
-    lastTagStart = cursor.pos;
-    const el = newElement();
+    lastTagBufferOffset = cursor.pos;
+    const el = new Element();
 
     try {
       if (exitDefLenSqRecursion(ctx, cursor)) return; // this must happen first
@@ -63,18 +73,18 @@ export async function parse(
       await parseValue(buffer, cursor, el, ctx); // async/await bleed because recurses with parse()
 
       if (plugin && plugin.sync) {
-        await wrapAndRunPlugin(plugin, buffer, el)
+        await wrapAndRunPlugin(plugin, buffer, el);
       } else {
-        wrapAndRunPlugin(plugin, buffer, el)
+        wrapAndRunPlugin(plugin, buffer, el);
       }
     } catch (error) {
       exitParse(ctx, cursor);
-      return handleEx(error, buffer, lastTagStart, el.tag);
+      return handleEx(error, buffer, lastTagBufferOffset, el.tag);
     }
   }
 
   exitParse(ctx, cursor);
-  return buffer.subarray(lastTagStart, buffer.length);
+  return buffer.subarray(lastTagBufferOffset, buffer.length);
 }
 
 /**

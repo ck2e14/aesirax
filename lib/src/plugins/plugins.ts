@@ -16,13 +16,17 @@ export async function wrapAndRunPlugin(
   buffer: Buffer,
   el: Parse.Element
 ): Promise<ReturnType<typeof plugin["handleParsedElement"]>> {
+  if (!plugin) {
+    return
+  }
+
   try {
     return await plugin.handleParsedElement(buffer, el, {
       studyUid: 'placeholder_s_uid_todo',
       instanceUid: 'placeholder_i_uid_todo'
     })
   } catch (error) {
-    console.log(`Plugin failure: [${plugin.name}]`);
+    console.log(`Plugin failure: [${plugin?.name}]`);
     return null
   }
 }
