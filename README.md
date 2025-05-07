@@ -1,4 +1,4 @@
-Aesirax contains a high-performance, zero-dependency DICOM decoder & serialiser - find this under /Parsely.
+Aesirax contains a high-performance, zero-dependency DICOM decoder & serialiser. Decoding a DICOM binary is the precursor to anything else; consuming applications must know what datatypes and values they're handling. That's why this parser supports plugins, but is a work in progress.
 
 Aesirax is a learning repo. Please do not use any code it contains in production. 
 
