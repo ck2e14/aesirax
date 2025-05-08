@@ -15,6 +15,5 @@ import { write } from "./logging/logQ.js";
 
   writeFile(`${filepath}.json`, safeJSON(await syncParse(filepath)));
   write(`Saved JSON serialiation to ${filepath}.json`, "INFO");
-  printMemoryUsage();
   setTimeout(() => { process.exit(0) }, 100);
 })();
