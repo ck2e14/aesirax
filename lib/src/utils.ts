@@ -14,6 +14,15 @@ export function mapToObj(map: Map<string, any>): any {
   return obj;
 }
 
+export function printMemoryUsage() {
+  const memoryUsage = process.memoryUsage();
+  
+  console.log('Memory usage:');
+  console.log(`RSS: ${Math.round(memoryUsage.rss / 1024 / 1024)} MB`);
+  console.log(`Heap Total: ${Math.round(memoryUsage.heapTotal / 1024 / 1024)} MB`);
+  console.log(`Heap Used: ${Math.round(memoryUsage.heapUsed / 1024 / 1024)} MB`);
+  console.log(`External: ${Math.round(memoryUsage.external / 1024 / 1024)} MB`);
+}
 
 // Safety-first JSON replacement. It will never 
 // throw. If it hits an error it will return `{}`.

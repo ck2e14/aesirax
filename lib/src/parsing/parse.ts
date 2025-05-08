@@ -1,15 +1,15 @@
-import { Element } from "./element.js";
-import { Plugin } from "../plugins/plugins.js";
-import { Ctx } from "./ctx.js";
-import { handleEx } from "../errors.js";
 import { exitDefLenSqRecursion, manageSqRecursion } from "./valueInterpretation/SQ.js";
 import { wrapAndRunPlugin } from "../plugins/plugins.js";
+import { Element } from "./element.js";
+import { Plugin } from "../plugins/plugins.js";
+import { handleEx } from "../errors.js";
 import { Parse } from "../global.js";
 import { parseTag } from "./TLV/tag.js";
 import { parseVR } from "./TLV/VR.js";
 import { parseValue } from "./TLV/value.js";
 import { parseLength } from "./TLV/length.js";
 import { Cursor } from "./cursor.js";
+import { Ctx } from "./ctx.js";
 
 /**
  * parse() orchestrates the parsing logic; it decodes and serialises 
@@ -17,19 +17,7 @@ import { Cursor } from "./cursor.js";
  * as buffer[0] is the first element of any dataset. 
  *
  * It's an iterative TLV binary decoder that supports recursive calls 
- * to handle nested datasets (sequence elements' items).
- *
- * After testing diverse imaging against aesirax, dcmjs and Dicom-Parser 
- * (all js libs): dicom-parser overall performed the best, dcmjs overall 
- * the slowest. Aesirax has by far the narrowest support for the breadth 
- * of transfer syntaxes that proper DICOM libraries can decode.
- *
- * Aesirax performed best on large Secondary Capture SOPs, and worst on 
- * Element-dense GSPS SOPs (where the elements were many but the bytes 
- * per element were few).
- *
- * dcmjs was mostly about the same speed as aesirax except when it was 
- * slower it was sometimes /far/ slower, occasionally 30x slower. 
+ * to handle nested datasets (sequence elements' items)
  *
  * @param buffer
  * @param ctx
@@ -90,34 +78,59 @@ export function exitParse(ctx: Ctx, cursor: Cursor) {
 
 /**                         -- DETAIL --
  *
- * Give it a buffer where buffer[0] is the exact first byte of a 
- * dataset (i.e. after the DCM preamble for the outermost dataset or 
- * first byte of nested datasets), and it will parse as far as the 
- * buffer allows, returning a BufferBoundary error if the current 
- * buffer doesn't reach the end of the file. 
+ * Give it a buffer where buffer[0] is the exact first byte of a
+ * dataset (i.e. after the DCM preamble for the outermost dataset or
+ * first byte of nested datasets), and it will parse as far as the
+ * buffer allows, returning a BufferBoundary error if the current
+ * buffer doesn't reach the end of the file.
  *
  * If parse() encounters nested datasets (in sequence (SQ) elements),
- * it will recurse, passing in the a buffer window starting at the first 
- * byte, as is always required for calls to parse(). It uses recursion 
- * depth tracking and context to place the element at the corresponding 
- * JSON object depth. 
+ * it will recurse, passing in the a buffer window starting at the first
+ * byte, as is always required for calls to parse(). It uses recursion
+ * depth tracking and context to place the element at the corresponding
+ * JSON object depth.
  *
- * Context (Ctx) is maintained at the global scope, allowing recursion 
- * interrupted by the length of the buffer to pick up where it left off 
+ * Context (Ctx) is maintained at the global scope, allowing recursion
+ * interrupted by the length of the buffer to pick up where it left off
  * when the next buffer is provided (e.g. via streamed file i/o: read.ts).
  *
- * Since it mutates a global context which stores the serialised 
+ * Since it mutates a global context which stores the serialised
  * DICOM object, parse() only returns a value when a BufferBoundary
- * error is thrown. In this case, read.ts streams need a ref to that 
+ * error is thrown. In this case, read.ts streams need a ref to that
  * buffer so it can stitch it infront of the next streamed buffer.
  *
- * This is a typescript implementation but arguably better described 
- * as a TS wrapper to C++ methods; it's heavily using efficient low-level 
- * bufferAPIs that directly call on native C++ APIs within V8. In some 
- * sense it's C++ performance with JS memory safety and TypeScript 
- * compiler safety. 
+ * This is a typescript implementation but arguably better described
+ * as a TS wrapper to C++ methods; it's heavily using efficient low-level
+ * bufferAPIs that directly call on native C++ APIs within V8. In some
+ * sense it's C++ performance with JS memory safety and TypeScript
+ * compiler safety.
  *
- * tldr; the idea is to give this function the start of raw DICOM 
- * dataset bytes, which in turn ensures that each new 'while' loop 
+ * After testing diverse imaging against aesirax, dcmjs and Dicom-Parser
+ * (all js libs): dicom-parser overall performed the best, dcmjs overall
+ * the slowest. Aesirax has by far the narrowest support for the breadth
+ * of transfer syntaxes that proper DICOM libraries can decode.
+ *
+ * Aesirax performed best on large Secondary Capture SOPs, and worst on
+ * Element-dense GSPS SOPs (where the elements were many but the bytes
+ * per element were few).
+ *
+ * dcmjs was mostly about the same speed as aesirax except when it was
+ * slower it was sometimes /far/ slower, occasionally 30x slower.
+ *
+ * tldr; the idea is to give this function the start of raw DICOM
+ * dataset bytes, which in turn ensures that each new 'while' loop
  * iteration is the start of a new element's bytes.
  */
+
+
+// > node dist/parsing/tests/comparisonClient.js --filepath=/Users/chriskennedy/Desktop/dicom/GRUSELAMBIX/SER00001/IMG00001.dcm
+//
+// 2025-05-08T00:37:32.695Z [INFO]  Parsed DICOM Instance:
+// {
+//    "sop_class": "1.2.840.10008.5.1.4.1.1.12.1",
+//    "instance_uid": "1.2.840.113619.2.16.1.155.1066229013.1.74040",
+//    "series_description": "LHC",
+//    "miliseconds including file i/o": 2.3646250000000038,
+//    "miliseconds excluding file i/o": 1.5960830000000072
+// }
+// 2025-05-08T00:37:32.698Z [INFO]  dcmjs parsed in: 2.030332999999999ms

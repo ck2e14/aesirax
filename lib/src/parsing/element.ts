@@ -19,6 +19,9 @@ export function newElement(): Parse.Element {
   };
 }
 
+// hoped for JIT class optimisations but it did nothing 
+// even for heavy instatiations per dicom instance - 
+// e.g. GSPS 
 export class Element {
   constructor() {
     this.tag = null;

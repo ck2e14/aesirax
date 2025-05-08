@@ -9,7 +9,7 @@
       "buildw": "tsc -w",
       "build": "tsc",
       "test": "jest --detectOpenHandles",
-      "start": "node dist/app.js --expose-gc",
+      "start": "node dist/app.js",
       "scu": "node dist/networking/SCU/client.js",
       "curry-test": "node dist/sandbox/sandbox.js"
    },

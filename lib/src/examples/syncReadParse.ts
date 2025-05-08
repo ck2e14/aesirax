@@ -20,7 +20,12 @@ import { safeJSON } from "../utils.js";
  * @param cfg
  * @returns DataSet
  */
-export async function syncParse(path: string, cfg = null, skipPixelData = true): Promise<Parse.DataSet> {
+export async function syncParse(
+  path: string,
+  cfg = null,
+  skipPixelData = true
+): Promise<Parse.DataSet> {
+
   const ctx = ctxFactory(path, cfg, true, skipPixelData);
   const ioStart = performance.now();
   const buf = (await readFile(path)).subarray(HEADER_END);
@@ -34,13 +39,16 @@ export async function syncParse(path: string, cfg = null, skipPixelData = true):
   // change because you can't accept any old JPEG TSN for example - you may need special 
   // handling for different cases. 
 
-  write(`Parsed DICOM Instance: ${ctx.dataSet["(0008,0018)"].value} \n` + safeJSON({
-    sop_class: ctx.dataSet["(0008,0016)"].value,
-    instance_uid: ctx.dataSet["(0008,0018)"].value,
-    series_description: ctx.dataSet["(0008,103e)"]?.value ?? "not found",
-    [`miliseconds including file i/o`]: end - ioStart,
-    [`miliseconds excluding file i/o`]: end - parseStart,
-  }), "INFO");
+  write(`Parsed DICOM Instance:\n`
+    + safeJSON({
+      sop_class: ctx.dataSet["(0008,0016)"].value,
+      instance_uid: ctx.dataSet["(0008,0018)"].value,
+      series_description: ctx.dataSet["(0008,103e)"]?.value ?? "not found",
+      [`miliseconds including file i/o`]: end - ioStart,
+      [`miliseconds excluding file i/o`]: end - parseStart,
+    }),
+    "INFO"
+  );
 
   return ctx.dataSet;
 }

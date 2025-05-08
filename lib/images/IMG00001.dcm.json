@@ -1,0 +1,347 @@
+{
+   "(0002,0000)": {
+      "tag": "(0002,0000)",
+      "vr": "UL",
+      "length": 4,
+      "value": "218",
+      "name": "FileMetaInformationGroupLength"
+   },
+   "(0002,0001)": {
+      "tag": "(0002,0001)",
+      "vr": "OB",
+      "length": 2,
+      "value": "Binary data (OB): 2 bytes",
+      "name": "FileMetaInformationVersion",
+      "devNote": "No support for VR: OB"
+   },
+   "(0002,0002)": {
+      "tag": "(0002,0002)",
+      "vr": "UI",
+      "length": 26,
+      "value": "1.2.840.10008.5.1.4.1.1.7",
+      "name": "MediaStorageSOPClassUID"
+   },
+   "(0002,0003)": {
+      "tag": "(0002,0003)",
+      "vr": "UI",
+      "length": 58,
+      "value": "1.3.6.1.4.1.34692.140112287680190856252708355909960490151",
+      "name": "MediaStorageSOPInstanceUID"
+   },
+   "(0002,0010)": {
+      "tag": "(0002,0010)",
+      "vr": "UI",
+      "length": 20,
+      "value": "1.2.840.10008.1.2.1",
+      "name": "TransferSyntaxUID"
+   },
+   "(0002,0012)": {
+      "tag": "(0002,0012)",
+      "vr": "UI",
+      "length": 28,
+      "value": "1.2.840.10008.052007.0.7.1.3",
+      "name": "ImplementationClassUID"
+   },
+   "(0002,0013)": {
+      "tag": "(0002,0013)",
+      "vr": "SH",
+      "length": 12,
+      "value": "DGSTORESCPV3",
+      "name": "ImplementationVersionName"
+   },
+   "(0002,0016)": {
+      "tag": "(0002,0016)",
+      "vr": "AE",
+      "length": 12,
+      "value": "CWK_ORTHANC",
+      "name": "SourceApplicationEntityTitle"
+   },
+   "(0004,1500)": {
+      "tag": "(0004,1500)",
+      "vr": "ST",
+      "length": 20,
+      "value": "radiologyreport.html",
+      "name": "ReferencedFileID"
+   },
+   "(0008,0005)": {
+      "tag": "(0008,0005)",
+      "vr": "CS",
+      "length": 10,
+      "value": "ISO_IR 100",
+      "name": "SpecificCharacterSet"
+   },
+   "(0008,0012)": {
+      "tag": "(0008,0012)",
+      "vr": "DA",
+      "length": 8,
+      "value": "20210525",
+      "name": "InstanceCreationDate"
+   },
+   "(0008,0013)": {
+      "tag": "(0008,0013)",
+      "vr": "TM",
+      "length": 10,
+      "value": "075046.527",
+      "name": "InstanceCreationTime"
+   },
+   "(0008,0016)": {
+      "tag": "(0008,0016)",
+      "vr": "UI",
+      "length": 26,
+      "value": "1.2.840.10008.5.1.4.1.1.7",
+      "name": "SOPClassUID"
+   },
+   "(0008,0018)": {
+      "tag": "(0008,0018)",
+      "vr": "UI",
+      "length": 58,
+      "value": "1.3.6.1.4.1.34692.140112287680190856252708355909960490151",
+      "name": "SOPInstanceUID"
+   },
+   "(0008,0020)": {
+      "tag": "(0008,0020)",
+      "vr": "DA",
+      "length": 8,
+      "value": "20130820",
+      "name": "StudyDate"
+   },
+   "(0008,0021)": {
+      "tag": "(0008,0021)",
+      "vr": "DA",
+      "length": 8,
+      "value": "20210525",
+      "name": "SeriesDate"
+   },
+   "(0008,0030)": {
+      "tag": "(0008,0030)",
+      "vr": "TM",
+      "length": 0,
+      "value": "",
+      "name": "StudyTime"
+   },
+   "(0008,0031)": {
+      "tag": "(0008,0031)",
+      "vr": "TM",
+      "length": 14,
+      "value": "075042.000004",
+      "name": "SeriesTime"
+   },
+   "(0008,0050)": {
+      "tag": "(0008,0050)",
+      "vr": "SH",
+      "length": 6,
+      "value": "Turkey",
+      "name": "AccessionNumber"
+   },
+   "(0008,0060)": {
+      "tag": "(0008,0060)",
+      "vr": "CS",
+      "length": 2,
+      "value": "CR",
+      "name": "Modality"
+   },
+   "(0008,0070)": {
+      "tag": "(0008,0070)",
+      "vr": "LO",
+      "length": 0,
+      "value": "",
+      "name": "Manufacturer"
+   },
+   "(0008,0080)": {
+      "tag": "(0008,0080)",
+      "vr": "LO",
+      "length": 0,
+      "value": "",
+      "name": "InstitutionName"
+   },
+   "(0008,0090)": {
+      "tag": "(0008,0090)",
+      "vr": "PN",
+      "length": 0,
+      "value": "",
+      "name": "ReferringPhysicianName"
+   },
+   "(0008,1030)": {
+      "tag": "(0008,1030)",
+      "vr": "LO",
+      "length": 16,
+      "value": "IMPORTED upload",
+      "name": "StudyDescription"
+   },
+   "(0008,103e)": {
+      "tag": "(0008,103e)",
+      "vr": "LO",
+      "length": 20,
+      "value": "radiologyreport.html",
+      "name": "SeriesDescription"
+   },
+   "(0010,0010)": {
+      "tag": "(0010,0010)",
+      "vr": "PN",
+      "length": 18,
+      "value": "TURKEY^BUTTERBALL",
+      "name": "PatientName"
+   },
+   "(0010,0020)": {
+      "tag": "(0010,0020)",
+      "vr": "LO",
+      "length": 0,
+      "value": "",
+      "name": "PatientID"
+   },
+   "(0010,0030)": {
+      "tag": "(0010,0030)",
+      "vr": "DA",
+      "length": 8,
+      "value": "20000101",
+      "name": "PatientBirthDate"
+   },
+   "(0010,0040)": {
+      "tag": "(0010,0040)",
+      "vr": "CS",
+      "length": 2,
+      "value": "F",
+      "name": "PatientSex"
+   },
+   "(0010,21b0)": {
+      "tag": "(0010,21b0)",
+      "vr": "LT",
+      "length": 0,
+      "value": "",
+      "name": "AdditionalPatientHistory"
+   },
+   "(0020,000d)": {
+      "tag": "(0020,000d)",
+      "vr": "UI",
+      "length": 52,
+      "value": "1.3.6.1.4.1.25403.17168433367.2352.20130820060032.1",
+      "name": "StudyInstanceUID"
+   },
+   "(0020,000e)": {
+      "tag": "(0020,000e)",
+      "vr": "UI",
+      "length": 58,
+      "value": "1.3.6.1.4.1.34692.214367784636445236360975209389702281970",
+      "name": "SeriesInstanceUID"
+   },
+   "(0020,0010)": {
+      "tag": "(0020,0010)",
+      "vr": "SH",
+      "length": 0,
+      "value": "",
+      "name": "StudyID"
+   },
+   "(0020,0011)": {
+      "tag": "(0020,0011)",
+      "vr": "IS",
+      "length": 4,
+      "value": "101",
+      "name": "SeriesNumber"
+   },
+   "(0020,0012)": {
+      "tag": "(0020,0012)",
+      "vr": "IS",
+      "length": 2,
+      "value": "1",
+      "name": "AcquisitionNumber"
+   },
+   "(0020,0013)": {
+      "tag": "(0020,0013)",
+      "vr": "IS",
+      "length": 2,
+      "value": "0",
+      "name": "InstanceNumber"
+   },
+   "(0028,0002)": {
+      "tag": "(0028,0002)",
+      "vr": "US",
+      "length": 2,
+      "value": 3,
+      "name": "SamplesPerPixel"
+   },
+   "(0028,0004)": {
+      "tag": "(0028,0004)",
+      "vr": "CS",
+      "length": 4,
+      "value": "RGB",
+      "name": "PhotometricInterpretation"
+   },
+   "(0028,0006)": {
+      "tag": "(0028,0006)",
+      "vr": "US",
+      "length": 2,
+      "value": 0,
+      "name": "PlanarConfiguration"
+   },
+   "(0028,0010)": {
+      "tag": "(0028,0010)",
+      "vr": "US",
+      "length": 2,
+      "value": 2200,
+      "name": "Rows"
+   },
+   "(0028,0011)": {
+      "tag": "(0028,0011)",
+      "vr": "US",
+      "length": 2,
+      "value": 1700,
+      "name": "Columns"
+   },
+   "(0028,0030)": {
+      "tag": "(0028,0030)",
+      "vr": "DS",
+      "length": 12,
+      "value": "0.127\\0.127",
+      "name": "PixelSpacing"
+   },
+   "(0028,0100)": {
+      "tag": "(0028,0100)",
+      "vr": "US",
+      "length": 2,
+      "value": 8,
+      "name": "BitsAllocated"
+   },
+   "(0028,0101)": {
+      "tag": "(0028,0101)",
+      "vr": "US",
+      "length": 2,
+      "value": 8,
+      "name": "BitsStored"
+   },
+   "(0028,0102)": {
+      "tag": "(0028,0102)",
+      "vr": "US",
+      "length": 2,
+      "value": 7,
+      "name": "HighBit"
+   },
+   "(0028,0103)": {
+      "tag": "(0028,0103)",
+      "vr": "US",
+      "length": 2,
+      "value": 0,
+      "name": "PixelRepresentation"
+   },
+   "(0038,0300)": {
+      "tag": "(0038,0300)",
+      "vr": "LO",
+      "length": 0,
+      "value": "",
+      "name": "CurrentPatientLocation"
+   },
+   "(0042,0010)": {
+      "tag": "(0042,0010)",
+      "vr": "ST",
+      "length": 20,
+      "value": "radiologyreport.html",
+      "name": "DocumentTitle"
+   },
+   "(7fe0,0010)": {
+      "tag": "(7fe0,0010)",
+      "vr": "OB",
+      "length": 11220000,
+      "value": "Binary data (OB): 11220000 bytes",
+      "name": "PixelData",
+      "devNote": "No support for VR: OB"
+   }
+}

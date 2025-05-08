@@ -43,7 +43,6 @@ async function compare(filepath?: string) {
 
   // const aesiraxParse = await streamParse(filepath);
   const aesiraxParse = await syncParse(filepath);
-
   const dcmjsStart = performance.now();
   const fileBuf = readFileSync(filepath).buffer;
   const dcmjsParse = dcmjs.data.DicomMessage.readFile(fileBuf);
